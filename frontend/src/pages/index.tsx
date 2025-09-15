@@ -1,109 +1,51 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  GraduationCap,
-  MapPin,
-  BookOpen,
-  FileText,
-  Lightbulb,
-  ArrowRight,
-  Star,
-  Target,
-} from "lucide-react";
+import { UniversitySlideshow } from "@/components/ui/UniversitySlideshow";
+import { AnimatedText } from "@/components/ui/AnimatedText";
+import { AutoScrollingFeatures } from "@/components/ui/AutoScrollingFeatures";
+import { ApplicationProcessDiagram } from "@/components/ui/ApplicationProcessDiagram";
+import { RecommendedUniversities } from "@/components/ui/RecommendedUniversities";
+import { ArrowRight } from "lucide-react";
 
 export default function Home() {
-  const features = [
-    {
-      icon: GraduationCap,
-      title: "University Discovery",
-      description:
-        "Explore thousands of universities worldwide with detailed information about programs, rankings, and requirements.",
-    },
-    {
-      icon: MapPin,
-      title: "Country Research",
-      description:
-        "Compare study destinations, costs, visa requirements, and work opportunities across different countries.",
-    },
-    {
-      icon: BookOpen,
-      title: "Exam Preparation",
-      description:
-        "Track your standardized test preparation with personalized study plans and practice resources.",
-    },
-    {
-      icon: FileText,
-      title: "Document Management",
-      description:
-        "Organize and track all your application documents with automated deadline reminders.",
-    },
-    {
-      icon: Lightbulb,
-      title: "AI Recommendations",
-      description:
-        "Get personalized university and program recommendations based on your profile and preferences.",
-    },
-    {
-      icon: Target,
-      title: "Progress Tracking",
-      description:
-        "Monitor your application progress with detailed analytics and milestone tracking.",
-    },
-  ];
-
-  const stats = [
-    { number: "2,500+", label: "Universities" },
-    { number: "95%", label: "Success Rate" },
-    { number: "150+", label: "Countries" },
-  ];
+  const universityImages = ["/uni1.jpg", "/uni2.jpg", "/uni3.jpg"];
 
   return (
     <div className="min-h-screen bg-white">
       <main>
         {/* Hero Section */}
-        <section className="pt-20 pb-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6">
-                Your Journey to
-                <span className="text-primary"> World-Class Education</span>
-              </h1>
-              <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-                Discover universities, track applications, and get personalized
-                recommendations to make your dream of studying abroad a reality.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  size="lg"
-                  className="bg-primary hover:bg-primary/90 text-lg px-8 py-4"
-                >
-                  Start Your Journey
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="text-lg px-8 py-4"
-                >
-                  Explore Universities
-                </Button>
-              </div>
-            </div>
+        <section className="relative h-screen overflow-hidden">
+          {/* Background slideshow */}
+          <div className="absolute inset-0">
+            <UniversitySlideshow images={universityImages} />
           </div>
-        </section>
 
-        {/* Stats Section */}
-        <section className="py-16 bg-muted/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">
-                    {stat.number}
-                  </div>
-                  <div className="text-muted-foreground">{stat.label}</div>
+          {/* Text overlay */}
+          <div className="relative z-10 h-full flex items-center justify-center">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center">
+              <div className="space-y-8">
+                <div>
+                  <h1 className="text-9xl md:text-[12rem] font-bold text-white mb-4 leading-tight">
+                    <AnimatedText />
+                  </h1>
                 </div>
-              ))}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button
+                    size="lg"
+                    className="bg-primary hover:bg-primary/90 text-lg px-8 py-4 rounded-full"
+                  >
+                    Start Your Journey
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="text-lg px-8 py-4 rounded-full border-2 border-white text-white hover:bg-white hover:text-primary bg-transparent"
+                  >
+                    Explore Universities
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -111,169 +53,118 @@ export default function Home() {
         {/* Features Section */}
         <section className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-foreground mb-4">
-                Everything You Need to Succeed
-              </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Our comprehensive platform provides all the tools and resources
-                you need to successfully apply to universities worldwide.
-              </p>
-            </div>
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Left side - Text content */}
+              <div className="space-y-6">
+                <h2 className="text-4xl font-bold text-foreground">
+                  Our Features
+                </h2>
+                <p className="text-xl text-muted-foreground">
+                  Our comprehensive platform provides all the tools and
+                  resources you need to successfully apply to universities
+                  worldwide.
+                </p>
+              </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {features.map((feature, index) => (
-                <Card
-                  key={index}
-                  className="hover:shadow-lg transition-all duration-300 hover:scale-105"
-                >
-                  <CardContent className="p-8">
-                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
-                      <feature.icon className="w-6 h-6 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-bold text-foreground mb-4">
-                      {feature.title}
-                    </h3>
-                    <p className="text-muted-foreground">
-                      {feature.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
+              {/* Right side - Auto-scrolling features */}
+              <AutoScrollingFeatures />
             </div>
           </div>
         </section>
 
-        {/* Testimonials Section */}
+        {/* Donor Connecting Feature Section */}
         <section className="py-20 bg-muted/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bold text-foreground mb-4">
-                What Students Say
+                Connect with Donors
               </h2>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                Get connected with generous donors who can help fund your
+                education journey. Our platform matches students with potential
+                sponsors and scholarship opportunities.
+              </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              <Card>
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold">
-                      AS
-                    </div>
-                    <div>
-                      <h4 className="font-semibold">Alex Smith</h4>
-                      <p className="text-sm text-muted-foreground">
-                        MIT &apos;28
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-muted-foreground mb-4">
-                    &quot;Ubit helped me organize my entire application process.
-                    The AI recommendations were spot-on, and I got into my dream
-                    school!&quot;
-                  </p>
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="h-4 w-4 fill-yellow-400 text-yellow-400"
+            <div className="grid md:grid-cols-2 gap-8 justify-center max-w-4xl mx-auto">
+              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105">
+                <CardContent className="p-8 text-center">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg
+                      className="w-8 h-8 text-primary"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                       />
-                    ))}
+                    </svg>
                   </div>
+                  <h3 className="text-xl font-bold text-foreground mb-4">
+                    Donor Matching
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Get matched with donors based on your field of study,
+                    location, and financial needs.
+                  </p>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 bg-secondary rounded-full flex items-center justify-center text-white font-bold">
-                      MJ
-                    </div>
-                    <div>
-                      <h4 className="font-semibold">Maria Johnson</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Stanford &apos;28
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-muted-foreground mb-4">
-                    &quot;The document tracking feature was a lifesaver. I never
-                    missed a deadline and stayed organized throughout the entire
-                    process.&quot;
-                  </p>
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="h-4 w-4 fill-yellow-400 text-yellow-400"
+              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105">
+                <CardContent className="p-8 text-center">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg
+                      className="w-8 h-8 text-primary"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
                       />
-                    ))}
+                    </svg>
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center text-white font-bold">
-                      DK
-                    </div>
-                    <div>
-                      <h4 className="font-semibold">David Kim</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Harvard &apos;28
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-muted-foreground mb-4">
-                    &quot;The personalized recommendations helped me discover
-                    universities I never knew about. Highly recommend this
-                    platform!&quot;
+                  <h3 className="text-xl font-bold text-foreground mb-4">
+                    Scholarship Opportunities
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Access exclusive scholarship opportunities from our network
+                    of educational sponsors.
                   </p>
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="h-4 w-4 fill-yellow-400 text-yellow-400"
-                      />
-                    ))}
-                  </div>
                 </CardContent>
               </Card>
             </div>
           </div>
         </section>
 
-        {/* CTA Section */}
+        {/* Application Process Tracking Section */}
         <section className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
+            <div className="text-center mb-16">
               <h2 className="text-4xl font-bold text-foreground mb-4">
-                Ready to Start Your Journey?
+                Application Process Tracking & List Management
               </h2>
-              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Join thousands of students who are already building their path
-                to world-class education.
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-12">
+                We will provide you with comprehensive application process
+                tracking and necessary list management to ensure you never miss
+                a deadline or important requirement.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  size="lg"
-                  className="bg-primary hover:bg-primary/90 text-lg px-8 py-4"
-                >
-                  Get Started Free
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="text-lg px-8 py-4"
-                >
-                  Schedule Demo
-                </Button>
-              </div>
+
+              {/* Process Diagram */}
+              <ApplicationProcessDiagram />
             </div>
           </div>
         </section>
+
+        {/* Recommended Universities Section */}
+        <RecommendedUniversities />
       </main>
     </div>
   );
