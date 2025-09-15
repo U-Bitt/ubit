@@ -4,6 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/ui/Logo";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Menu,
   X,
@@ -18,17 +25,30 @@ import {
   FileText,
   BarChart3,
   Award,
+  ChevronDown,
 } from "lucide-react";
 
-const navigation = [
-  { name: "Home", href: "/", icon: GraduationCap },
-  { name: "Universities", href: "/universities", icon: GraduationCap },
-  { name: "Countries", href: "/countries", icon: MapPin },
-  { name: "Exams", href: "/exams", icon: BookOpen },
-  { name: "Scholarships", href: "/scholarships", icon: Award },
-  { name: "Recommendations", href: "/recommendations", icon: Lightbulb },
-  { name: "Documents", href: "/documents", icon: FileText },
-  { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
+const navigationMenus = [
+  {
+    name: "Discover",
+    items: [
+      { name: "Universities", href: "/universities", icon: GraduationCap },
+      { name: "Countries", href: "/countries", icon: MapPin },
+      { name: "Scholarships", href: "/scholarships", icon: Award },
+    ],
+  },
+  {
+    name: "Prepare",
+    items: [
+      { name: "Exams", href: "/exams", icon: BookOpen },
+      { name: "Recommendations", href: "/recommendations", icon: Lightbulb },
+      { name: "Documents", href: "/documents", icon: FileText },
+    ],
+  },
+  {
+    name: "Manage",
+    items: [{ name: "Dashboard", href: "/dashboard", icon: BarChart3 }],
+  },
 ];
 
 export default function Navbar() {
@@ -40,35 +60,57 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <GraduationCap className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-foreground">Ubit</span>
-            </Link>
-          </div>
+          <Logo />
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
-            {navigation.map(item => {
-              const isActive = router.pathname === item.href;
-              return (
-                <Link key={item.name} href={item.href}>
+            {/* Home Link */}
+            <Link href="/">
+              <Button
+                variant={router.pathname === "/" ? "default" : "ghost"}
+                className={`flex items-center space-x-2 ${
+                  router.pathname === "/"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <GraduationCap className="h-4 w-4" />
+                <span>Home</span>
+              </Button>
+            </Link>
+
+            {/* Dropdown Menus */}
+            {navigationMenus.map(menu => (
+              <DropdownMenu key={menu.name}>
+                <DropdownMenuTrigger asChild>
                   <Button
-                    variant={isActive ? "default" : "ghost"}
-                    className={`flex items-center space-x-2 ${
-                      isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
+                    variant="ghost"
+                    className="flex items-center space-x-1 text-muted-foreground hover:text-foreground"
                   >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.name}</span>
+                    <span>{menu.name}</span>
+                    <ChevronDown className="h-4 w-4" />
                   </Button>
-                </Link>
-              );
-            })}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  {menu.items.map(item => {
+                    const isActive = router.pathname === item.href;
+                    return (
+                      <DropdownMenuItem key={item.name} asChild>
+                        <Link
+                          href={item.href}
+                          className={`flex items-center space-x-2 w-full ${
+                            isActive ? "bg-primary/10 text-primary" : ""
+                          }`}
+                        >
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.name}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ))}
           </div>
 
           {/* Right side buttons */}
@@ -105,24 +147,47 @@ export default function Navbar() {
         {isOpen && (
           <div className="md:hidden border-t border-gray-200">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              {navigation.map(item => {
-                const isActive = router.pathname === item.href;
-                return (
-                  <Link key={item.name} href={item.href}>
-                    <Button
-                      variant={isActive ? "default" : "ghost"}
-                      className={`w-full justify-start flex items-center space-x-2 ${
-                        isActive
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.name}</span>
-                    </Button>
-                  </Link>
-                );
-              })}
+              {/* Home Link */}
+              <Link href="/">
+                <Button
+                  variant={router.pathname === "/" ? "default" : "ghost"}
+                  className={`w-full justify-start flex items-center space-x-2 ${
+                    router.pathname === "/"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <GraduationCap className="h-4 w-4" />
+                  <span>Home</span>
+                </Button>
+              </Link>
+
+              {/* Dropdown Menus for Mobile */}
+              {navigationMenus.map(menu => (
+                <div key={menu.name} className="space-y-1">
+                  <div className="px-3 py-2 text-sm font-medium text-muted-foreground">
+                    {menu.name}
+                  </div>
+                  {menu.items.map(item => {
+                    const isActive = router.pathname === item.href;
+                    return (
+                      <Link key={item.name} href={item.href}>
+                        <Button
+                          variant={isActive ? "default" : "ghost"}
+                          className={`w-full justify-start flex items-center space-x-2 ml-4 ${
+                            isActive
+                              ? "bg-primary text-primary-foreground"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.name}</span>
+                        </Button>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
             <div className="pt-4 pb-3 border-t border-gray-200">
               <div className="flex items-center px-3">
