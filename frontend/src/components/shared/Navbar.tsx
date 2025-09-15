@@ -17,6 +17,7 @@ import {
   Lightbulb,
   FileText,
   BarChart3,
+  Award,
 } from "lucide-react";
 
 const navigation = [
@@ -24,6 +25,7 @@ const navigation = [
   { name: "Universities", href: "/universities", icon: GraduationCap },
   { name: "Countries", href: "/countries", icon: MapPin },
   { name: "Exams", href: "/exams", icon: BookOpen },
+  { name: "Scholarships", href: "/scholarships", icon: Award },
   { name: "Recommendations", href: "/recommendations", icon: Lightbulb },
   { name: "Documents", href: "/documents", icon: FileText },
   { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
