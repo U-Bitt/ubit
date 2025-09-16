@@ -2,47 +2,65 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Star, ArrowRight } from "lucide-react";
+import { Search, Star, ArrowRight, X } from "lucide-react";
+import { useState, useMemo } from "react";
+import { useRouter } from "next/router";
+import { countries } from "@/mockData/countries";
 
 export const Countries = () => {
-  const countries = [
-    {
-      name: "United States",
-      flag: "🇺🇸",
-      popularCities: ["New York", "Boston", "San Francisco"],
-      rating: 4.8,
-      description:
-        "Home to world-renowned universities like Harvard, MIT, and Stanford.",
-      visaType: "F-1 Student Visa",
-      workRights: "CPT/OPT available",
-      avgTuition: "$50,000/year",
-      livingCost: "$15,000/year",
-    },
-    {
-      name: "United Kingdom",
-      flag: "🇬🇧",
-      popularCities: ["London", "Cambridge", "Oxford"],
-      rating: 4.7,
-      description:
-        "Rich academic tradition with universities like Oxford and Cambridge.",
-      visaType: "Student Visa",
-      workRights: "20 hours/week",
-      avgTuition: "£25,000/year",
-      livingCost: "£12,000/year",
-    },
-    {
-      name: "Canada",
-      flag: "🇨🇦",
-      popularCities: ["Toronto", "Vancouver", "Montreal"],
-      rating: 4.6,
-      description:
-        "Welcoming immigration policies and high-quality education system.",
-      visaType: "Study Permit",
-      workRights: "20 hours/week",
-      avgTuition: "C$30,000/year",
-      livingCost: "C$15,000/year",
-    },
-  ];
+  const router = useRouter();
+  
+  // State for search and filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+
+
+  // Filter and search logic
+  const filteredCountries = useMemo(() => {
+    return countries.filter((country) => {
+      // Search filter
+      const matchesSearch = searchQuery === "" || 
+        country.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        country.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        country.visaType.toLowerCase().includes(searchQuery.toLowerCase());
+
+      // Active filters
+      const matchesFilters = activeFilters.length === 0 || activeFilters.every(filter => {
+        switch (filter) {
+          case "english-speaking":
+            return country.isEnglishSpeaking;
+          case "low-cost":
+            return country.isLowCost;
+          case "work-rights":
+            return country.hasWorkRights;
+          default:
+            return true;
+        }
+      });
+
+      return matchesSearch && matchesFilters;
+    });
+  }, [searchQuery, activeFilters]);
+
+  // Filter toggle function
+  const toggleFilter = (filter: string) => {
+    setActiveFilters(prev => 
+      prev.includes(filter) 
+        ? prev.filter(f => f !== filter)
+        : [...prev, filter]
+    );
+  };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setActiveFilters([]);
+    setSearchQuery("");
+  };
+
+  // Handle explore universities button click
+  const handleExploreUniversities = (countryName: string) => {
+    router.push(`/discover/universities?country=${encodeURIComponent(countryName)}`);
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -63,26 +81,35 @@ export const Countries = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Search countries or cities..."
+                placeholder="Search countries, descriptions, or visa types..."
                 className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              <Button variant="outline" onClick={clearFilters}>
+                <X className="h-4 w-4 mr-2" />
+                Clear
+              </Button>
               <Badge
-                variant="outline"
+                variant={activeFilters.includes("english-speaking") ? "default" : "outline"}
                 className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                onClick={() => toggleFilter("english-speaking")}
               >
                 English Speaking
               </Badge>
               <Badge
-                variant="outline"
+                variant={activeFilters.includes("low-cost") ? "default" : "outline"}
                 className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                onClick={() => toggleFilter("low-cost")}
               >
                 Low Cost
               </Badge>
               <Badge
-                variant="outline"
+                variant={activeFilters.includes("work-rights") ? "default" : "outline"}
                 className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                onClick={() => toggleFilter("work-rights")}
               >
                 Work Rights
               </Badge>
@@ -90,9 +117,22 @@ export const Countries = () => {
           </div>
         </div>
 
+        {/* Results Counter */}
+        <div className="mb-4">
+          <p className="text-muted-foreground">
+            Showing {filteredCountries.length} of {countries.length} countries
+            {(searchQuery || activeFilters.length > 0) && (
+              <span className="ml-2">
+                {searchQuery && `for "${searchQuery}"`}
+                {activeFilters.length > 0 && ` with ${activeFilters.join(", ")} filters`}
+              </span>
+            )}
+          </p>
+        </div>
+
         {/* Countries Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {countries.map((country, index) => (
+          {filteredCountries.map((country, index) => (
             <Card
               key={index}
               className="hover:shadow-lg transition-all duration-300 hover:scale-105"
@@ -156,22 +196,10 @@ export const Countries = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Popular Cities:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {country.popularCities.map((city, cityIndex) => (
-                      <Badge
-                        key={cityIndex}
-                        variant="secondary"
-                        className="text-xs"
-                      >
-                        {city}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <Button className="w-full bg-primary hover:bg-primary/90">
+                <Button 
+                  className="w-full bg-primary hover:bg-primary/90"
+                  onClick={() => handleExploreUniversities(country.name)}
+                >
                   Explore Universities
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>

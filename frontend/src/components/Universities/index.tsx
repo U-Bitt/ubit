@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/router";
-import { useState, useMemo } from "react";
-import { Search, MapPin, Star, ArrowRight, Heart, Filter, X } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Search, MapPin, Star, ArrowRight, Heart, Filter, X, Bookmark } from "lucide-react";
+import { useSavedUniversities } from "@/hooks/useSavedUniversities";
+import { universities } from "@/mockData/universities";
 
 export const Universities = () => {
   const router = useRouter();
@@ -14,67 +16,58 @@ export const Universities = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   
-  const universities = [
-    {
-      id: "mit",
-      name: "Massachusetts Institute of Technology",
-      location: "Cambridge, MA, USA",
-      ranking: 1,
-      rating: 4.9,
-      tuition: "$57,986/year",
-      acceptance: "6.7%",
-      image: "/mit-campus-aerial.png",
-      programs: ["Computer Science", "Engineering", "Physics", "Mathematics"],
-      deadline: "Jan 1, 2025",
-    },
-    {
-      id: "stanford",
-      name: "Stanford University",
-      location: "Stanford, CA, USA",
-      ranking: 2,
-      rating: 4.8,
-      tuition: "$61,731/year",
-      acceptance: "4.3%",
-      image: "/stanford-campus.jpg",
-      programs: ["Computer Science", "Business", "Medicine", "Engineering"],
-      deadline: "Jan 2, 2025",
-    },
-    {
-      id: "harvard",
-      name: "Harvard University",
-      location: "Cambridge, MA, USA",
-      ranking: 3,
-      rating: 4.9,
-      tuition: "$57,261/year",
-      acceptance: "3.4%",
-      image: "/harvard-campus.jpg",
-      programs: ["Liberal Arts", "Medicine", "Law", "Business"],
-      deadline: "Jan 1, 2025",
-    },
-    {
-      id: "oxford",
-      name: "University of Oxford",
-      location: "Oxford, UK",
-      ranking: 4,
-      rating: 4.7,
-      tuition: "£26,770/year",
-      acceptance: "17.5%",
-      image: "/oxford-university-campus.jpg",
-      programs: ["Philosophy", "Literature", "Medicine", "Law"],
-      deadline: "Oct 15, 2024",
-    },
-  ];
+  // Saved universities hook
+  const { savedUniversities, toggleSave, isSaved } = useSavedUniversities();
+
+  // Handle country parameter from URL
+  useEffect(() => {
+    if (router.isReady && router.query.country) {
+      const countryName = router.query.country as string;
+      setSearchQuery(countryName);
+    }
+  }, [router.isReady, router.query.country]);
+
+  // Helper function to check if university matches country
+  const matchesCountry = (university: any, countryQuery: string) => {
+    if (!countryQuery) return true;
+    
+    const countryQueryLower = countryQuery.toLowerCase();
+    const locationLower = university.location.toLowerCase();
+    
+    // Map country names to common variations
+    const countryMappings: { [key: string]: string[] } = {
+      'united states': ['usa', 'us', 'america', 'united states'],
+      'united kingdom': ['uk', 'britain', 'england', 'scotland', 'wales'],
+      'canada': ['canada', 'canadian'],
+      'germany': ['germany', 'german'],
+      'australia': ['australia', 'australian'],
+      'netherlands': ['netherlands', 'dutch', 'holland']
+    };
+    
+    // Check direct country name match
+    if (locationLower.includes(countryQueryLower)) return true;
+    
+    // Check mapped variations
+    for (const [country, variations] of Object.entries(countryMappings)) {
+      if (countryQueryLower.includes(country) || country.includes(countryQueryLower)) {
+        return variations.some(variation => locationLower.includes(variation));
+      }
+    }
+    
+    return false;
+  };
 
   // Filter and search logic
   const filteredUniversities = useMemo(() => {
     return universities.filter((university) => {
-      // Search filter
+      // Search filter (including country matching)
       const matchesSearch = searchQuery === "" || 
         university.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         university.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
         university.programs.some(program => 
           program.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+        ) ||
+        matchesCountry(university, searchQuery);
 
       // Active filters
       const matchesFilters = activeFilters.length === 0 || activeFilters.every(filter => {
@@ -87,6 +80,8 @@ export const Universities = () => {
             );
           case "scholarships":
             return university.tuition.includes("$") && parseFloat(university.tuition.replace(/[$,]/g, "")) > 50000;
+          case "saved":
+            return isSaved(university.id);
           default:
             return true;
         }
@@ -94,7 +89,7 @@ export const Universities = () => {
 
       return matchesSearch && matchesFilters;
     });
-  }, [searchQuery, activeFilters]);
+  }, [searchQuery, activeFilters, isSaved]);
 
   // Filter toggle function
   const toggleFilter = (filter: string) => {
@@ -162,6 +157,14 @@ export const Universities = () => {
               >
                 Scholarships
               </Badge>
+              <Badge
+                variant={activeFilters.includes("saved") ? "default" : "outline"}
+                className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                onClick={() => toggleFilter("saved")}
+              >
+                <Bookmark className="h-3 w-3 mr-1" />
+                Saved ({savedUniversities.length})
+              </Badge>
             </div>
           </div>
         </div>
@@ -174,6 +177,11 @@ export const Universities = () => {
               <span className="ml-2">
                 {searchQuery && `for "${searchQuery}"`}
                 {activeFilters.length > 0 && ` with ${activeFilters.join(", ")} filters`}
+              </span>
+            )}
+            {router.query.country && (
+              <span className="ml-2 text-primary font-medium">
+                in {router.query.country}
               </span>
             )}
           </p>
@@ -213,10 +221,15 @@ export const Universities = () => {
                 </div>
                 <Button
                   size="sm"
-                  variant="secondary"
-                  className="absolute top-4 right-4 rounded-full w-10 h-10 p-0"
+                  variant={isSaved(university.id) ? "default" : "secondary"}
+                  className={`absolute top-4 right-4 rounded-full w-10 h-10 p-0 ${
+                    isSaved(university.id) 
+                      ? "bg-red-500 hover:bg-red-600 text-white" 
+                      : "hover:bg-red-50"
+                  }`}
+                  onClick={() => toggleSave(university.id)}
                 >
-                  <Heart className="h-4 w-4" />
+                  <Heart className={`h-4 w-4 ${isSaved(university.id) ? "fill-current" : ""}`} />
                 </Button>
               </div>
 
