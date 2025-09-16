@@ -3,11 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useRouter } from "next/router";
 import {
   MapPin,
   Star,
   Calendar,
-  Users,
   DollarSign,
   GraduationCap,
   BookOpen,
@@ -16,64 +16,182 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-export default function UniversityDetailPage() {
-  const university = {
-    name: "Massachusetts Institute of Technology",
-    location: "Cambridge, MA, USA",
-    ranking: 1,
-    rating: 4.9,
-    tuition: "$57,986/year",
-    acceptance: "6.7%",
-    students: "11,934",
-    image: "/mit-campus-aerial.png",
-    description:
-      "MIT is a world-renowned private research university known for its cutting-edge research, innovation, and excellence in science, technology, engineering, and mathematics (STEM) fields.",
-    programs: [
-      "Computer Science",
-      "Engineering",
-      "Physics",
-      "Mathematics",
-      "Biology",
-      "Chemistry",
-      "Economics",
-      "Business Administration",
-    ],
-    highlights: [
-      "Top Engineering School",
-      "Research Excellence",
-      "Innovation Hub",
-      "Strong Alumni Network",
-      "Cutting-edge Facilities",
-    ],
-    deadline: "Jan 1, 2025",
-    requirements: [
-      "High School Transcript",
-      "SAT/ACT Scores",
-      "Personal Statement",
-      "Letters of Recommendation",
-      "Portfolio (for certain programs)",
-    ],
-    scholarships: [
-      {
-        name: "Merit Scholarship",
-        amount: "$15,000/year",
-        requirements: ["High academic performance", "Leadership experience"],
-        deadline: "Dec 15, 2024",
-      },
-      {
-        name: "Need-based Financial Aid",
-        amount: "Up to full tuition",
-        requirements: ["Financial need", "Academic merit"],
-        deadline: "Jan 1, 2025",
-      },
-    ],
-  };
+interface UniversityDetailsProps {
+  universityId: string;
+}
+
+export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
+  const router = useRouter();
+
+  // University data - in a real app, this would be fetched based on the ID
+  const universities = [
+    {
+      id: "mit",
+      name: "Massachusetts Institute of Technology",
+      location: "Cambridge, MA, USA",
+      ranking: 1,
+      rating: 4.9,
+      tuition: "$57,986/year",
+      acceptance: "6.7%",
+      image: "/mit-campus-aerial.png",
+      description:
+        "MIT is a world-renowned private research university known for its cutting-edge research, innovation, and excellence in science, technology, engineering, and mathematics (STEM) fields.",
+      programs: [
+        "Computer Science",
+        "Engineering",
+        "Physics",
+        "Mathematics",
+        "Biology",
+        "Chemistry",
+        "Economics",
+        "Business Administration",
+      ],
+      deadline: "Jan 1, 2025",
+      requirements: [
+        "High School Transcript",
+        "SAT/ACT Scores",
+        "Personal Statement",
+        "Letters of Recommendation",
+        "Portfolio (for certain programs)",
+      ],
+      scholarships: [
+        {
+          name: "Merit Scholarship",
+          amount: "$15,000/year",
+          requirements: ["High academic performance", "Leadership experience"],
+          deadline: "Dec 15, 2024",
+        },
+        {
+          name: "Need-based Financial Aid",
+          amount: "Up to full tuition",
+          requirements: ["Financial need", "Academic merit"],
+          deadline: "Jan 1, 2025",
+        },
+      ],
+    },
+    {
+      id: "stanford",
+      name: "Stanford University",
+      location: "Stanford, CA, USA",
+      ranking: 2,
+      rating: 4.8,
+      tuition: "$61,731/year",
+      acceptance: "4.3%",
+      image: "/stanford-campus.jpg",
+      description:
+        "Stanford University is a leading research university known for its academic strength, proximity to Silicon Valley, and entrepreneurial spirit.",
+      programs: [
+        "Computer Science",
+        "Business",
+        "Medicine",
+        "Engineering",
+        "Law",
+        "Education",
+        "Humanities",
+        "Sciences",
+      ],
+      deadline: "Jan 2, 2025",
+      requirements: [
+        "High School Transcript",
+        "SAT/ACT Scores",
+        "Personal Statement",
+        "Letters of Recommendation",
+        "Extracurricular Activities",
+      ],
+      scholarships: [
+        {
+          name: "Stanford Scholarship",
+          amount: "Up to $20,000/year",
+          requirements: ["Academic excellence", "Financial need"],
+          deadline: "Jan 2, 2025",
+        },
+      ],
+    },
+    {
+      id: "harvard",
+      name: "Harvard University",
+      location: "Cambridge, MA, USA",
+      ranking: 3,
+      rating: 4.9,
+      tuition: "$57,261/year",
+      acceptance: "3.4%",
+      image: "/harvard-campus.jpg",
+      description:
+        "Harvard University is America's oldest institution of higher learning, founded in 1636, and is widely regarded as one of the most prestigious universities in the world.",
+      programs: [
+        "Liberal Arts",
+        "Medicine",
+        "Law",
+        "Business",
+        "Public Policy",
+        "Education",
+        "Divinity",
+        "Design",
+      ],
+      deadline: "Jan 1, 2025",
+      requirements: [
+        "High School Transcript",
+        "SAT/ACT Scores",
+        "Personal Statement",
+        "Letters of Recommendation",
+        "Interview (optional)",
+      ],
+      scholarships: [
+        {
+          name: "Harvard Financial Aid",
+          amount: "Need-based",
+          requirements: ["Financial need", "Academic merit"],
+          deadline: "Jan 1, 2025",
+        },
+      ],
+    },
+    {
+      id: "oxford",
+      name: "University of Oxford",
+      location: "Oxford, UK",
+      ranking: 4,
+      rating: 4.7,
+      tuition: "£26,770/year",
+      acceptance: "17.5%",
+      image: "/oxford-university-campus.jpg",
+      description:
+        "The University of Oxford is the oldest university in the English-speaking world and is regarded as one of the leading academic institutions in the world.",
+      programs: [
+        "Philosophy",
+        "Literature",
+        "Medicine",
+        "Law",
+        "Mathematics",
+        "Physics",
+        "History",
+        "Economics",
+      ],
+      deadline: "Oct 15, 2024",
+      requirements: [
+        "A-Levels or equivalent",
+        "Personal Statement",
+        "Academic References",
+        "Admissions Test",
+        "Interview",
+      ],
+      scholarships: [
+        {
+          name: "Oxford Scholarship",
+          amount: "Up to £10,000/year",
+          requirements: ["Academic excellence", "Financial need"],
+          deadline: "Oct 15, 2024",
+        },
+      ],
+    },
+  ];
+
+  const university = universities.find((uni) => uni.id === universityId) || universities[0];
 
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
-        <Button variant="ghost" className="mb-6">
+        <Button variant="ghost" className="mb-6" onClick={() => router.push('/universities')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Universities
         </Button>
@@ -114,16 +232,11 @@ export default function UniversityDetailPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
               <div className="text-center p-4 bg-muted/30 rounded-lg">
                 <DollarSign className="h-6 w-6 text-primary mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground">Tuition</p>
                 <p className="font-semibold">{university.tuition}</p>
-              </div>
-              <div className="text-center p-4 bg-muted/30 rounded-lg">
-                <Users className="h-6 w-6 text-primary mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">Students</p>
-                <p className="font-semibold">{university.students}</p>
               </div>
               <div className="text-center p-4 bg-muted/30 rounded-lg">
                 <GraduationCap className="h-6 w-6 text-primary mx-auto mb-2" />
@@ -189,23 +302,7 @@ export default function UniversityDetailPage() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle>University Highlights</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {university.highlights.map((highlight, index) => (
-                      <li key={index} className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-primary rounded-full"></div>
-                        <span>{highlight}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-
+            <div className="grid md:grid-cols-1 gap-8">
               <Card>
                 <CardHeader>
                   <CardTitle>Key Statistics</CardTitle>
@@ -213,21 +310,38 @@ export default function UniversityDetailPage() {
                 <CardContent className="space-y-4">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Founded</span>
-                    <span className="font-semibold">1861</span>
+                    <span className="font-semibold">
+                      {university.id === 'mit' ? '1861' : 
+                       university.id === 'stanford' ? '1885' :
+                       university.id === 'harvard' ? '1636' :
+                       university.id === 'oxford' ? '1096' : 'N/A'}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Type</span>
-                    <span className="font-semibold">Private Research</span>
+                    <span className="font-semibold">
+                      {university.id === 'oxford' ? 'Public Research' : 'Private Research'}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Campus Size</span>
-                    <span className="font-semibold">168 acres</span>
+                    <span className="font-semibold">
+                      {university.id === 'mit' ? '168 acres' :
+                       university.id === 'stanford' ? '8,180 acres' :
+                       university.id === 'harvard' ? '5,076 acres' :
+                       university.id === 'oxford' ? '1,000+ acres' : 'N/A'}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
                       Student-Faculty Ratio
                     </span>
-                    <span className="font-semibold">3:1</span>
+                    <span className="font-semibold">
+                      {university.id === 'mit' ? '3:1' :
+                       university.id === 'stanford' ? '5:1' :
+                       university.id === 'harvard' ? '6:1' :
+                       university.id === 'oxford' ? '11:1' : 'N/A'}
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -354,4 +468,4 @@ export default function UniversityDetailPage() {
       </div>
     </div>
   );
-}
+};
