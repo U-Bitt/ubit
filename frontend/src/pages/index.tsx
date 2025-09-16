@@ -166,6 +166,7 @@ export default function Home() {
         {/* Recommended Universities Section */}
         <RecommendedUniversities />
       </main>
+
     </div>
   );
 }
