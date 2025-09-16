@@ -12,9 +12,9 @@ import {
   GraduationCap,
   BookOpen,
   Heart,
-  Share2,
   ArrowLeft,
 } from "lucide-react";
+import { useSavedUniversities } from "@/hooks/useSavedUniversities";
 
 interface UniversityDetailsProps {
   universityId: string;
@@ -22,6 +22,7 @@ interface UniversityDetailsProps {
 
 export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
   const router = useRouter();
+  const { toggleSave, isSaved } = useSavedUniversities();
 
   // University data - in a real app, this would be fetched based on the ID
   const universities = [
@@ -221,13 +222,17 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <Heart className="h-4 w-4 mr-2" />
-                  Save
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share
+                <Button 
+                  variant={isSaved(university.id) ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => toggleSave(university.id)}
+                  className={isSaved(university.id) 
+                    ? "bg-red-500 hover:bg-red-600 text-white" 
+                    : "hover:bg-red-50"
+                  }
+                >
+                  <Heart className={`h-4 w-4 mr-2 ${isSaved(university.id) ? "fill-current" : ""}`} />
+                  {isSaved(university.id) ? "Saved" : "Save"}
                 </Button>
               </div>
             </div>
@@ -264,13 +269,7 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
                     Start Application
                   </Button>
                   <Button variant="outline" className="w-full">
-                    Schedule Visit
-                  </Button>
-                  <Button variant="outline" className="w-full">
                     Contact Admissions
-                  </Button>
-                  <Button variant="outline" className="w-full">
-                    Download Brochure
                   </Button>
                 </div>
               </CardContent>
