@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { SettingsSidebar } from "@/components/SettingsSidebar";
+import { NotificationCube } from "@/components/NotificationCube";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/Logo";
 import {
@@ -58,6 +60,8 @@ const navigationMenus = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const router = useRouter();
 
   return (
@@ -120,15 +124,19 @@ export default function Navbar() {
 
           {/* Right side buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" asChild>
-              <Link href="/notifications">
-                <Bell className="h-4 w-4" />
-              </Link>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setIsNotificationsOpen(true)}
+            >
+              <Bell className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" asChild>
-              <Link href="/settings">
-                <Settings className="h-4 w-4" />
-              </Link>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setIsSettingsOpen(true)}
+            >
+              <Settings className="h-4 w-4" />
             </Button>
             <Link href="/user/profile" className="flex items-center space-x-2">
               <User className="h-4 w-4 mr-2" />
@@ -215,22 +223,26 @@ export default function Navbar() {
                 </div>
               </div>
               <div className="mt-3 space-y-1">
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start"
+                  onClick={() => setIsNotificationsOpen(true)}
+                >
+                  <Bell className="h-4 w-4 mr-2" />
+                  Notifications
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start"
+                  onClick={() => setIsSettingsOpen(true)}
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </Button>
                 <Button variant="ghost" className="w-full justify-start" asChild>
                   <Link href="/user/profile">
                     <User className="h-4 w-4 mr-2" />
                     Your Profile
-                  </Link>
-                </Button>
-                <Button variant="ghost" className="w-full justify-start" asChild>
-                  <Link href="/notifications">
-                    <Bell className="h-4 w-4 mr-2" />
-                    Notifications
-                  </Link>
-                </Button>
-                <Button variant="ghost" className="w-full justify-start" asChild>
-                  <Link href="/settings">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Settings
                   </Link>
                 </Button>
                 <Button variant="ghost" className="w-full justify-start">
@@ -242,6 +254,19 @@ export default function Navbar() {
           </div>
         )}
       </div>
+
+      {/* Settings Sidebar */}
+      <SettingsSidebar 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+      />
+
+      {/* Notification Cube */}
+      <NotificationCube 
+        isOpen={isNotificationsOpen} 
+        onClose={() => setIsNotificationsOpen(false)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+      />
     </nav>
   );
 }
