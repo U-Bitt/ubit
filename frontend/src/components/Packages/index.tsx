@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, Star } from "lucide-react";
 
-export default function PackagesPage() {
+export const Packages = () => {
   const packages = [
     {
       id: 1,
@@ -312,4 +312,4 @@ export default function PackagesPage() {
       </div>
     </div>
   );
-}
+};

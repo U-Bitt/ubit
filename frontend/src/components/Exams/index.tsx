@@ -13,7 +13,7 @@ import {
   Play,
 } from "lucide-react";
 
-export default function ExamsPage() {
+export const Exams = () => {
   const exams = [
     {
       name: "SAT",
@@ -389,4 +389,4 @@ export default function ExamsPage() {
       </div>
     </div>
   );
-}
+};

@@ -17,7 +17,7 @@ import {
   File,
 } from "lucide-react";
 
-export default function DocumentsPage() {
+export const Documents = () => {
   const documents = [
     {
       id: 1,
@@ -323,4 +323,4 @@ export default function DocumentsPage() {
       </div>
     </div>
   );
-}
+};

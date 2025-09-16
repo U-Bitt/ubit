@@ -12,7 +12,7 @@ import {
   FileText,
 } from "lucide-react";
 
-export default function DashboardPage() {
+export const Dashboard = () => {
   const applications = [
     {
       university: "MIT",
@@ -275,4 +275,4 @@ export default function DashboardPage() {
       </div>
     </div>
   );
-}
+};
