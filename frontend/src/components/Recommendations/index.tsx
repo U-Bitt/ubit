@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, CheckCircle, ArrowRight } from "lucide-react";
 
-export default function RecommendationsPage() {
+export const Recommendations = () => {
   const universityRecommendations = [
     {
       name: "Massachusetts Institute of Technology",
@@ -541,4 +541,4 @@ export default function RecommendationsPage() {
       </div>
     </div>
   );
-}
+};

@@ -12,7 +12,7 @@ import {
   MapPin,
 } from "lucide-react";
 
-export default function VisaPage() {
+export const Visa = () => {
   const visaTypes = [
     {
       country: "United States",
@@ -444,4 +444,4 @@ export default function VisaPage() {
       </div>
     </div>
   );
-}
+};

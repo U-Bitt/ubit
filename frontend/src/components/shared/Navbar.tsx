@@ -115,16 +115,16 @@ export default function Navbar() {
 
           {/* Right side buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" >
               <Bell className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" >
               <Settings className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm">
+            <Link href="/user-profile" className="flex items-center space-x-2">
               <User className="h-4 w-4 mr-2" />
               Profile
-            </Button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}

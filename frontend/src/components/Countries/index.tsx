@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Star, ArrowRight } from "lucide-react";
 
-export default function CountriesPage() {
+export const Countries = () => {
   const countries = [
     {
       name: "United States",
@@ -182,4 +182,4 @@ export default function CountriesPage() {
       </div>
     </div>
   );
-}
+};

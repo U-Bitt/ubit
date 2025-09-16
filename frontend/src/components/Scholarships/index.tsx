@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Star, ArrowRight, Mail, Linkedin, ExternalLink, DollarSign, Users, Calendar, Award } from "lucide-react";
 import { useState, useMemo } from "react";
 
-export default function ScholarshipsPage() {
+export const Scholarships = () => {
   const scholarships = [
     {
       id: 1,
@@ -449,4 +449,4 @@ export default function ScholarshipsPage() {
       </div>
     </div>
   );
-}
+};

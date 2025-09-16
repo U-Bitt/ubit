@@ -14,7 +14,7 @@ import {
   Filter,
 } from "lucide-react";
 
-export default function TrainingsPage() {
+export const Trainings = () => {
   const trainings = [
     {
       id: 1,
@@ -393,4 +393,4 @@ export default function TrainingsPage() {
       </div>
     </div>
   );
-}
+};
