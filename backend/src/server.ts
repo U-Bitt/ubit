@@ -5,60 +5,86 @@ import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 
+// Import routes
+import universityRoutes from "./routes/universities";
+import countryRoutes from "./routes/countries";
+import examRoutes from "./routes/exams";
+import userRoutes from "./routes/users";
+
+// Import middleware
+import { errorHandler } from "./middleware/errorHandler";
+import { notFound } from "./middleware/notFound";
+
+// Import database connection
+import connectDB from "./config/database";
+import { seedUniversities } from "./utils/seedData";
+
+// Load environment variables
 dotenv.config();
 
-const app = express();
-const PORT = parseInt(process.env["PORT"] ?? "5000", 10);
-const CORS_ORIGIN = process.env["CORS_ORIGIN"] ?? "http://localhost:3000";
+// Connect to database and seed data
+const initializeDatabase = async () => {
+  await connectDB();
+  await seedUniversities();
+};
 
+initializeDatabase();
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Security middleware
 app.use(helmet());
+
+// CORS configuration
 app.use(
   cors({
-    origin: CORS_ORIGIN,
+    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
     credentials: true,
   })
 );
-app.use(express.json());
 
+// Rate limiting
 const limiter = rateLimit({
-  windowMs: parseInt(process.env["RATE_LIMIT_WINDOW_MS"] ?? "900000", 10),
-  max: parseInt(process.env["RATE_LIMIT_MAX_REQUESTS"] ?? "100", 10),
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000"), // 15 minutes
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "100"), // limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again later.",
 });
 app.use(limiter);
 
-app.use(morgan(process.env["NODE_ENV"] === "development" ? "dev" : "combined"));
+// Logging middleware
+app.use(morgan("combined"));
 
-// Health
-app.get("/health", (_req, res) => {
-  res.status(200).json({ status: "OK", now: new Date().toISOString() });
+// Body parsing middleware
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    message: "Ubit Education API is running",
+    timestamp: new Date().toISOString(),
+  });
 });
 
-// --- Minimal mock endpoints to serve frontend ---
-app.get("/api/universities", (_req, res) => res.json([]));
-app.get("/api/universities/:id", (_req, res) => res.status(404).json({ message: "Not found" }));
-app.get("/api/universities/search", (_req, res) => res.json([]));
+// API routes
+app.use("/api/universities", universityRoutes);
+app.use("/api/countries", countryRoutes);
+app.use("/api/exams", examRoutes);
+app.use("/api/user", userRoutes);
 
-app.get("/api/countries", (_req, res) => res.json([]));
-app.get("/api/countries/:id", (_req, res) => res.status(404).json({ message: "Not found" }));
-app.get("/api/countries/search", (_req, res) => res.json([]));
+// 404 handler
+app.use(notFound);
 
-app.get("/api/exams", (_req, res) => res.json([]));
-app.get("/api/exams/:id", (_req, res) => res.status(404).json({ message: "Not found" }));
-app.get("/api/exams/type/:type", (_req, res) => res.json([]));
+// Error handling middleware
+app.use(errorHandler);
 
-app.get("/api/user/profile", (_req, res) => res.json({ name: "Guest" }));
-app.put("/api/user/profile", (req, res) => res.json({ ...req.body }));
-app.get("/api/user/applications", (_req, res) => res.json([]));
-app.post("/api/user/applications", (req, res) => res.status(201).json({ id: "a1", ...req.body }));
-
-app.get("/api/recommendations/universities", (_req, res) => res.json([]));
-app.get("/api/recommendations/programs", (_req, res) => res.json([]));
-app.get("/api/recommendations/scholarships", (_req, res) => res.json([]));
-
+// Start server
 app.listen(PORT, () => {
-  console.log(`🚀 API on http://localhost:${PORT}/api`);
-  console.log(`🔎 Health: http://localhost:${PORT}/health`);
+  console.log(`🚀 Server is running on port ${PORT}`);
+  console.log(`📚 Ubit Education API is ready!`);
+  console.log(`🌐 Health check: http://localhost:${PORT}/health`);
 });
 
 export default app;
-
