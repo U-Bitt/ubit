@@ -26,28 +26,33 @@ import {
   BarChart3,
   Award,
   ChevronDown,
+  Users,
+  Plane,
 } from "lucide-react";
 
 const navigationMenus = [
   {
     name: "Discover",
     items: [
-      { name: "Universities", href: "/universities", icon: GraduationCap },
-      { name: "Countries", href: "/countries", icon: MapPin },
-      { name: "Scholarships", href: "/scholarships", icon: Award },
+      { name: "Universities", href: "/discover/universities", icon: GraduationCap },
+      { name: "Countries", href: "/discover/countries", icon: MapPin },
+      { name: "Scholarships", href: "/discover/scholarships", icon: Award },
     ],
   },
   {
     name: "Prepare",
     items: [
-      { name: "Exams", href: "/exams", icon: BookOpen },
-      { name: "Recommendations", href: "/recommendations", icon: Lightbulb },
-      { name: "Documents", href: "/documents", icon: FileText },
+      { name: "Exams", href: "/prepare/exams", icon: BookOpen },
+      { name: "Recommendations", href: "/prepare/recommendations", icon: Lightbulb },
+      { name: "Documents", href: "/prepare/documents", icon: FileText },
+      { name: "Trainings", href: "/prepare/trainings", icon: Users },
+      { name: "Visa", href: "/prepare/visa", icon: Plane },
+      { name: "Packages", href: "/prepare/packages", icon: FileText },
     ],
   },
   {
     name: "Manage",
-    items: [{ name: "Dashboard", href: "/dashboard", icon: BarChart3 }],
+    items: [{ name: "Dashboard", href: "/manage/dashboard", icon: BarChart3 }],
   },
 ];
 
@@ -121,7 +126,7 @@ export default function Navbar() {
             <Button variant="ghost" >
               <Settings className="h-4 w-4" />
             </Button>
-            <Link href="/user-profile" className="flex items-center space-x-2">
+            <Link href="/user/profile" className="flex items-center space-x-2">
               <User className="h-4 w-4 mr-2" />
               Profile
             </Link>

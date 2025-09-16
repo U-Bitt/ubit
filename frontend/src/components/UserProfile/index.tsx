@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { GraduationCap, Award, Edit, Save, Camera } from "lucide-react";
 
-export default function ProfilePage() {
+export const UserProfile = () => {
   const academicInfo = {
     gpa: "3.8/4.0",
     school: "International High School",
@@ -228,4 +228,6 @@ export default function ProfilePage() {
       </div>
     </div>
   );
-}
+};
+
+export default UserProfile;

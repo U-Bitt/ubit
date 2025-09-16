@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Users, Target, Award } from "lucide-react";
 
-export const About = () => {
+const About = () => {
   const stats = [
     { number: "50,000+", label: "Students Helped", icon: Users },
     { number: "2,500+", label: "Universities", icon: Target },
@@ -194,3 +194,5 @@ export const About = () => {
     </div>
   );
 };
+
+export default About;
