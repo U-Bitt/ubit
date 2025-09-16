@@ -1,7 +1,7 @@
 // API utility functions for the Ubit education platform
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export interface University {
   id: string;
@@ -62,13 +62,24 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
 
 // University API functions
 export const universityApi = {
-  getAll: (): Promise<University[]> => apiCall<University[]>("/universities"),
-  getById: (id: string): Promise<University> =>
-    apiCall<University>(`/universities/${id}`),
-  search: (query: string): Promise<University[]> =>
-    apiCall<University[]>(
+  getAll: async (): Promise<University[]> => {
+    const response = await apiCall<{ success: boolean; data: University[] }>(
+      "/universities"
+    );
+    return response.data;
+  },
+  getById: async (id: string): Promise<University> => {
+    const response = await apiCall<{ success: boolean; data: University }>(
+      `/universities/${id}`
+    );
+    return response.data;
+  },
+  search: async (query: string): Promise<University[]> => {
+    const response = await apiCall<{ success: boolean; data: University[] }>(
       `/universities/search?q=${encodeURIComponent(query)}`
-    ),
+    );
+    return response.data;
+  },
 };
 
 // Country API functions
