@@ -120,11 +120,15 @@ export default function Navbar() {
 
           {/* Right side buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" >
-              <Bell className="h-4 w-4" />
+            <Button variant="ghost" asChild>
+              <Link href="/notifications">
+                <Bell className="h-4 w-4" />
+              </Link>
             </Button>
-            <Button variant="ghost" >
-              <Settings className="h-4 w-4" />
+            <Button variant="ghost" asChild>
+              <Link href="/settings">
+                <Settings className="h-4 w-4" />
+              </Link>
             </Button>
             <Link href="/user/profile" className="flex items-center space-x-2">
               <User className="h-4 w-4 mr-2" />
@@ -211,13 +215,23 @@ export default function Navbar() {
                 </div>
               </div>
               <div className="mt-3 space-y-1">
-                <Button variant="ghost" className="w-full justify-start">
-                  <User className="h-4 w-4 mr-2" />
-                  Your Profile
+                <Button variant="ghost" className="w-full justify-start" asChild>
+                  <Link href="/user/profile">
+                    <User className="h-4 w-4 mr-2" />
+                    Your Profile
+                  </Link>
                 </Button>
-                <Button variant="ghost" className="w-full justify-start">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Settings
+                <Button variant="ghost" className="w-full justify-start" asChild>
+                  <Link href="/notifications">
+                    <Bell className="h-4 w-4 mr-2" />
+                    Notifications
+                  </Link>
+                </Button>
+                <Button variant="ghost" className="w-full justify-start" asChild>
+                  <Link href="/settings">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Settings
+                  </Link>
                 </Button>
                 <Button variant="ghost" className="w-full justify-start">
                   <LogOut className="h-4 w-4 mr-2" />
