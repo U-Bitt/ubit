@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,8 @@ import {
   Calendar,
   FileText,
   File,
+  Award,
+  Check,
 } from "lucide-react";
 
 export const Documents = () => {
@@ -71,15 +74,54 @@ export const Documents = () => {
     },
   ];
 
+  const [testScores, setTestScores] = useState([
+    {
+      id: 1,
+      test: "SAT",
+      score: "1450",
+      date: "Dec 2023",
+      status: "Completed",
+      verified: true,
+      maxScore: "1600",
+    },
+    {
+      id: 2,
+      test: "TOEFL",
+      score: "108",
+      date: "Nov 2023",
+      status: "Completed",
+      verified: true,
+      maxScore: "120",
+    },
+    {
+      id: 3,
+      test: "AP Computer Science",
+      score: "5",
+      date: "May 2023",
+      status: "Completed",
+      verified: true,
+      maxScore: "5",
+    },
+    {
+      id: 4,
+      test: "GRE",
+      score: "",
+      date: "Jan 2024",
+      status: "Pending",
+      verified: false,
+      maxScore: "340",
+    },
+  ]);
+
   const documentTypes = [
-    { name: "All Documents", count: documents.length },
+    { name: "All Documents", count: documents.length + testScores.length },
     {
       name: "Transcripts",
       count: documents.filter(d => d.type === "Transcript").length,
     },
     {
       name: "Test Scores",
-      count: documents.filter(d => d.type === "Test Score").length,
+      count: testScores.length,
     },
     { name: "Essays", count: documents.filter(d => d.type === "Essay").length },
     {
@@ -100,6 +142,8 @@ export const Documents = () => {
         return "secondary";
       case "Pending":
         return "destructive";
+      case "Completed":
+        return "default";
       default:
         return "outline";
     }
@@ -116,6 +160,22 @@ export const Documents = () => {
       default:
         return <File className="h-4 w-4" />;
     }
+  };
+
+  const handleScoreUpdate = (id: number, newScore: string) => {
+    setTestScores(prev =>
+      prev.map(score =>
+        score.id === id ? { ...score, score: newScore, verified: false } : score
+      )
+    );
+  };
+
+  const handleVerificationToggle = (id: number) => {
+    setTestScores(prev =>
+      prev.map(score =>
+        score.id === id ? { ...score, verified: !score.verified } : score
+      )
+    );
   };
 
   return (
@@ -165,6 +225,7 @@ export const Documents = () => {
 
           <TabsContent value="all" className="space-y-6">
             <div className="grid gap-4">
+              {/* Documents */}
               {documents.map(doc => (
                 <Card
                   key={doc.id}
@@ -227,81 +288,258 @@ export const Documents = () => {
                   </CardContent>
                 </Card>
               ))}
-            </div>
-          </TabsContent>
 
-          {documentTypes.slice(1).map(type => (
-            <TabsContent
-              key={type.name}
-              value={type.name.toLowerCase().replace(/\s+/g, "-")}
-              className="space-y-6"
-            >
-              <div className="grid gap-4">
-                {documents
-                  .filter(doc => doc.type === type.name.slice(0, -1))
-                  .map(doc => (
-                    <Card
-                      key={doc.id}
-                      className="hover:shadow-md transition-shadow"
-                    >
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
-                              {getFileIcon(doc.format)}
-                            </div>
-                            <div>
-                              <h4 className="font-semibold">{doc.name}</h4>
-                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                <span>{doc.university}</span>
-                                {doc.uploadDate && (
-                                  <>
-                                    <span>•</span>
-                                    <span className="flex items-center gap-1">
-                                      <Calendar className="h-3 w-3" />
-                                      {doc.uploadDate}
-                                    </span>
-                                  </>
-                                )}
-                                {doc.size && (
-                                  <>
-                                    <span>•</span>
-                                    <span>{doc.size}</span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
+              {/* Test Scores */}
+              {testScores.map(score => (
+                <Card
+                  key={`test-${score.id}`}
+                  className="hover:shadow-md transition-shadow"
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                          <Award className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold">{score.test}</h4>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+                            <span>Test Score</span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {score.date}
+                            </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Badge variant={getStatusColor(doc.status)}>
-                              {doc.status}
-                            </Badge>
-                            <div className="flex gap-1">
-                              <Button variant="ghost" size="sm">
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm">
-                                <Download className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm">
-                                <Edit className="h-4 w-4" />
-                              </Button>
+                            <Input
+                              type="number"
+                              placeholder="Enter score"
+                              value={score.score}
+                              onChange={e =>
+                                handleScoreUpdate(score.id, e.target.value)
+                              }
+                              className="w-24 h-8 text-sm"
+                              min="0"
+                              max={score.maxScore}
+                            />
+                            <span className="text-sm text-muted-foreground">
+                              / {score.maxScore}
+                            </span>
+                            <div className="flex items-center gap-1 ml-2">
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-destructive"
+                                onClick={() =>
+                                  handleVerificationToggle(score.id)
+                                }
+                                className={`h-6 w-6 p-0 ${
+                                  score.verified
+                                    ? "bg-green-100 text-green-600 hover:bg-green-200"
+                                    : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                                }`}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                {score.verified && (
+                                  <Check className="h-3 w-3" />
+                                )}
                               </Button>
+                              <label
+                                className="text-xs text-muted-foreground cursor-pointer"
+                                onClick={() =>
+                                  handleVerificationToggle(score.id)
+                                }
+                              >
+                                Verified
+                              </label>
                             </div>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-              </div>
-            </TabsContent>
-          ))}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={getStatusColor(score.status)}>
+                          {score.status}
+                        </Badge>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* Test Scores Tab */}
+          <TabsContent value="test-scores" className="space-y-6">
+            <div className="grid gap-4">
+              {testScores.map(score => (
+                <Card
+                  key={`test-${score.id}`}
+                  className="hover:shadow-md transition-shadow"
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                          <Award className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold">{score.test}</h4>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+                            <span>Test Score</span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {score.date}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              placeholder="Enter score"
+                              value={score.score}
+                              onChange={e =>
+                                handleScoreUpdate(score.id, e.target.value)
+                              }
+                              className="w-24 h-8 text-sm"
+                              min="0"
+                              max={score.maxScore}
+                            />
+                            <span className="text-sm text-muted-foreground">
+                              / {score.maxScore}
+                            </span>
+                            <div className="flex items-center gap-1 ml-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  handleVerificationToggle(score.id)
+                                }
+                                className={`h-6 w-6 p-0 ${
+                                  score.verified
+                                    ? "bg-green-100 text-green-600 hover:bg-green-200"
+                                    : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                                }`}
+                              >
+                                {score.verified && (
+                                  <Check className="h-3 w-3" />
+                                )}
+                              </Button>
+                              <label
+                                className="text-xs text-muted-foreground cursor-pointer"
+                                onClick={() =>
+                                  handleVerificationToggle(score.id)
+                                }
+                              >
+                                Verified
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={getStatusColor(score.status)}>
+                          {score.status}
+                        </Badge>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {documentTypes
+            .slice(1)
+            .filter(type => type.name !== "Test Scores")
+            .map(type => (
+              <TabsContent
+                key={type.name}
+                value={type.name.toLowerCase().replace(/\s+/g, "-")}
+                className="space-y-6"
+              >
+                <div className="grid gap-4">
+                  {documents
+                    .filter(doc => doc.type === type.name.slice(0, -1))
+                    .map(doc => (
+                      <Card
+                        key={doc.id}
+                        className="hover:shadow-md transition-shadow"
+                      >
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                                {getFileIcon(doc.format)}
+                              </div>
+                              <div>
+                                <h4 className="font-semibold">{doc.name}</h4>
+                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                  <span>{doc.university}</span>
+                                  {doc.uploadDate && (
+                                    <>
+                                      <span>•</span>
+                                      <span className="flex items-center gap-1">
+                                        <Calendar className="h-3 w-3" />
+                                        {doc.uploadDate}
+                                      </span>
+                                    </>
+                                  )}
+                                  {doc.size && (
+                                    <>
+                                      <span>•</span>
+                                      <span>{doc.size}</span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant={getStatusColor(doc.status)}>
+                                {doc.status}
+                              </Badge>
+                              <div className="flex gap-1">
+                                <Button variant="ghost" size="sm">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="sm">
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="sm">
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                </div>
+              </TabsContent>
+            ))}
         </Tabs>
 
         {/* Upload Area */}

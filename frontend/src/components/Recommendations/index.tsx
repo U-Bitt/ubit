@@ -180,127 +180,118 @@ export const Recommendations = () => {
           </TabsList>
 
           <TabsContent value="universities" className="space-y-6">
-            <div className="grid gap-6">
+            <div className="grid md:grid-cols-2 gap-4">
               {universityRecommendations.map((university, index) => (
                 <Card
                   key={index}
-                  className="hover:shadow-lg transition-all duration-300"
+                  className="hover:shadow-lg transition-all duration-300 overflow-hidden p-0"
                 >
-                  <div className="flex flex-col lg:flex-row">
-                    <div className="lg:w-1/3">
-                      <Image
-                        src={university.image}
-                        alt={university.name}
-                        width={400}
-                        height={300}
-                        className="w-full h-48 lg:h-full object-cover rounded-t-lg lg:rounded-l-lg lg:rounded-tr-none"
-                      />
+                  <div
+                    className="relative h-80 bg-cover bg-center bg-no-repeat rounded-lg"
+                    style={{ backgroundImage: `url(${university.image})` }}
+                  >
+                    {/* Dark overlay */}
+                    <div className="absolute inset-0 bg-black/50"></div>
+
+                    {/* Match score badge */}
+                    <div className="absolute top-4 right-4 z-10">
+                      <div className="bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
+                        <div className="text-lg font-bold text-primary">
+                          {university.matchScore}%
+                        </div>
+                      </div>
                     </div>
-                    <div className="lg:w-2/3 p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="text-2xl font-bold mb-2">
+
+                    {/* Content overlay */}
+                    <div className="relative z-10 h-full flex flex-col justify-between p-6 text-white">
+                      {/* Subtle gradient overlay for better text readability */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent rounded-lg"></div>
+                      <div className="relative z-20 h-full flex flex-col justify-between">
+                        <div className="mb-4">
+                          <h3 className="text-xl font-bold mb-2 line-clamp-2 text-white drop-shadow-lg">
                             {university.name}
                           </h3>
-                          <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                          <div className="flex items-center gap-1 text-sm text-white drop-shadow-md">
                             <MapPin className="h-4 w-4" />
-                            <span>
+                            <span className="font-medium">
                               {university.city}, {university.country}
                             </span>
                           </div>
-                          <div className="flex items-center gap-4 text-sm">
-                            <span>Match Score: {university.matchScore}%</span>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-3xl font-bold text-primary mb-1">
-                            {university.matchScore}%
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Match Score
-                          </div>
-                          <Badge
-                            variant={
-                              university.priority === "high"
-                                ? "destructive"
-                                : "default"
-                            }
-                            className="mt-2"
-                          >
-                            {university.priority} priority
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div>
-                          <h4 className="font-semibold mb-2">
-                            Why this university matches you:
-                          </h4>
-                          <ul className="space-y-1">
-                            {university.reasons.map((reason, reasonIndex) => (
-                              <li
-                                key={reasonIndex}
-                                className="flex items-center gap-2 text-sm"
-                              >
-                                <CheckCircle className="h-4 w-4 text-primary" />
-                                {reason}
-                              </li>
-                            ))}
-                          </ul>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-3">
                           <div>
-                            <h5 className="font-medium text-sm mb-2 text-green-600">
-                              Pros:
-                            </h5>
+                            <h4 className="font-semibold text-sm mb-2 text-white drop-shadow-md">
+                              Why this matches you:
+                            </h4>
                             <ul className="space-y-1">
-                              {university.pros.map((pro, proIndex) => (
-                                <li
-                                  key={proIndex}
-                                  className="text-sm text-muted-foreground"
-                                >
-                                  • {pro}
-                                </li>
-                              ))}
+                              {university.reasons
+                                .slice(0, 2)
+                                .map((reason, reasonIndex) => (
+                                  <li
+                                    key={reasonIndex}
+                                    className="flex items-center gap-2 text-sm text-white drop-shadow-sm"
+                                  >
+                                    <CheckCircle className="h-4 w-4 text-white flex-shrink-0 drop-shadow-sm" />
+                                    <span className="line-clamp-1 font-medium">
+                                      {reason}
+                                    </span>
+                                  </li>
+                                ))}
                             </ul>
                           </div>
-                          <div>
-                            <h5 className="font-medium text-sm mb-2 text-red-600">
-                              Cons:
-                            </h5>
-                            <ul className="space-y-1">
-                              {university.cons.map((con, conIndex) => (
-                                <li
-                                  key={conIndex}
-                                  className="text-sm text-muted-foreground"
-                                >
-                                  • {con}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
 
-                        <div className="flex justify-between items-center pt-4 border-t">
-                          <div className="text-sm">
-                            <span className="text-muted-foreground">
-                              Application Deadline:{" "}
-                            </span>
-                            <span className="font-medium">
-                              {university.deadline}
-                            </span>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <h5 className="font-semibold text-sm mb-2 text-green-300 drop-shadow-sm">
+                                Pros:
+                              </h5>
+                              <ul className="space-y-1">
+                                {university.pros
+                                  .slice(0, 2)
+                                  .map((pro, proIndex) => (
+                                    <li
+                                      key={proIndex}
+                                      className="text-sm text-white drop-shadow-sm line-clamp-1 font-medium"
+                                    >
+                                      • {pro}
+                                    </li>
+                                  ))}
+                              </ul>
+                            </div>
+                            <div>
+                              <h5 className="font-semibold text-sm mb-2 text-red-300 drop-shadow-sm">
+                                Cons:
+                              </h5>
+                              <ul className="space-y-1">
+                                {university.cons
+                                  .slice(0, 2)
+                                  .map((con, conIndex) => (
+                                    <li
+                                      key={conIndex}
+                                      className="text-sm text-white drop-shadow-sm line-clamp-1 font-medium"
+                                    >
+                                      • {con}
+                                    </li>
+                                  ))}
+                              </ul>
+                            </div>
                           </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm">
-                              Add to Wishlist
-                            </Button>
+
+                          <div className="flex justify-between items-center pt-4 border-t border-white/30">
+                            <div className="text-sm">
+                              <span className="text-white/80 drop-shadow-sm">
+                                Deadline:{" "}
+                              </span>
+                              <span className="font-bold text-white drop-shadow-md">
+                                {university.deadline}
+                              </span>
+                            </div>
                             <Button
                               size="sm"
-                              className="bg-primary hover:bg-primary/90"
+                              className="bg-white text-black hover:bg-white/90 text-sm px-4 py-2 h-8 font-semibold shadow-lg"
                             >
-                              View Details
+                              Add to Wishlist
                               <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                           </div>

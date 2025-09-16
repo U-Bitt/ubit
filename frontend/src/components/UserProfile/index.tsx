@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { GraduationCap, Award, Edit, Save, Camera } from "lucide-react";
+import { GraduationCap, Edit, Save, Camera } from "lucide-react";
 
 export const UserProfile = () => {
   const academicInfo = {
@@ -14,11 +14,6 @@ export const UserProfile = () => {
     major: "Computer Science",
   };
 
-  const testScores = [
-    { test: "SAT", score: "1450", date: "Dec 2023" },
-    { test: "TOEFL", score: "108", date: "Nov 2023" },
-    { test: "AP Computer Science", score: "5", date: "May 2023" },
-  ];
 
   const interests = [
     "Computer Science",
@@ -146,47 +141,6 @@ export const UserProfile = () => {
               </CardContent>
             </Card>
 
-            {/* Test Scores */}
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Test Scores</CardTitle>
-                  <Button variant="outline" size="sm">
-                    <Award className="h-4 w-4 mr-2" />
-                    Add Score
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4">
-                  {testScores.map((score, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between items-center p-3 rounded-lg bg-muted/50"
-                    >
-                      <div>
-                        <h4 className="font-medium">{score.test}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {score.date}
-                        </p>
-                      </div>
-                      <Badge
-                        variant="secondary"
-                        className="text-lg font-semibold"
-                      >
-                        {score.score}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-                <Button
-                  variant="outline"
-                  className="w-full mt-4 bg-transparent"
-                >
-                  Add New Score
-                </Button>
-              </CardContent>
-            </Card>
 
             {/* Interests */}
             <Card>

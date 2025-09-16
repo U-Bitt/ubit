@@ -1,7 +1,7 @@
 // API utility functions for the Ubit education platform
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export interface University {
   id: string;
@@ -39,6 +39,19 @@ export interface Exam {
   nextDate: string;
   preparation: string;
   difficulty: string;
+}
+
+export interface Document {
+  id: number;
+  name: string;
+  type: string;
+  university: string;
+  status: "Uploaded" | "Draft" | "Pending";
+  uploadDate: string | null;
+  size: string | null;
+  format: string;
+  filename?: string;
+  path?: string;
 }
 
 // Generic API call function
@@ -118,6 +131,48 @@ export const recommendationApi = {
     apiCall<Record<string, unknown>[]>("/recommendations/programs"),
   getScholarshipRecommendations: (): Promise<Record<string, unknown>[]> =>
     apiCall<Record<string, unknown>[]>("/recommendations/scholarships"),
+};
+
+// Document API functions
+export const documentApi = {
+  getAll: (): Promise<{ success: boolean; data: Document[]; count: number }> =>
+    apiCall<{ success: boolean; data: Document[]; count: number }>(
+      "/documents"
+    ),
+
+  getById: (id: number): Promise<{ success: boolean; data: Document }> =>
+    apiCall<{ success: boolean; data: Document }>(`/documents/${id}`),
+
+  upload: (
+    formData: FormData
+  ): Promise<{ success: boolean; message: string; data: Document }> =>
+    apiCall<{ success: boolean; message: string; data: Document }>(
+      "/documents/upload",
+      {
+        method: "POST",
+        body: formData,
+      }
+    ),
+
+  update: (
+    id: number,
+    data: Partial<Document>
+  ): Promise<{ success: boolean; message: string; data: Document }> =>
+    apiCall<{ success: boolean; message: string; data: Document }>(
+      `/documents/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    ),
+
+  delete: (id: number): Promise<{ success: boolean; message: string }> =>
+    apiCall<{ success: boolean; message: string }>(`/documents/${id}`, {
+      method: "DELETE",
+    }),
+
+  download: (id: number): Promise<Blob> =>
+    fetch(`${API_BASE_URL}/documents/${id}/download`).then(res => res.blob()),
 };
 
 // Error handling utility
