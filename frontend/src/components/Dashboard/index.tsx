@@ -27,8 +27,12 @@ import {
   DollarSign,
   Percent,
   Mail,
+  Phone,
+  Globe,
+  ArrowRight,
+  Search,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Application {
   image: string;
@@ -111,6 +115,12 @@ export const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
   const [isExamModalOpen, setIsExamModalOpen] = useState(false);
+  const [isScholarshipModalOpen, setIsScholarshipModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [isAddApplicationModalOpen, setIsAddApplicationModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredUniversities, setFilteredUniversities] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const applications = [
     {
@@ -292,11 +302,226 @@ export const Dashboard = () => {
     { label: "Deadlines", value: "2", icon: Calendar },
   ];
 
+  const scholarshipOpportunities = [
+    {
+      id: 1,
+      title: "MIT Merit Scholarship",
+      amount: "$25,000",
+      deadline: "Dec 20, 2024",
+      daysLeft: 8,
+      match: 95,
+      applied: false,
+    },
+    {
+      id: 2,
+      title: "Stanford Engineering Excellence",
+      amount: "$30,000", 
+      deadline: "Jan 5, 2025",
+      daysLeft: 24,
+      match: 88,
+      applied: true,
+    },
+    {
+      id: 3,
+      title: "Harvard Leadership Award",
+      amount: "$20,000",
+      deadline: "Jan 10, 2025", 
+      daysLeft: 29,
+      match: 92,
+      applied: false,
+    },
+  ];
+
+  const availableExams = [
+    {
+      id: 1,
+      name: "SAT",
+      fullName: "Scholastic Assessment Test",
+      provider: "College Board",
+      duration: "3 hours 45 minutes",
+      cost: "$60",
+      registrationUrl: "https://satsuite.collegeboard.org/sat/registration",
+      nextDates: [
+        { date: "Dec 14, 2024", location: "Downtown Test Center", spots: 15 },
+        { date: "Jan 25, 2025", location: "University Campus", spots: 8 },
+        { date: "Mar 8, 2025", location: "High School Center", spots: 22 }
+      ]
+    },
+    {
+      id: 2,
+      name: "IELTS",
+      fullName: "International English Language Testing System",
+      provider: "British Council",
+      duration: "2 hours 45 minutes",
+      cost: "$245",
+      registrationUrl: "https://www.ielts.org/book-a-test",
+      nextDates: [
+        { date: "Jan 20, 2025", location: "British Council", spots: 12 },
+        { date: "Feb 17, 2025", location: "Language Center", spots: 18 },
+        { date: "Mar 15, 2025", location: "International School", spots: 6 }
+      ]
+    },
+    {
+      id: 3,
+      name: "TOEFL",
+      fullName: "Test of English as a Foreign Language",
+      provider: "ETS",
+      duration: "3 hours 30 minutes",
+      cost: "$225",
+      registrationUrl: "https://www.ets.org/toefl/test-takers/ibt/register",
+      nextDates: [
+        { date: "Feb 10, 2025", location: "ETS Test Center", spots: 20 },
+        { date: "Mar 2, 2025", location: "Computer Lab", spots: 14 },
+        { date: "Apr 6, 2025", location: "University Hall", spots: 16 }
+      ]
+    }
+  ];
+
+  const popularUniversities = [
+    {
+      id: "mit",
+      name: "MIT",
+      location: "Cambridge, MA, USA",
+      ranking: 1,
+      tuition: "$57,986/year",
+      acceptance: "6.7%",
+      deadline: "Jan 1, 2025",
+      image: "/mit-campus-aerial.png",
+      programs: ["Computer Science", "Engineering", "Physics", "Mathematics"]
+    },
+    {
+      id: "stanford",
+      name: "Stanford University",
+      location: "Stanford, CA, USA",
+      ranking: 2,
+      tuition: "$61,731/year",
+      acceptance: "3.9%",
+      deadline: "Jan 2, 2025",
+      image: "/stanford-campus.jpg",
+      programs: ["Computer Science", "Engineering", "Business", "Medicine"]
+    },
+    {
+      id: "harvard",
+      name: "Harvard University",
+      location: "Cambridge, MA, USA",
+      ranking: 3,
+      tuition: "$57,261/year",
+      acceptance: "3.2%",
+      deadline: "Jan 1, 2025",
+      image: "/harvard-campus.jpg",
+      programs: ["Liberal Arts", "Medicine", "Law", "Business"]
+    },
+    {
+      id: "berkeley",
+      name: "UC Berkeley",
+      location: "Berkeley, CA, USA",
+      ranking: 4,
+      tuition: "$44,115/year",
+      acceptance: "14.5%",
+      deadline: "Nov 30, 2024",
+      image: "/berkeley-logo.svg",
+      programs: ["Computer Science", "Engineering", "Business", "Liberal Arts"]
+    },
+    {
+      id: "caltech",
+      name: "Caltech",
+      location: "Pasadena, CA, USA", 
+      ranking: 5,
+      tuition: "$60,864/year",
+      acceptance: "6.4%",
+      deadline: "Jan 3, 2025",
+      image: "/caltech-logo.svg",
+      programs: ["Physics", "Engineering", "Computer Science", "Mathematics"]
+    },
+    {
+      id: "princeton",
+      name: "Princeton University",
+      location: "Princeton, NJ, USA",
+      ranking: 6,
+      tuition: "$59,710/year",
+      acceptance: "5.6%",
+      deadline: "Jan 1, 2025",
+      image: "/princeton-logo.svg",
+      programs: ["Liberal Arts", "Engineering", "Public Policy", "Economics"]
+    },
+    {
+      id: "yale",
+      name: "Yale University",
+      location: "New Haven, CT, USA",
+      ranking: 7,
+      tuition: "$62,250/year",
+      acceptance: "4.6%",
+      deadline: "Jan 2, 2025",
+      image: "/yale-logo.svg",
+      programs: ["Liberal Arts", "Medicine", "Law", "Business"]
+    },
+    {
+      id: "columbia",
+      name: "Columbia University",
+      location: "New York, NY, USA",
+      ranking: 8,
+      tuition: "$65,340/year",
+      acceptance: "3.7%",
+      deadline: "Jan 1, 2025",
+      image: "/columbia-logo.svg",
+      programs: ["Liberal Arts", "Engineering", "Journalism", "Business"]
+    },
+    {
+      id: "chicago",
+      name: "University of Chicago",
+      location: "Chicago, IL, USA",
+      ranking: 9,
+      tuition: "$61,179/year",
+      acceptance: "5.4%",
+      deadline: "Jan 2, 2025",
+      image: "/chicago-logo.svg",
+      programs: ["Liberal Arts", "Economics", "Business", "Public Policy"]
+    },
+    {
+      id: "cambridge",
+      name: "University of Cambridge",
+      location: "Cambridge, UK",
+      ranking: 10,
+      tuition: "£22,227/year",
+      acceptance: "21%",
+      deadline: "Oct 15, 2024",
+      image: "/cambridge-university-campus.jpg",
+      programs: ["Liberal Arts", "Engineering", "Medicine", "Natural Sciences"]
+    },
+    {
+      id: "oxford",
+      name: "University of Oxford",
+      location: "Oxford, UK",
+      ranking: 11,
+      tuition: "£26,770/year",
+      acceptance: "17%",
+      deadline: "Oct 15, 2024",
+      image: "/oxford-university-campus.jpg",
+      programs: ["Liberal Arts", "Medicine", "Law", "Natural Sciences"]
+    },
+    {
+      id: "toronto",
+      name: "University of Toronto",
+      location: "Toronto, Canada",
+      ranking: 12,
+      tuition: "CAD $58,160/year",
+      acceptance: "43%",
+      deadline: "Jan 15, 2025",
+      image: "/university-of-toronto-campus.png",
+      programs: ["Computer Science", "Engineering", "Medicine", "Business"]
+    }
+  ];
+
+  // Initialize filtered universities when component mounts
+  useEffect(() => {
+    setFilteredUniversities(popularUniversities);
+  }, []);
+
   const quickActions = [
     { label: "Add Application", icon: Plus, action: "add-application", color: "bg-blue-500" },
     { label: "Upload Documents", icon: Upload, action: "upload-docs", color: "bg-green-500" },
     { label: "Schedule Exam", icon: Calendar, action: "schedule-exam", color: "bg-purple-500" },
-    { label: "Find Scholarships", icon: Award, action: "find-scholarships", color: "bg-yellow-500" },
+    { label: "Find Scholarships", icon: Award, action: "find-scholarships", color: "bg-yellow-500", scholarships: scholarshipOpportunities },
   ];
 
   const upcomingDeadlines = [
@@ -359,6 +584,7 @@ export const Dashboard = () => {
       time: "1 day ago",
       icon: GraduationCap,
     },
+    
     {
       id: 4,
       type: "exam",
@@ -497,6 +723,56 @@ export const Dashboard = () => {
     setSelectedExam(null);
   };
 
+  const openScholarshipModal = () => {
+    setIsScholarshipModalOpen(true);
+  };
+
+  const closeScholarshipModal = () => {
+    setIsScholarshipModalOpen(false);
+  };
+
+  const openScheduleModal = () => {
+    setIsScheduleModalOpen(true);
+  };
+
+  const closeScheduleModal = () => {
+    setIsScheduleModalOpen(false);
+  };
+
+  const openAddApplicationModal = () => {
+    setIsAddApplicationModalOpen(true);
+  };
+
+  const closeAddApplicationModal = () => {
+    setIsAddApplicationModalOpen(false);
+    setSearchQuery("");
+    setFilteredUniversities(popularUniversities);
+    setShowSuggestions(false);
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setShowSuggestions(query.length > 0);
+    
+    if (query.trim() === "") {
+      setFilteredUniversities(popularUniversities);
+    } else {
+      const filtered = popularUniversities.filter(university =>
+        university.name.toLowerCase().includes(query.toLowerCase()) ||
+        university.location.toLowerCase().includes(query.toLowerCase()) ||
+        university.programs.some(program => 
+          program.toLowerCase().includes(query.toLowerCase())
+        )
+      );
+      setFilteredUniversities(filtered);
+    }
+  };
+
+  const handleSearchSubmit = () => {
+    setShowSuggestions(false);
+    // Search functionality is already handled by handleSearch
+  };
+
   const savedUniversities = [
     {
       id: "mit",
@@ -527,36 +803,6 @@ export const Dashboard = () => {
     },
   ];
 
-  const scholarshipOpportunities = [
-    {
-      id: 1,
-      title: "MIT Merit Scholarship",
-      amount: "$25,000",
-      deadline: "Dec 20, 2024",
-      daysLeft: 8,
-      match: 95,
-      applied: false,
-    },
-    {
-      id: 2,
-      title: "Stanford Engineering Excellence",
-      amount: "$30,000", 
-      deadline: "Jan 5, 2025",
-      daysLeft: 24,
-      match: 88,
-      applied: true,
-    },
-    {
-      id: 3,
-      title: "Harvard Leadership Award",
-      amount: "$20,000",
-      deadline: "Jan 10, 2025", 
-      daysLeft: 29,
-      match: 92,
-      applied: false,
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -584,6 +830,15 @@ export const Dashboard = () => {
                     key={index}
                     variant="outline"
                     className="h-20 flex flex-col items-center justify-center gap-2 hover:shadow-md transition-shadow"
+                    onClick={() => {
+                      if (action.action === "find-scholarships") {
+                        openScholarshipModal();
+                      } else if (action.action === "schedule-exam") {
+                        openScheduleModal();
+                      } else if (action.action === "add-application") {
+                        openAddApplicationModal();
+                      }
+                    }}
                   >
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${action.color}`}>
                       <action.icon className="h-4 w-4 text-white" />
@@ -812,7 +1067,7 @@ export const Dashboard = () => {
           </div>
 
         {/* Additional Widgets Grid */}
-        <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
             {/* Exam Progress Tracker */}
             <Card>
               <CardHeader>
@@ -926,41 +1181,6 @@ export const Dashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Scholarship Opportunities */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="h-5 w-5" />
-                  Scholarship Opportunities
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {scholarshipOpportunities.map((scholarship) => (
-                  <div
-                    key={scholarship.id}
-                    className="p-3 rounded-lg border hover:shadow-sm transition-shadow"
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-semibold text-sm">{scholarship.title}</h4>
-                      <Badge
-                        variant={scholarship.applied ? "default" : "secondary"}
-                        className="text-xs"
-                      >
-                        {scholarship.applied ? "Applied" : `${scholarship.match}% match`}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      {scholarship.amount} • {scholarship.daysLeft} days left
-                    </p>
-                    {!scholarship.applied && (
-                      <Button size="sm" variant="outline" className="w-full">
-                        Apply Now
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
 
 
         </div>
@@ -1551,6 +1771,472 @@ export const Dashboard = () => {
                   Official Website
                 </Button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Scholarship Opportunities Modal */}
+      {isScholarshipModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <Award className="h-8 w-8 text-yellow-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold">Scholarship Opportunities</h2>
+                    <p className="text-lg text-muted-foreground">Find and apply for scholarships</p>
+                  </div>
+                </div>
+                <Button variant="ghost" size="sm" onClick={closeScholarshipModal}>
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-6">
+              {/* Scholarship List */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {scholarshipOpportunities.map((scholarship) => (
+                  <Card key={scholarship.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <CardTitle className="text-lg">{scholarship.title}</CardTitle>
+                        <Badge
+                          variant={scholarship.applied ? "default" : "secondary"}
+                          className="text-xs"
+                        >
+                          {scholarship.applied ? "Applied" : `${scholarship.match}% match`}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4 text-green-600" />
+                        <span className="font-semibold text-green-600">{scholarship.amount}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {scholarship.daysLeft} days left to apply
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Target className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {scholarship.match}% match with your profile
+                        </span>
+                      </div>
+                      {!scholarship.applied ? (
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                          <Award className="h-4 w-4 mr-2" />
+                          Apply Now
+                        </Button>
+                      ) : (
+                        <Button variant="outline" className="w-full" disabled>
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Application Submitted
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-center pt-4 border-t">
+                <Button 
+                  className="bg-yellow-600 hover:bg-yellow-700 text-white px-8 py-3 min-w-[200px]"
+                  onClick={() => openExternalLink("https://www.scholarships.com")}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Find More Scholarships
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Schedule Exam Modal */}
+      {isScheduleModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Calendar className="h-8 w-8 text-purple-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold">Schedule Exam</h2>
+                    <p className="text-lg text-muted-foreground">Register for standardized tests</p>
+                  </div>
+                </div>
+                <Button variant="ghost" size="sm" onClick={closeScheduleModal}>
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-8">
+              {/* Available Exams */}
+              <div className="space-y-6">
+                {availableExams.map((exam) => (
+                  <Card key={exam.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-xl">{exam.name}</CardTitle>
+                          <p className="text-sm text-muted-foreground">{exam.fullName}</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          {exam.provider}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* Exam Details */}
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">{exam.duration}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4 text-green-600" />
+                          <span className="text-sm font-semibold text-green-600">{exam.cost}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">Multiple locations</span>
+                        </div>
+                      </div>
+
+                      {/* Available Dates */}
+                      <div>
+                        <h4 className="font-semibold mb-3">Available Test Dates</h4>
+                        <div className="space-y-3">
+                          {exam.nextDates.map((testDate, index) => (
+                            <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
+                              <div className="flex items-center gap-4">
+                                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                  <Calendar className="h-4 w-4 text-purple-600" />
+                                </div>
+                                <div>
+                                  <div className="font-medium text-sm">{testDate.date}</div>
+                                  <div className="text-xs text-muted-foreground">{testDate.location}</div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <Badge 
+                                  variant={testDate.spots > 10 ? "default" : testDate.spots > 5 ? "secondary" : "destructive"}
+                                  className="text-xs"
+                                >
+                                  {testDate.spots} spots left
+                                </Badge>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => openExternalLink(exam.registrationUrl)}
+                                >
+                                  Register
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Quick Register Button */}
+                      <div className="pt-4 border-t">
+                        <Button 
+                          className="w-full bg-purple-600 hover:bg-purple-700"
+                          onClick={() => openExternalLink(exam.registrationUrl)}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Register for {exam.name}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Help Section */}
+              <Card className="bg-blue-50 border-blue-200">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <BookOpen className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-900 mb-2">Need Help Choosing?</h4>
+                      <p className="text-sm text-blue-800 mb-3">
+                        Not sure which exam to take? Check your target universities' requirements or consult with your academic advisor.
+                      </p>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" className="border-blue-300 text-blue-700">
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          University Requirements
+                        </Button>
+                        <Button size="sm" variant="outline" className="border-blue-300 text-blue-700">
+                          <Users className="h-3 w-3 mr-1" />
+                          Get Advice
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Application Modal */}
+      {isAddApplicationModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Plus className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold">Add New Application</h2>
+                    <p className="text-lg text-muted-foreground">Start your university application</p>
+                  </div>
+                </div>
+                <Button variant="ghost" size="sm" onClick={closeAddApplicationModal}>
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div 
+              className="p-6 space-y-8"
+              onClick={() => setShowSuggestions(false)}
+            >
+              {/* Search Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <GraduationCap className="h-5 w-5" />
+                    Search Universities
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="relative">
+                    <div className="flex gap-4">
+                      <div className="flex-1 relative">
+                        <input
+                          type="text"
+                          placeholder="Search universities by name, location, or program..."
+                          value={searchQuery}
+                          onChange={(e) => handleSearch(e.target.value)}
+                          onFocus={() => setShowSuggestions(searchQuery.length > 0)}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        
+                        {/* Search Suggestions Dropdown */}
+                        {showSuggestions && searchQuery.length > 0 && (
+                          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                            {filteredUniversities.length > 0 ? (
+                              filteredUniversities.slice(0, 5).map((university) => (
+                                <div
+                                  key={university.id}
+                                  className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                  onClick={() => {
+                                    setSearchQuery(university.name);
+                                    setShowSuggestions(false);
+                                    setFilteredUniversities([university]);
+                                  }}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <img 
+                                      src={university.image} 
+                                      alt={university.name}
+                                      className="w-8 h-8 rounded object-cover"
+                                      onError={(e) => {
+                                        e.currentTarget.src = "/placeholder-logo.svg";
+                                      }}
+                                    />
+                                    <div>
+                                      <p className="font-medium text-sm">{university.name}</p>
+                                      <p className="text-xs text-gray-500">{university.location}</p>
+                                    </div>
+                                    <Badge variant="outline" className="ml-auto text-xs">
+                                      #{university.ranking}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="px-4 py-3 text-gray-500 text-sm">
+                                No universities found for "{searchQuery}"
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <Button 
+                        className="bg-blue-600 hover:bg-blue-700"
+                        onClick={handleSearchSubmit}
+                      >
+                        <Search className="h-4 w-4 mr-2" />
+                        Search
+                      </Button>
+                      {searchQuery && (
+                        <Button 
+                          variant="outline"
+                          onClick={() => {
+                            setSearchQuery("");
+                            setFilteredUniversities(popularUniversities);
+                            setShowSuggestions(false);
+                          }}
+                        >
+                          Clear
+                        </Button>
+                      )}
+                    </div>
+                    
+                    {/* Search Results Summary */}
+                    {searchQuery && (
+                      <div className="mt-3 text-sm text-gray-600">
+                        {filteredUniversities.length > 0 ? (
+                          <span>
+                            Found {filteredUniversities.length} universit{filteredUniversities.length === 1 ? 'y' : 'ies'} 
+                            {searchQuery && ` for "${searchQuery}"`}
+                          </span>
+                        ) : (
+                          <span className="text-red-500">
+                            No results found for "{searchQuery}"
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Popular Universities */}
+              <div>
+                <h3 className="text-xl font-semibold mb-6">
+                  {searchQuery ? `Search Results` : `Popular Universities`}
+                </h3>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredUniversities.map((university) => (
+                    <Card key={university.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4 mb-4">
+                          <img 
+                            src={university.image} 
+                            alt={university.name}
+                            className="w-16 h-16 rounded-lg object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = "/placeholder-logo.svg";
+                            }}
+                          />
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-lg">{university.name}</h4>
+                            <p className="text-sm text-muted-foreground">{university.location}</p>
+                            <Badge variant="outline" className="mt-1 text-xs">
+                              #{university.ranking}
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2 mb-4">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Tuition:</span>
+                            <span className="font-medium">{university.tuition}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Acceptance:</span>
+                            <span className="font-medium">{university.acceptance}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Deadline:</span>
+                            <span className="font-medium">{university.deadline}</span>
+                          </div>
+                        </div>
+
+                        <div className="mb-4">
+                          <p className="text-xs text-muted-foreground mb-2">Popular Programs:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {university.programs.slice(0, 3).map((program: string, index: number) => (
+                              <Badge key={index} variant="secondary" className="text-xs">
+                                {program}
+                              </Badge>
+                            ))}
+                            {university.programs.length > 3 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{university.programs.length - 3} more
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            className="flex-1 bg-blue-600 hover:bg-blue-700"
+                            onClick={() => {
+                              // Here you would typically start the application process
+                              console.log(`Starting application for ${university.name}`);
+                              closeAddApplicationModal();
+                            }}
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            Apply Now
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => openExternalLink(`https://www.${university.name.toLowerCase().replace(/\s+/g, '')}.edu`)}
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <Card className="bg-gray-50 border-gray-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2">Can't find your university?</h4>
+                      <p className="text-sm text-gray-600">
+                        Browse our complete database of 2,500+ universities worldwide
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="border-gray-300 text-gray-700">
+                        <Globe className="h-4 w-4 mr-2" />
+                        Browse All Universities
+                      </Button>
+                      <Button className="bg-blue-600 hover:bg-blue-700">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Custom University
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
