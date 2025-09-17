@@ -49,7 +49,6 @@ const navigationMenus = [
       { name: "Documents", href: "/prepare/documents", icon: FileText },
       { name: "Trainings", href: "/prepare/trainings", icon: Users },
       { name: "Visa", href: "/prepare/visa", icon: Plane },
-      { name: "Packages", href: "/prepare/packages", icon: FileText },
     ],
   },
   {

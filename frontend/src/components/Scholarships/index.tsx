@@ -2,47 +2,85 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Star, ArrowRight, Mail, Linkedin, ExternalLink, DollarSign, Users, Calendar, Award } from "lucide-react";
-import { useState, useMemo } from "react";
+import { Search, ArrowRight, DollarSign, Calendar } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/router";
-import { scholarships } from "@/mockData/scholarships";
+import { scholarships as mockScholarships } from "@/mockData/scholarships";
+import { scholarshipApi } from "@/utils/api";
+
+interface Scholarship {
+  id: string;
+  title: string;
+  description: string;
+  amount: string;
+  university: string;
+  country: string;
+  deadline: string;
+  requirements: string[];
+  type: string;
+  coverage: string;
+  duration: string;
+  applicationProcess: string;
+  eligibility: string;
+  benefits: string[];
+  image: string;
+}
 
 export const Scholarships = () => {
   const router = useRouter();
 
-  const fields = ["All", "Engineering", "Business", "Medicine", "Computer Science", "Arts & Humanities"];
-  const levels = ["All", "Undergraduate", "Graduate"];
+  const types = ["All", "Merit-based", "Leadership-based", "Need-based"];
   const countries = ["All", "United States", "United Kingdom", "Canada"];
 
   // State management
+  const [scholarships, setScholarships] = useState<Scholarship[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedField, setSelectedField] = useState("All");
-  const [selectedLevel, setSelectedLevel] = useState("All");
+  const [selectedType, setSelectedType] = useState("All");
   const [selectedCountry, setSelectedCountry] = useState("All");
+
+  // Load scholarship data from API
+  useEffect(() => {
+    const loadScholarships = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const response = await scholarshipApi.getAll();
+        setScholarships(response);
+      } catch (err) {
+        console.error("Error loading scholarships:", err);
+        setError("Failed to load scholarships");
+        // Fallback to mock data
+        setScholarships(mockScholarships);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadScholarships();
+  }, []);
 
   // Filter and search logic
   const filteredScholarships = useMemo(() => {
     return scholarships.filter((scholarship) => {
       // Search filter
       const matchesSearch = searchQuery === "" || 
-        scholarship.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        scholarship.donor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        scholarship.university.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        scholarship.field.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        scholarship.description.toLowerCase().includes(searchQuery.toLowerCase());
+        scholarship.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        scholarship.university?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        scholarship.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        scholarship.description?.toLowerCase().includes(searchQuery.toLowerCase());
 
-      // Field filter
-      const matchesField = selectedField === "All" || scholarship.field === selectedField;
-
-      // Level filter
-      const matchesLevel = selectedLevel === "All" || scholarship.level === selectedLevel;
+      // Type filter
+      const matchesType = selectedType === "All" || scholarship.type === selectedType;
 
       // Country filter
       const matchesCountry = selectedCountry === "All" || scholarship.country === selectedCountry;
 
-      return matchesSearch && matchesField && matchesLevel && matchesCountry;
+      return matchesSearch && matchesType && matchesCountry;
     });
-  }, [searchQuery, selectedField, selectedLevel, selectedCountry]);
+  }, [scholarships, searchQuery, selectedType, selectedCountry]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -70,33 +108,20 @@ export const Scholarships = () => {
               />
             </div>
             <div className="flex gap-2 flex-wrap">
-              {fields.map((field) => (
+              {types.map((type) => (
                 <Badge
-                  key={field}
-                  variant={selectedField === field ? "default" : "outline"}
+                  key={type}
+                  variant={selectedType === type ? "default" : "outline"}
                   className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
-                  onClick={() => setSelectedField(field)}
+                  onClick={() => setSelectedType(type)}
                 >
-                  {field}
+                  {type}
                 </Badge>
               ))}
             </div>
           </div>
           
           <div className="flex gap-4 flex-wrap">
-            <div className="flex gap-2">
-              <span className="text-sm text-muted-foreground self-center">Level:</span>
-              {levels.map((level) => (
-                <Badge
-                  key={level}
-                  variant={selectedLevel === level ? "default" : "outline"}
-                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
-                  onClick={() => setSelectedLevel(level)}
-                >
-                  {level}
-                </Badge>
-              ))}
-            </div>
             <div className="flex gap-2">
               <span className="text-sm text-muted-foreground self-center">Country:</span>
               {countries.map((country) => (
@@ -113,15 +138,37 @@ export const Scholarships = () => {
           </div>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <h3 className="text-lg font-semibold mb-2">Loading scholarships...</h3>
+            <p>Please wait while we fetch the latest scholarship opportunities</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-12">
+            <h3 className="text-lg font-semibold mb-2 text-red-600">Error Loading Scholarships</h3>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </div>
+        )}
+
         {/* Results Counter */}
-        <div className="mb-6">
-          <p className="text-sm text-muted-foreground">
-            Showing {filteredScholarships.length} of {scholarships.length} scholarships
-          </p>
-        </div>
+        {!loading && !error && (
+          <div className="mb-6">
+            <p className="text-sm text-muted-foreground">
+              Showing {filteredScholarships.length} of {scholarships.length} scholarships
+            </p>
+          </div>
+        )}
 
         {/* Scholarships Grid */}
-        {filteredScholarships.length === 0 ? (
+        {!loading && !error && filteredScholarships.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
               <Search className="h-8 w-8 text-muted-foreground" />
@@ -156,16 +203,16 @@ export const Scholarships = () => {
                     <CardTitle className="text-lg mb-2 line-clamp-2">{scholarship.title}</CardTitle>
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-sm font-bold">
-                        {scholarship.donor.avatar}
+                        {scholarship.university?.charAt(0) || 'U'}
                       </div>
                       <div>
-                        <p className="font-medium text-sm">{scholarship.donor.name}</p>
-                        <p className="text-xs text-muted-foreground">{scholarship.donor.title}</p>
+                        <p className="font-medium text-sm">{scholarship.university}</p>
+                        <p className="text-xs text-muted-foreground">{scholarship.type} Scholarship</p>
                       </div>
                     </div>
                   </div>
                   <Badge variant="secondary" className="ml-2">
-                    {scholarship.field}
+                    {scholarship.type}
                   </Badge>
                 </div>
               </CardHeader>

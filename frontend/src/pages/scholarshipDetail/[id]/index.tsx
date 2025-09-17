@@ -10,5 +10,13 @@ export default function ScholarshipDetailsPage() {
     return <div>Loading...</div>;
   }
 
-  return <ScholarshipDetails scholarshipId={id as string} />;
+  // Ensure id is a string and not undefined
+  const scholarshipId = Array.isArray(id) ? id[0] : id;
+
+  // Don't render the component if scholarshipId is undefined
+  if (!scholarshipId) {
+    return <div>Loading...</div>;
+  }
+
+  return <ScholarshipDetails scholarshipId={scholarshipId} />;
 }

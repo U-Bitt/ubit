@@ -1,7 +1,7 @@
 // API utility functions for the Ubit education platform
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
 
 export interface University {
   id: string;
@@ -45,19 +45,26 @@ export interface Exam {
 async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
 
-  const response = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
-    ...options,
-  });
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+      },
+      ...options,
+    });
 
-  if (!response.ok) {
-    throw new Error(`API call failed: ${response.statusText}`);
+    if (!response.ok) {
+      throw new Error(`API call failed: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network error: Unable to connect to the server. Please check if the backend is running.');
+    }
+    throw error;
   }
-
-  return response.json();
 }
 
 // University API functions
@@ -121,14 +128,82 @@ export const userApi = {
     }),
 };
 
+// Test Scores API functions
+export const testScoreApi = {
+  getAll: (): Promise<Record<string, unknown>[]> =>
+    apiCall<Record<string, unknown>[]>("/test-scores"),
+  create: (data: Record<string, unknown>): Promise<Record<string, unknown>> =>
+    apiCall<Record<string, unknown>>("/test-scores", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  update: (
+    id: string,
+    data: Record<string, unknown>
+  ): Promise<Record<string, unknown>> =>
+    apiCall<Record<string, unknown>>(`/test-scores/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  delete: (id: string): Promise<Record<string, unknown>> =>
+    apiCall<Record<string, unknown>>(`/test-scores/${id}`, {
+      method: "DELETE",
+    }),
+};
+
+// Documents API functions
+export const documentApi = {
+  getAll: (): Promise<Record<string, unknown>[]> =>
+    apiCall<Record<string, unknown>[]>("/documents"),
+  create: (data: Record<string, unknown>): Promise<Record<string, unknown>> =>
+    apiCall<Record<string, unknown>>("/documents", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  update: (
+    id: string,
+    data: Record<string, unknown>
+  ): Promise<Record<string, unknown>> =>
+    apiCall<Record<string, unknown>>(`/documents/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  delete: (id: string): Promise<Record<string, unknown>> =>
+    apiCall<Record<string, unknown>>(`/documents/${id}`, {
+      method: "DELETE",
+    }),
+};
+
+// Scholarship API functions
+export const scholarshipApi = {
+  getAll: async (): Promise<Record<string, unknown>[]> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>("/scholarships");
+    return response.data;
+  },
+  getById: async (id: string): Promise<Record<string, unknown>> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown> }>(`/scholarships/${id}`);
+    return response.data;
+  },
+  search: async (query: string): Promise<Record<string, unknown>[]> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>(`/scholarships/search?q=${encodeURIComponent(query)}`);
+    return response.data;
+  },
+};
+
 // Recommendation API functions
 export const recommendationApi = {
-  getUniversityRecommendations: (): Promise<Record<string, unknown>[]> =>
-    apiCall<Record<string, unknown>[]>("/recommendations/universities"),
-  getProgramRecommendations: (): Promise<Record<string, unknown>[]> =>
-    apiCall<Record<string, unknown>[]>("/recommendations/programs"),
-  getScholarshipRecommendations: (): Promise<Record<string, unknown>[]> =>
-    apiCall<Record<string, unknown>[]>("/recommendations/scholarships"),
+  getUniversityRecommendations: async (): Promise<Record<string, unknown>[]> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>("/recommendations/universities");
+    return response.data;
+  },
+  getProgramRecommendations: async (): Promise<Record<string, unknown>[]> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>("/recommendations/programs");
+    return response.data;
+  },
+  getScholarshipRecommendations: async (): Promise<Record<string, unknown>[]> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>("/recommendations/scholarships");
+    return response.data;
+  },
 };
 
 // Error handling utility

@@ -1,29 +1,40 @@
-import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from "next/router";
+import { useState, useEffect } from "react";
 import {
   MapPin,
-  Star,
   Calendar,
   DollarSign,
-  GraduationCap,
-  BookOpen,
-  Heart,
   ArrowLeft,
   Award,
   Users,
   Mail,
-  Linkedin,
   ExternalLink,
   Clock,
   CheckCircle,
-  Globe,
-  User,
-  Building,
 } from "lucide-react";
+import { scholarshipApi } from "@/utils/api";
+
+interface Scholarship {
+  id: string;
+  title: string;
+  description: string;
+  amount: string;
+  university: string;
+  country: string;
+  deadline: string;
+  requirements: string[];
+  type: string;
+  coverage: string;
+  duration: string;
+  applicationProcess: string;
+  eligibility: string;
+  benefits: string[];
+  image: string;
+}
 
 interface ScholarshipDetailsProps {
   scholarshipId: string;
@@ -31,135 +42,51 @@ interface ScholarshipDetailsProps {
 
 export const ScholarshipDetails = ({ scholarshipId }: ScholarshipDetailsProps) => {
   const router = useRouter();
+  const [scholarship, setScholarship] = useState<Scholarship | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Scholarship data - in a real app, this would be fetched based on the ID
-  const scholarships = [
-    {
-      id: "1",
-      title: "MIT Alumni Engineering Excellence Scholarship",
-      donor: {
-        name: "Dr. Sarah Chen",
-        title: "MIT '95, Senior VP at Google",
-        avatar: "SC",
-        company: "Google",
-        linkedin: "https://linkedin.com/in/sarahchen",
-        email: "sarah.chen@alumni.mit.edu",
-        bio: "Dr. Sarah Chen is a distinguished MIT alumna with over 25 years of experience in technology leadership. She currently serves as Senior Vice President at Google, where she leads strategic initiatives in artificial intelligence and machine learning. Sarah is passionate about supporting the next generation of engineers and has personally funded this scholarship to help students pursue their dreams in engineering.",
-        location: "San Francisco, CA",
-        education: "MIT '95 - Computer Science, Stanford MBA '98"
-      },
-      amount: "$25,000",
-      duration: "4 years",
-      deadline: "March 15, 2024",
-      description: "Awarded to outstanding students pursuing engineering degrees with demonstrated leadership potential and community involvement. This scholarship is designed to support students who show exceptional promise in engineering and have a strong commitment to making a positive impact in their communities.",
-      longDescription: "The MIT Alumni Engineering Excellence Scholarship is a comprehensive financial aid program that provides $25,000 per year for up to four years to exceptional engineering students. This scholarship is not just about financial support—it's about building a community of future engineering leaders who will shape the world through innovation and service.\n\nRecipients of this scholarship become part of an exclusive network of MIT alumni and current students, gaining access to mentorship opportunities, networking events, and career guidance. The scholarship also includes additional benefits such as research opportunities, internship placements, and conference attendance funding.\n\nThis scholarship is particularly focused on students who demonstrate not only academic excellence but also leadership potential, community involvement, and a commitment to using their engineering skills to solve real-world problems. We believe that the best engineers are those who understand the broader impact of their work and are dedicated to making a positive difference in society.",
-      requirements: [
-        "3.8+ GPA",
-        "Engineering major",
-        "Leadership experience",
-        "Community service",
-        "Two letters of recommendation",
-        "Personal statement",
-        "Portfolio of engineering projects"
-      ],
-      field: "Engineering",
-      level: "Undergraduate",
-      country: "United States",
-      university: "MIT",
-      applications: 245,
-      spots: 3,
-      benefits: [
-        "Full tuition coverage",
-        "Research opportunities",
-        "Mentorship program",
-        "Networking events",
-        "Conference attendance funding",
-        "Internship placement assistance"
-      ],
-      applicationProcess: [
-        "Submit online application",
-        "Upload academic transcripts",
-        "Provide two letters of recommendation",
-        "Write personal statement (500 words)",
-        "Submit portfolio of engineering projects",
-        "Complete video interview (if selected)",
-        "Final review by selection committee"
-      ],
-      selectionCriteria: [
-        "Academic excellence (40%)",
-        "Leadership potential (25%)",
-        "Community involvement (20%)",
-        "Engineering project quality (15%)"
-      ]
-    },
-    {
-      id: "2",
-      title: "Harvard Business School Alumni Fellowship",
-      donor: {
-        name: "Michael Rodriguez",
-        title: "Harvard MBA '98, CEO at TechCorp",
-        avatar: "MR",
-        company: "TechCorp",
-        linkedin: "https://linkedin.com/in/michaelrodriguez",
-        email: "m.rodriguez@alumni.harvard.edu",
-        bio: "Michael Rodriguez is a serial entrepreneur and Harvard Business School graduate who has built and sold three successful technology companies. As CEO of TechCorp, he leads a team of 500+ employees and has been recognized as one of the top 40 under 40 entrepreneurs by Forbes. Michael is committed to increasing diversity in business and technology.",
-        location: "New York, NY",
-        education: "Harvard MBA '98, Stanford BS '95"
-      },
-      amount: "$50,000",
-      duration: "2 years",
-      deadline: "April 30, 2024",
-      description: "Supporting exceptional students from underrepresented backgrounds pursuing MBA degrees with entrepreneurial aspirations.",
-      longDescription: "The Harvard Business School Alumni Fellowship is a prestigious award that provides comprehensive support for MBA students from underrepresented backgrounds who demonstrate exceptional entrepreneurial potential. This fellowship goes beyond financial assistance to provide mentorship, networking opportunities, and hands-on experience in the business world.\n\nFellows receive not only financial support but also access to exclusive events, mentorship from successful entrepreneurs, and opportunities to work on real business projects. The program is designed to help fellows develop the skills, network, and experience needed to launch successful businesses or advance to senior leadership positions.\n\nThis fellowship is particularly valuable for students who are interested in entrepreneurship but may not have the traditional background or resources typically associated with business school success. We believe that diverse perspectives and experiences are essential for innovation and business success.",
-      requirements: [
-        "GMAT 700+",
-        "Entrepreneurial experience",
-        "Underrepresented background",
-        "Leadership potential",
-        "Business plan submission",
-        "Three letters of recommendation",
-        "Video interview"
-      ],
-      field: "Business",
-      level: "Graduate",
-      country: "United States",
-      university: "Harvard",
-      applications: 189,
-      spots: 2,
-      benefits: [
-        "Full MBA tuition coverage",
-        "Entrepreneurship mentorship",
-        "Access to investor network",
-        "Business plan development support",
-        "Internship opportunities",
-        "Conference and event access"
-      ],
-      applicationProcess: [
-        "Submit online application",
-        "GMAT score submission",
-        "Upload transcripts",
-        "Submit business plan",
-        "Provide three letters of recommendation",
-        "Complete video interview",
-        "Final presentation to selection committee"
-      ],
-      selectionCriteria: [
-        "Academic performance (30%)",
-        "Entrepreneurial potential (35%)",
-        "Leadership experience (20%)",
-        "Diversity and background (15%)"
-      ]
+  // Fetch scholarship data
+  useEffect(() => {
+    const fetchScholarship = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await scholarshipApi.getById(scholarshipId);
+        setScholarship(response);
+      } catch (err) {
+        console.error("Error fetching scholarship:", err);
+        setError("Failed to load scholarship details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (scholarshipId && scholarshipId !== 'undefined') {
+      fetchScholarship();
     }
-  ];
+  }, [scholarshipId]);
 
-  const scholarship = scholarships.find(s => s.id === scholarshipId);
-
-  if (!scholarship) {
+  // Show loading state
+  if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Scholarship Not Found</h1>
-          <p className="text-muted-foreground mb-6">The scholarship you're looking for doesn't exist.</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <h3 className="text-lg font-semibold mb-2">Loading scholarship...</h3>
+          <p>Please wait while we fetch the details</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-4">Error Loading Scholarship</h1>
+          <p className="text-muted-foreground mb-6">{error}</p>
           <Button onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Go Back
@@ -168,6 +95,23 @@ export const ScholarshipDetails = ({ scholarshipId }: ScholarshipDetailsProps) =
       </div>
     );
   }
+
+  // Show not found state
+  if (!scholarship) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-4">Scholarship Not Found</h1>
+          <p className="text-muted-foreground mb-6">The scholarship you&apos;re looking for doesn&apos;t exist.</p>
+          <Button onClick={() => router.back()}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Go Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="min-h-screen bg-white">
@@ -245,7 +189,7 @@ export const ScholarshipDetails = ({ scholarshipId }: ScholarshipDetailsProps) =
                   </CardHeader>
                   <CardContent>
                     <div className="grid md:grid-cols-2 gap-4">
-                      {scholarship.requirements.map((req, index) => (
+                      {scholarship.requirements?.map((req: string, index: number) => (
                         <div key={index} className="flex items-center gap-2">
                           <CheckCircle className="h-4 w-4 text-green-600" />
                           <span>{req}</span>
@@ -263,12 +207,14 @@ export const ScholarshipDetails = ({ scholarshipId }: ScholarshipDetailsProps) =
                   </CardHeader>
                   <CardContent>
                     <div className="grid md:grid-cols-2 gap-4">
-                      {scholarship.benefits.map((benefit, index) => (
+                      {scholarship.benefits?.map((benefit: string, index: number) => (
                         <div key={index} className="flex items-center gap-2">
                           <Award className="h-4 w-4 text-blue-600" />
                           <span>{benefit}</span>
                         </div>
-                      ))}
+                      )) || (
+                        <div className="text-muted-foreground">No specific benefits listed</div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -281,14 +227,16 @@ export const ScholarshipDetails = ({ scholarshipId }: ScholarshipDetailsProps) =
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {scholarship.applicationProcess.map((step, index) => (
-                        <div key={index} className="flex items-start gap-3">
+                      {scholarship.applicationProcess ? (
+                        <div className="flex items-start gap-3">
                           <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
-                            {index + 1}
+                            1
                           </div>
-                          <span>{step}</span>
+                          <span>{scholarship.applicationProcess}</span>
                         </div>
-                      ))}
+                      ) : (
+                        <div className="text-muted-foreground">Application process details not available</div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -301,12 +249,16 @@ export const ScholarshipDetails = ({ scholarshipId }: ScholarshipDetailsProps) =
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {scholarship.selectionCriteria.map((criteria, index) => (
-                        <div key={index} className="flex justify-between items-center">
-                          <span>{criteria.split('(')[0].trim()}</span>
-                          <Badge variant="outline">{criteria.split('(')[1]?.replace(')', '')}</Badge>
+                      {scholarship.requirements?.map((requirement: string, index: number) => (
+                        <div key={index} className="flex items-start gap-3">
+                          <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
+                            {index + 1}
+                          </div>
+                          <span>{requirement}</span>
                         </div>
-                      ))}
+                      )) || (
+                        <div className="text-muted-foreground">Selection criteria not available</div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -351,33 +303,36 @@ export const ScholarshipDetails = ({ scholarshipId }: ScholarshipDetailsProps) =
             {/* Donor Information */}
             <Card>
               <CardHeader>
-                <CardTitle>About the Donor</CardTitle>
+                <CardTitle>About the University</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold">
-                    {scholarship.donor.avatar}
+                    {scholarship.university?.charAt(0) || 'U'}
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold">{scholarship.donor.name}</h3>
-                    <p className="text-sm text-muted-foreground">{scholarship.donor.title}</p>
+                    <h3 className="font-semibold">{scholarship.university}</h3>
                     <p className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Building className="h-3 w-3" />
-                      {scholarship.donor.company}
+                      <MapPin className="h-3 w-3" />
+                      {scholarship.country}
+                    </p>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Award className="h-3 w-3" />
+                      {scholarship.type} Scholarship
                     </p>
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {scholarship.donor.bio}
+                  {scholarship.description}
                 </p>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <MapPin className="h-3 w-3" />
-                    {scholarship.donor.location}
+                    {scholarship.country}
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <GraduationCap className="h-3 w-3" />
-                    {scholarship.donor.education}
+                    <DollarSign className="h-3 w-3" />
+                    {scholarship.amount} {scholarship.coverage}
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -385,19 +340,19 @@ export const ScholarshipDetails = ({ scholarshipId }: ScholarshipDetailsProps) =
                     variant="outline" 
                     size="sm" 
                     className="flex-1"
-                    onClick={() => window.open(`mailto:${scholarship.donor.email}?subject=Inquiry about ${scholarship.title}`)}
+                    onClick={() => window.open(`mailto:admissions@${scholarship.university?.toLowerCase().replace(/\s+/g, '')}.edu?subject=Inquiry about ${scholarship.title}`)}
                   >
                     <Mail className="h-3 w-3 mr-1" />
-                    Email
+                    Contact University
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
                     className="flex-1"
-                    onClick={() => window.open(scholarship.donor.linkedin, '_blank')}
+                    onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(scholarship.university || '')}`, '_blank')}
                   >
-                    <Linkedin className="h-3 w-3 mr-1" />
-                    LinkedIn
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    Learn More
                   </Button>
                 </div>
               </CardContent>
@@ -412,10 +367,10 @@ export const ScholarshipDetails = ({ scholarshipId }: ScholarshipDetailsProps) =
               <Button 
                 variant="outline" 
                 className="w-full"
-                onClick={() => window.open(scholarship.donor.linkedin, '_blank')}
+                onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(scholarship.university || '')}`, '_blank')}
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
-                View Donor Profile
+                View University Website
               </Button>
             </div>
           </div>

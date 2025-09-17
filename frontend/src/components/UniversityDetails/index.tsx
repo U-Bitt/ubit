@@ -192,7 +192,7 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
-        <Button variant="ghost" className="mb-6" onClick={() => router.push('/universities')}>
+        <Button variant="ghost" className="mb-6" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Universities
         </Button>

@@ -13,11 +13,21 @@ const universities_1 = __importDefault(require("./routes/universities"));
 const countries_1 = __importDefault(require("./routes/countries"));
 const exams_1 = __importDefault(require("./routes/exams"));
 const users_1 = __importDefault(require("./routes/users"));
+const testScores_1 = __importDefault(require("./routes/testScores"));
+const documents_1 = __importDefault(require("./routes/documents"));
+const scholarships_1 = __importDefault(require("./routes/scholarships"));
 const errorHandler_1 = require("./middleware/errorHandler");
 const notFound_1 = require("./middleware/notFound");
+const database_1 = __importDefault(require("./config/database"));
+const seedData_1 = require("./utils/seedData");
 dotenv_1.default.config();
+const initializeDatabase = async () => {
+    await (0, database_1.default)();
+    await (0, seedData_1.seedUniversities)();
+};
+initializeDatabase();
 const app = (0, express_1.default)();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.use((0, helmet_1.default)());
 app.use((0, cors_1.default)({
     origin: process.env.CORS_ORIGIN || "http://localhost:3000",
@@ -43,6 +53,9 @@ app.use("/api/universities", universities_1.default);
 app.use("/api/countries", countries_1.default);
 app.use("/api/exams", exams_1.default);
 app.use("/api/user", users_1.default);
+app.use("/api/test-scores", testScores_1.default);
+app.use("/api/documents", documents_1.default);
+app.use("/api/scholarships", scholarships_1.default);
 app.use(notFound_1.notFound);
 app.use(errorHandler_1.errorHandler);
 app.listen(PORT, () => {
