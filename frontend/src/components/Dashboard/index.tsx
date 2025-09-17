@@ -17,30 +17,99 @@ import {
   TrendingUp,
   Target,
   Award,
-  Users,
   BarChart3,
   Activity,
   ExternalLink,
   Eye,
   Edit,
-  Trash2,
-  Star,
   X,
   MapPin,
   DollarSign,
   Percent,
-  User,
   Mail,
-  Phone,
-  Globe,
-  ArrowRight,
 } from "lucide-react";
 import { useState } from "react";
 
+interface Application {
+  image: string;
+  university: string;
+  program: string;
+  ranking: number;
+  status: string;
+  location: string;
+  tuition: string;
+  acceptance: string;
+  deadline: string;
+  progress: number;
+  description: string;
+  requirements: string[];
+  documents: Document[];
+  milestones: Milestone[];
+  website: string;
+}
+
+interface Document {
+  name: string;
+  status: string;
+  required: boolean;
+}
+
+interface Milestone {
+  title: string;
+  date: string;
+  completed: boolean;
+}
+
+interface Exam {
+  exam: string;
+  fullName: string;
+  status: string;
+  daysLeft: number;
+  date: string;
+  location: string;
+  duration: string;
+  registrationId?: string;
+  progress: number;
+  score?: string;
+  target: string;
+  sections: Section[];
+  practiceTests: PracticeTest[];
+  studyPlan: StudyTopic[];
+  resources: Resource[];
+}
+
+interface Section {
+  name: string;
+  score: number;
+  target: number;
+  status: string;
+}
+
+interface PracticeTest {
+  name: string;
+  score: number;
+  date: string;
+  status: string;
+}
+
+interface StudyTopic {
+  topic: string;
+  progress: number;
+  priority: string;
+  status: string;
+}
+
+interface Resource {
+  name: string;
+  type: string;
+  url: string;
+  status: string;
+}
+
 export const Dashboard = () => {
-  const [selectedApplication, setSelectedApplication] = useState<any>(null);
+  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedExam, setSelectedExam] = useState<any>(null);
+  const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
   const [isExamModalOpen, setIsExamModalOpen] = useState(false);
 
   const applications = [
@@ -163,7 +232,7 @@ export const Dashboard = () => {
     },
   ];
 
-  const handleViewDetails = (application: any) => {
+  const handleViewDetails = (application: Application) => {
     setSelectedApplication(application);
     setIsModalOpen(true);
   };
@@ -418,7 +487,7 @@ export const Dashboard = () => {
     },
   ];
 
-  const handleExamDetails = (exam: any) => {
+  const handleExamDetails = (exam: Exam) => {
     setSelectedExam(exam);
     setIsExamModalOpen(true);
   };
@@ -815,7 +884,7 @@ export const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {savedUniversities.map((uni, index) => (
+                {savedUniversities.map((uni, _) => (
                   <div
                     key={uni.id}
                     className="p-3 rounded-lg border hover:shadow-sm transition-shadow"
@@ -1105,7 +1174,7 @@ export const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {selectedApplication.documents.map((doc: any, index: number) => (
+                    {selectedApplication.documents.map((doc: Document, index: number) => (
                       <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
                         <div className="flex items-center gap-3">
                           <div className={`w-3 h-3 rounded-full ${
@@ -1156,7 +1225,7 @@ export const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {selectedApplication.milestones.map((milestone: any, index: number) => (
+                    {selectedApplication.milestones.map((milestone: Milestone, index: number) => (
                       <div key={index} className="flex items-center gap-4">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                           milestone.completed 
@@ -1325,7 +1394,7 @@ export const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {selectedExam.sections.map((section: any, index: number) => (
+                    {selectedExam.sections.map((section: Section, index: number) => (
                       <div key={index} className="p-4 rounded-lg border">
                         <div className="flex justify-between items-center mb-2">
                           <h4 className="font-medium text-sm">{section.name}</h4>
@@ -1354,7 +1423,7 @@ export const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {selectedExam.practiceTests.map((test: any, index: number) => (
+                    {selectedExam.practiceTests.map((test: PracticeTest, index: number) => (
                       <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
                         <div className="flex items-center gap-4">
                           <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -1387,7 +1456,7 @@ export const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {selectedExam.studyPlan.map((topic: any, index: number) => (
+                    {selectedExam.studyPlan.map((topic: StudyTopic, index: number) => (
                       <div key={index} className="flex items-center gap-3 p-3 rounded-lg border">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
                           topic.completed 
@@ -1435,7 +1504,7 @@ export const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="grid md:grid-cols-2 gap-4">
-                    {selectedExam.resources.map((resource: any, index: number) => (
+                    {selectedExam.resources.map((resource: Resource, index: number) => (
                       <div key={index} className="p-4 rounded-lg border">
                         <div className="flex justify-between items-start mb-2">
                           <h4 className="font-medium text-sm">{resource.name}</h4>

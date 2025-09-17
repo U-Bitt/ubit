@@ -12,6 +12,7 @@ import examRoutes from "./routes/exams";
 import userRoutes from "./routes/users";
 import testScoreRoutes from "./routes/testScores";
 import documentRoutes from "./routes/documents";
+import scholarshipRoutes from "./routes/scholarships";
 
 // Import middleware
 import { errorHandler } from "./middleware/errorHandler";
@@ -33,7 +34,7 @@ const initializeDatabase = async () => {
 initializeDatabase();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Security middleware
 app.use(helmet());
@@ -77,6 +78,7 @@ app.use("/api/exams", examRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/test-scores", testScoreRoutes);
 app.use("/api/documents", documentRoutes);
+app.use("/api/scholarships", scholarshipRoutes);
 
 // 404 handler
 app.use(notFound);

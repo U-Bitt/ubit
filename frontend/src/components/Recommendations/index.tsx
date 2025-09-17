@@ -4,71 +4,40 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, CheckCircle, ArrowRight } from "lucide-react";
+import { MapPin, CheckCircle, ArrowRight, Star, Users, Calendar, DollarSign } from "lucide-react";
+import { useRouter } from "next/router";
+import { universities } from "@/mockData/universities";
+import { scholarships } from "@/mockData/scholarships";
 
 export const Recommendations = () => {
-  const universityRecommendations = [
-    {
-      name: "Massachusetts Institute of Technology",
-      city: "Cambridge",
-      country: "USA",
-      image: "/mit-campus-aerial.png",
-      matchScore: 95,
-      reasons: [
-        "Your SAT score (1450+) exceeds their minimum requirement",
-        "Strong academic documentation and transcripts",
-        "IELTS/TOEFL scores meet international student standards",
-      ],
-      pros: [
-        "World-class faculty",
-        "Cutting-edge research",
-        "Strong alumni network",
-      ],
-      cons: ["Very competitive", "High cost", "Intense workload"],
-      deadline: "Jan 1, 2025",
-      priority: "high",
-    },
-    {
-      name: "Stanford University",
-      city: "Stanford",
-      country: "USA",
-      image: "/stanford-campus.jpg",
-      matchScore: 92,
-      reasons: [
-        "Your SAT score (1400+) meets their competitive threshold",
-        "Complete academic documentation package ready",
-        "English proficiency scores exceed requirements",
-      ],
-      pros: ["Innovation hub", "Startup culture", "Beautiful campus"],
-      cons: [
-        "Very selective",
-        "High cost of living",
-        "Competitive environment",
-      ],
-      deadline: "Jan 2, 2025",
-      priority: "high",
-    },
-    {
-      name: "University of Toronto",
-      city: "Toronto",
-      country: "Canada",
-      image: "/toronto-university.jpg",
-      matchScore: 88,
-      reasons: [
-        "Your SAT score (1300+) meets their admission criteria",
-        "Strong academic transcripts and documentation",
-        "IELTS/TOEFL scores satisfy language requirements",
-      ],
-      pros: ["Lower cost", "High quality education", "Immigration friendly"],
-      cons: [
-        "Cold winters",
-        "Large class sizes",
-        "Less prestigious than top US schools",
-      ],
-      deadline: "Jan 13, 2025",
-      priority: "medium",
-    },
-  ];
+  const router = useRouter();
+
+  // Transform university mock data to match recommendations format
+  const universityRecommendations = universities.map((uni, index) => ({
+    id: uni.id,
+    name: uni.name,
+    location: uni.location,
+    ranking: uni.ranking,
+    students: "15,000+",
+    tuition: uni.tuition,
+    image: uni.image,
+    matchScore: 85 + (index * 3), // Generate match scores
+    reason: `Strong match for your academic profile and interests in ${uni.programs[0]}`,
+    highlights: uni.programs.slice(0, 3),
+    programs: uni.programs,
+    deadline: uni.deadline
+  }));
+
+  // Transform scholarship mock data to match recommendations format
+  const scholarshipRecommendations = scholarships.map((scholarship, index) => ({
+    name: scholarship.title,
+    university: scholarship.university,
+    amount: scholarship.amount + "/year",
+    requirements: scholarship.requirements,
+    deadline: scholarship.deadline,
+    match: 80 + (index * 2), // Generate match scores
+    description: scholarship.description
+  }));
 
   const programRecommendations = [
     {
@@ -123,40 +92,7 @@ export const Recommendations = () => {
     },
   ];
 
-  const scholarshipRecommendations = [
-    {
-      name: "Merit Scholarship",
-      university: "MIT",
-      amount: "$15,000/year",
-      requirements: ["High academic performance", "Leadership experience"],
-      deadline: "Dec 15, 2024",
-      match: 95,
-      description: "Based on academic excellence and leadership potential",
-    },
-    {
-      name: "International Student Grant",
-      university: "Stanford",
-      amount: "$25,000/year",
-      requirements: [
-        "International student",
-        "Financial need",
-        "Academic merit",
-      ],
-      deadline: "Jan 1, 2025",
-      match: 88,
-      description: "Need-based financial aid for international students",
-    },
-    {
-      name: "Tech Innovation Award",
-      university: "University of Toronto",
-      amount: "$10,000/year",
-      requirements: ["CS major", "Innovative project", "Academic merit"],
-      deadline: "Feb 1, 2025",
-      match: 92,
-      description:
-        "Awarded to outstanding CS students with innovative projects",
-    },
-  ];
+
 
   return (
     <div className="min-h-screen bg-white">
@@ -167,7 +103,7 @@ export const Recommendations = () => {
             Personalized Recommendations
           </h1>
           <p className="text-muted-foreground">
-            AI-powered suggestions based on your profile and preferences
+            AI-powered suggestions based on your profile and preferences. We show a diverse mix of universities that match your scores, including both top-tier and more accessible options.
           </p>
         </div>
 
@@ -209,8 +145,22 @@ export const Recommendations = () => {
                           <div className="flex items-center gap-2 text-white/90 mb-2">
                             <MapPin className="h-4 w-4" />
                             <span>
-                              {university.city}, {university.country}
+                              {university.location}
                             </span>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-white/80">
+                            <div className="flex items-center gap-1">
+                              <Star className="h-4 w-4" />
+                              <span>#{university.ranking}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Users className="h-4 w-4" />
+                              <span>{university.students}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <DollarSign className="h-4 w-4" />
+                              <span>{university.tuition}</span>
+                            </div>
                           </div>
                         </div>
                         <div className="text-right">
@@ -228,56 +178,37 @@ export const Recommendations = () => {
                         <h4 className="font-semibold mb-2 text-white">
                           Why it was matched for you:
                         </h4>
-                        <ul className="space-y-1">
-                          {university.reasons
-                            .slice(0, 2)
-                            .map((reason, reasonIndex) => (
-                              <li
-                                key={reasonIndex}
-                                className="flex items-center gap-2 text-sm text-white/90"
-                              >
-                                <CheckCircle className="h-4 w-4 text-white" />
-                                {reason}
-                              </li>
-                            ))}
-                        </ul>
+                        <div className="text-sm text-white/90">
+                          <CheckCircle className="h-4 w-4 text-white inline mr-2" />
+                          {university.reason}
+                        </div>
+                        {university.highlights && university.highlights.length > 0 && (
+                          <div className="mt-2">
+                            <div className="text-xs text-white/80">
+                              Highlights: {university.highlights.slice(0, 2).join(", ")}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
-                      {/* Pros and Cons */}
+                      {/* University Info */}
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <h5 className="font-medium text-sm mb-2 text-green-300">
-                            Pros:
+                            Programs:
                           </h5>
-                          <ul className="space-y-1">
-                            {university.pros
-                              .slice(0, 2)
-                              .map((pro, proIndex) => (
-                                <li
-                                  key={proIndex}
-                                  className="text-sm text-white/90"
-                                >
-                                  • {pro}
-                                </li>
-                              ))}
-                          </ul>
+                          <div className="text-xs text-white/80">
+                            {university.programs ? university.programs.slice(0, 2).join(", ") : "Various programs available"}
+                          </div>
                         </div>
                         <div>
-                          <h5 className="font-medium text-sm mb-2 text-red-300">
-                            Cons:
+                          <h5 className="font-medium text-sm mb-2 text-blue-300">
+                            Deadline:
                           </h5>
-                          <ul className="space-y-1">
-                            {university.cons
-                              .slice(0, 2)
-                              .map((con, conIndex) => (
-                                <li
-                                  key={conIndex}
-                                  className="text-sm text-white/90"
-                                >
-                                  • {con}
-                                </li>
-                              ))}
-                          </ul>
+                          <div className="text-xs text-white/80 flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {university.deadline || "Check website"}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -302,6 +233,7 @@ export const Recommendations = () => {
                         <Button
                           size="sm"
                           className="bg-white text-black hover:bg-white/90"
+                          onClick={() => router.push(`/universityDetail/${university.id}`)}
                         >
                           View Details
                           <ArrowRight className="ml-2 h-4 w-4" />

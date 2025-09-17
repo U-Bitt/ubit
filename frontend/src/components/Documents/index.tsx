@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,13 +28,11 @@ import {
   Trash2,
   Plus,
   Search,
-  Filter,
   Calendar,
   FileText,
   File,
   X,
   Check,
-  AlertCircle,
 } from "lucide-react";
 import { testScoreApi, documentApi } from "@/utils/api";
 
@@ -477,7 +475,7 @@ export const Documents = () => {
                 <CardTitle>Test Scores</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {testScores.map((score, index) => (
+                {testScores.map((score, _) => (
                   <div
                     key={score.id}
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 p-6 border border-gray-200 rounded-lg bg-white hover:shadow-sm transition-shadow items-center"
