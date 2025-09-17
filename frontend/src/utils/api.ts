@@ -1,7 +1,7 @@
 // API utility functions for the Ubit education platform
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
 
 export interface University {
   id: string;
@@ -118,6 +118,52 @@ export const userApi = {
     apiCall<Record<string, unknown>>("/user/applications", {
       method: "POST",
       body: JSON.stringify(data),
+    }),
+};
+
+// Test Scores API functions
+export const testScoreApi = {
+  getAll: (): Promise<Record<string, unknown>[]> =>
+    apiCall<Record<string, unknown>[]>("/test-scores"),
+  create: (data: Record<string, unknown>): Promise<Record<string, unknown>> =>
+    apiCall<Record<string, unknown>>("/test-scores", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  update: (
+    id: string,
+    data: Record<string, unknown>
+  ): Promise<Record<string, unknown>> =>
+    apiCall<Record<string, unknown>>(`/test-scores/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  delete: (id: string): Promise<Record<string, unknown>> =>
+    apiCall<Record<string, unknown>>(`/test-scores/${id}`, {
+      method: "DELETE",
+    }),
+};
+
+// Documents API functions
+export const documentApi = {
+  getAll: (): Promise<Record<string, unknown>[]> =>
+    apiCall<Record<string, unknown>[]>("/documents"),
+  create: (data: Record<string, unknown>): Promise<Record<string, unknown>> =>
+    apiCall<Record<string, unknown>>("/documents", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  update: (
+    id: string,
+    data: Record<string, unknown>
+  ): Promise<Record<string, unknown>> =>
+    apiCall<Record<string, unknown>>(`/documents/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  delete: (id: string): Promise<Record<string, unknown>> =>
+    apiCall<Record<string, unknown>>(`/documents/${id}`, {
+      method: "DELETE",
     }),
 };
 
