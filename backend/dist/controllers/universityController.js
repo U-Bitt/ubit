@@ -1,123 +1,51 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUniversity = exports.updateUniversity = exports.createUniversity = exports.searchUniversities = exports.getUniversityById = exports.getAllUniversities = void 0;
-const universities = [
-    {
-        id: "mit",
-        name: "Massachusetts Institute of Technology",
-        location: "Cambridge, MA, USA",
-        ranking: 1,
-        rating: 4.9,
-        tuition: "$57,986/year",
-        acceptance: "6.7%",
-        students: "11,934",
-        image: "/mit-campus-aerial.png",
-        programs: ["Computer Science", "Engineering", "Physics", "Mathematics"],
-        highlights: [
-            "World-renowned research",
-            "Innovation hub",
-            "Strong industry connections",
-        ],
-        deadline: "Jan 1, 2025",
-        description: "A world-class institution known for its cutting-edge research and innovation.",
-        website: "https://web.mit.edu",
-        founded: 1861,
-        type: "private",
-        size: "medium",
-    },
-    {
-        id: "stanford",
-        name: "Stanford University",
-        location: "Stanford, CA, USA",
-        ranking: 2,
-        rating: 4.8,
-        tuition: "$61,731/year",
-        acceptance: "4.3%",
-        students: "17,381",
-        image: "/stanford-campus.jpg",
-        programs: ["Computer Science", "Business", "Medicine", "Engineering"],
-        highlights: [
-            "Silicon Valley location",
-            "Entrepreneurship focus",
-            "Beautiful campus",
-        ],
-        deadline: "Jan 2, 2025",
-        description: "Located in the heart of Silicon Valley, Stanford fosters innovation and entrepreneurship.",
-        website: "https://stanford.edu",
-        founded: 1885,
-        type: "private",
-        size: "large",
-    },
-    {
-        id: "harvard",
-        name: "Harvard University",
-        location: "Cambridge, MA, USA",
-        ranking: 3,
-        rating: 4.9,
-        tuition: "$57,261/year",
-        acceptance: "3.4%",
-        students: "23,731",
-        image: "/harvard-campus.jpg",
-        programs: ["Liberal Arts", "Medicine", "Law", "Business"],
-        highlights: ["Ivy League prestige", "World-class faculty", "Rich history"],
-        deadline: "Jan 1, 2025",
-        description: "The oldest institution of higher education in the United States.",
-        website: "https://harvard.edu",
-        founded: 1636,
-        type: "private",
-        size: "large",
-    },
-    {
-        id: "oxford",
-        name: "University of Oxford",
-        location: "Oxford, UK",
-        ranking: 4,
-        rating: 4.7,
-        tuition: "£26,770/year",
-        acceptance: "17.5%",
-        students: "24,515",
-        image: "/oxford-university-campus.jpg",
-        programs: ["Philosophy", "Literature", "Medicine", "Law"],
-        highlights: [
-            "Ancient history",
-            "Tutorial system",
-            "Beautiful architecture",
-        ],
-        deadline: "Oct 15, 2024",
-        description: "One of the oldest universities in the English-speaking world.",
-        website: "https://ox.ac.uk",
-        founded: 1096,
-        type: "public",
-        size: "large",
-    },
-];
+const University_1 = __importDefault(require("../models/University"));
 const getAllUniversities = async (req, res, next) => {
     try {
         const { page = 1, limit = 10, sort = "ranking", order = "asc" } = req.query;
-        const sortedUniversities = [...universities].sort((a, b) => {
-            const aValue = a[sort];
-            const bValue = b[sort];
-            if (typeof aValue === "string" && typeof bValue === "string") {
-                return order === "asc"
-                    ? aValue.localeCompare(bValue)
-                    : bValue.localeCompare(aValue);
-            }
-            if (typeof aValue === "number" && typeof bValue === "number") {
-                return order === "asc" ? aValue - bValue : bValue - aValue;
-            }
-            return 0;
-        });
-        const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + limit;
-        const paginatedUniversities = sortedUniversities.slice(startIndex, endIndex);
+        const sortObj = {};
+        sortObj[sort] = order === "asc" ? 1 : -1;
+        const skip = (page - 1) * limit;
+        const universities = await University_1.default.find()
+            .sort(sortObj)
+            .skip(skip)
+            .limit(limit)
+            .lean();
+        const total = await University_1.default.countDocuments();
+        const universityData = universities.map((uni) => ({
+            id: uni._id.toString(),
+            name: uni.name,
+            location: uni.location,
+            ranking: uni.ranking,
+            rating: uni.rating,
+            tuition: uni.tuition,
+            acceptance: uni.acceptance,
+            students: uni.students,
+            image: uni.image,
+            programs: uni.programs,
+            highlights: uni.highlights,
+            deadline: uni.deadline,
+            description: uni.description,
+            website: uni.website,
+            founded: uni.founded,
+            type: uni.type,
+            size: uni.size,
+            createdAt: uni.createdAt,
+            updatedAt: uni.updatedAt,
+        }));
         const response = {
             success: true,
-            data: paginatedUniversities,
+            data: universityData,
             pagination: {
                 page,
                 limit,
-                total: universities.length,
-                pages: Math.ceil(universities.length / limit),
+                total,
+                pages: Math.ceil(total / limit),
             },
         };
         res.status(200).json(response);
@@ -130,7 +58,7 @@ exports.getAllUniversities = getAllUniversities;
 const getUniversityById = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const university = universities.find((uni) => uni.id === id);
+        const university = await University_1.default.findById(id).lean();
         if (!university) {
             res.status(404).json({
                 success: false,
@@ -139,9 +67,30 @@ const getUniversityById = async (req, res, next) => {
             });
             return;
         }
+        const universityData = {
+            id: university._id.toString(),
+            name: university.name,
+            location: university.location,
+            ranking: university.ranking,
+            rating: university.rating,
+            tuition: university.tuition,
+            acceptance: university.acceptance,
+            students: university.students,
+            image: university.image,
+            programs: university.programs,
+            highlights: university.highlights,
+            deadline: university.deadline,
+            description: university.description,
+            website: university.website,
+            founded: university.founded,
+            type: university.type,
+            size: university.size,
+            createdAt: university.createdAt,
+            updatedAt: university.updatedAt,
+        };
         const response = {
             success: true,
-            data: university,
+            data: universityData,
         };
         res.status(200).json(response);
     }
@@ -152,32 +101,65 @@ const getUniversityById = async (req, res, next) => {
 exports.getUniversityById = getUniversityById;
 const searchUniversities = async (req, res, next) => {
     try {
-        const { q = "", country, program, minRating, maxTuition } = req.query;
-        let filteredUniversities = [...universities];
+        const { q, country, program, minRating, maxTuition, page = 1, limit = 10, sort = "ranking", order = "asc", } = req.query;
+        const query = {};
         if (q) {
-            const searchTerm = q.toLowerCase();
-            filteredUniversities = filteredUniversities.filter((uni) => uni.name.toLowerCase().includes(searchTerm) ||
-                uni.location.toLowerCase().includes(searchTerm) ||
-                uni.programs.some((prog) => prog.toLowerCase().includes(searchTerm)));
+            query.$or = [
+                { name: { $regex: q, $options: "i" } },
+                { location: { $regex: q, $options: "i" } },
+                { programs: { $in: [new RegExp(q, "i")] } },
+            ];
         }
         if (country) {
-            filteredUniversities = filteredUniversities.filter((uni) => uni.location.toLowerCase().includes(country.toLowerCase()));
+            query.location = { $regex: country, $options: "i" };
         }
         if (program) {
-            filteredUniversities = filteredUniversities.filter((uni) => uni.programs.some((prog) => prog.toLowerCase().includes(program.toLowerCase())));
+            query.programs = { $in: [new RegExp(program, "i")] };
         }
         if (minRating) {
-            filteredUniversities = filteredUniversities.filter((uni) => uni.rating >= parseFloat(minRating.toString()));
+            query.rating = { $gte: minRating };
         }
         if (maxTuition) {
-            filteredUniversities = filteredUniversities.filter((uni) => {
-                const tuitionNumber = parseFloat(uni.tuition.replace(/[^0-9.]/g, ""));
-                return tuitionNumber <= parseFloat(maxTuition.toString());
-            });
         }
+        const sortObj = {};
+        sortObj[sort] = order === "asc" ? 1 : -1;
+        const skip = (page - 1) * limit;
+        const universities = await University_1.default.find(query)
+            .sort(sortObj)
+            .skip(skip)
+            .limit(limit)
+            .lean();
+        const total = await University_1.default.countDocuments(query);
+        const universityData = universities.map((uni) => ({
+            id: uni._id.toString(),
+            name: uni.name,
+            location: uni.location,
+            ranking: uni.ranking,
+            rating: uni.rating,
+            tuition: uni.tuition,
+            acceptance: uni.acceptance,
+            students: uni.students,
+            image: uni.image,
+            programs: uni.programs,
+            highlights: uni.highlights,
+            deadline: uni.deadline,
+            description: uni.description,
+            website: uni.website,
+            founded: uni.founded,
+            type: uni.type,
+            size: uni.size,
+            createdAt: uni.createdAt,
+            updatedAt: uni.updatedAt,
+        }));
         const response = {
             success: true,
-            data: filteredUniversities,
+            data: universityData,
+            pagination: {
+                page,
+                limit,
+                total,
+                pages: Math.ceil(total / limit),
+            },
         };
         res.status(200).json(response);
     }
@@ -188,16 +170,32 @@ const searchUniversities = async (req, res, next) => {
 exports.searchUniversities = searchUniversities;
 const createUniversity = async (req, res, next) => {
     try {
-        const newUniversity = {
-            ...req.body,
-            id: `uni_${Date.now()}`,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+        const newUniversity = new University_1.default(req.body);
+        const savedUniversity = await newUniversity.save();
+        const universityData = {
+            id: savedUniversity._id.toString(),
+            name: savedUniversity.name,
+            location: savedUniversity.location,
+            ranking: savedUniversity.ranking,
+            rating: savedUniversity.rating,
+            tuition: savedUniversity.tuition,
+            acceptance: savedUniversity.acceptance,
+            students: savedUniversity.students,
+            image: savedUniversity.image,
+            programs: savedUniversity.programs,
+            highlights: savedUniversity.highlights,
+            deadline: savedUniversity.deadline,
+            description: savedUniversity.description,
+            website: savedUniversity.website,
+            founded: savedUniversity.founded,
+            type: savedUniversity.type,
+            size: savedUniversity.size,
+            createdAt: savedUniversity.createdAt,
+            updatedAt: savedUniversity.updatedAt,
         };
-        universities.push(newUniversity);
         const response = {
             success: true,
-            data: newUniversity,
+            data: universityData,
             message: "University created successfully",
         };
         res.status(201).json(response);
@@ -210,8 +208,9 @@ exports.createUniversity = createUniversity;
 const updateUniversity = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const universityIndex = universities.findIndex((uni) => uni.id === id);
-        if (universityIndex === -1) {
+        const updateData = req.body;
+        const updatedUniversity = await University_1.default.findByIdAndUpdate(id, { ...updateData, updatedAt: new Date() }, { new: true, runValidators: true }).lean();
+        if (!updatedUniversity) {
             res.status(404).json({
                 success: false,
                 data: {},
@@ -219,14 +218,30 @@ const updateUniversity = async (req, res, next) => {
             });
             return;
         }
-        universities[universityIndex] = {
-            ...universities[universityIndex],
-            ...req.body,
-            updatedAt: new Date(),
+        const universityData = {
+            id: updatedUniversity._id.toString(),
+            name: updatedUniversity.name,
+            location: updatedUniversity.location,
+            ranking: updatedUniversity.ranking,
+            rating: updatedUniversity.rating,
+            tuition: updatedUniversity.tuition,
+            acceptance: updatedUniversity.acceptance,
+            students: updatedUniversity.students,
+            image: updatedUniversity.image,
+            programs: updatedUniversity.programs,
+            highlights: updatedUniversity.highlights,
+            deadline: updatedUniversity.deadline,
+            description: updatedUniversity.description,
+            website: updatedUniversity.website,
+            founded: updatedUniversity.founded,
+            type: updatedUniversity.type,
+            size: updatedUniversity.size,
+            createdAt: updatedUniversity.createdAt,
+            updatedAt: updatedUniversity.updatedAt,
         };
         const response = {
             success: true,
-            data: universities[universityIndex],
+            data: universityData,
             message: "University updated successfully",
         };
         res.status(200).json(response);
@@ -239,8 +254,8 @@ exports.updateUniversity = updateUniversity;
 const deleteUniversity = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const universityIndex = universities.findIndex((uni) => uni.id === id);
-        if (universityIndex === -1) {
+        const deletedUniversity = await University_1.default.findByIdAndDelete(id);
+        if (!deletedUniversity) {
             res.status(404).json({
                 success: false,
                 data: {},
@@ -248,7 +263,6 @@ const deleteUniversity = async (req, res, next) => {
             });
             return;
         }
-        universities.splice(universityIndex, 1);
         const response = {
             success: true,
             data: {},

@@ -15,9 +15,9 @@ export const Recommendations = () => {
       image: "/mit-campus-aerial.png",
       matchScore: 95,
       reasons: [
-        "Strong research opportunities in AI/ML",
-        "Excellent career prospects in tech",
-        "Your SAT score meets requirements",
+        "Your SAT score (1450+) exceeds their minimum requirement",
+        "Strong academic documentation and transcripts",
+        "IELTS/TOEFL scores meet international student standards",
       ],
       pros: [
         "World-class faculty",
@@ -35,9 +35,9 @@ export const Recommendations = () => {
       image: "/stanford-campus.jpg",
       matchScore: 92,
       reasons: [
-        "Strong entrepreneurship programs",
-        "Your profile aligns with their values",
-        "Good financial aid options",
+        "Your SAT score (1400+) meets their competitive threshold",
+        "Complete academic documentation package ready",
+        "English proficiency scores exceed requirements",
       ],
       pros: ["Innovation hub", "Startup culture", "Beautiful campus"],
       cons: [
@@ -55,9 +55,9 @@ export const Recommendations = () => {
       image: "/toronto-university.jpg",
       matchScore: 88,
       reasons: [
-        "More affordable than US options",
-        "Diverse and inclusive community",
-        "Good work opportunities after graduation",
+        "Your SAT score (1300+) meets their admission criteria",
+        "Strong academic transcripts and documentation",
+        "IELTS/TOEFL scores satisfy language requirements",
       ],
       pros: ["Lower cost", "High quality education", "Immigration friendly"],
       cons: [
@@ -180,131 +180,132 @@ export const Recommendations = () => {
           </TabsList>
 
           <TabsContent value="universities" className="space-y-6">
-            <div className="grid gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {universityRecommendations.map((university, index) => (
                 <Card
                   key={index}
-                  className="hover:shadow-lg transition-all duration-300"
+                  className="relative h-96 overflow-hidden rounded-2xl hover:shadow-xl transition-all duration-300 group"
                 >
-                  <div className="flex flex-col lg:flex-row">
-                    <div className="lg:w-1/3">
-                      <Image
-                        src={university.image}
-                        alt={university.name}
-                        width={400}
-                        height={300}
-                        className="w-full h-48 lg:h-full object-cover rounded-t-lg lg:rounded-l-lg lg:rounded-tr-none"
-                      />
-                    </div>
-                    <div className="lg:w-2/3 p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="text-2xl font-bold mb-2">
+                  {/* Background Image */}
+                  <Image
+                    src={university.image}
+                    alt={university.name}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+
+                  {/* 40% Opacity Shadow Overlay */}
+                  <div className="absolute inset-0 bg-black opacity-40"></div>
+
+                  {/* Content Overlay */}
+                  <div className="absolute inset-0 p-6 flex flex-col justify-between text-white">
+                    {/* Top Section - University Info */}
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h3 className="text-2xl font-bold mb-2 line-clamp-2">
                             {university.name}
                           </h3>
-                          <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                          <div className="flex items-center gap-2 text-white/90 mb-2">
                             <MapPin className="h-4 w-4" />
                             <span>
                               {university.city}, {university.country}
                             </span>
                           </div>
-                          <div className="flex items-center gap-4 text-sm">
-                            <span>Match Score: {university.matchScore}%</span>
-                          </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-3xl font-bold text-primary mb-1">
+                          <div className="text-3xl font-bold text-white mb-1">
                             {university.matchScore}%
                           </div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-sm text-white/80">
                             Match Score
                           </div>
-                          <Badge
-                            variant={
-                              university.priority === "high"
-                                ? "destructive"
-                                : "default"
-                            }
-                            className="mt-2"
-                          >
-                            {university.priority} priority
-                          </Badge>
                         </div>
                       </div>
 
-                      <div className="space-y-4">
-                        <div>
-                          <h4 className="font-semibold mb-2">
-                            Why this university matches you:
-                          </h4>
-                          <ul className="space-y-1">
-                            {university.reasons.map((reason, reasonIndex) => (
+                      {/* Why it was matched for you */}
+                      <div>
+                        <h4 className="font-semibold mb-2 text-white">
+                          Why it was matched for you:
+                        </h4>
+                        <ul className="space-y-1">
+                          {university.reasons
+                            .slice(0, 2)
+                            .map((reason, reasonIndex) => (
                               <li
                                 key={reasonIndex}
-                                className="flex items-center gap-2 text-sm"
+                                className="flex items-center gap-2 text-sm text-white/90"
                               >
-                                <CheckCircle className="h-4 w-4 text-primary" />
+                                <CheckCircle className="h-4 w-4 text-white" />
                                 {reason}
                               </li>
                             ))}
-                          </ul>
-                        </div>
+                        </ul>
+                      </div>
 
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <h5 className="font-medium text-sm mb-2 text-green-600">
-                              Pros:
-                            </h5>
-                            <ul className="space-y-1">
-                              {university.pros.map((pro, proIndex) => (
+                      {/* Pros and Cons */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <h5 className="font-medium text-sm mb-2 text-green-300">
+                            Pros:
+                          </h5>
+                          <ul className="space-y-1">
+                            {university.pros
+                              .slice(0, 2)
+                              .map((pro, proIndex) => (
                                 <li
                                   key={proIndex}
-                                  className="text-sm text-muted-foreground"
+                                  className="text-sm text-white/90"
                                 >
                                   • {pro}
                                 </li>
                               ))}
-                            </ul>
-                          </div>
-                          <div>
-                            <h5 className="font-medium text-sm mb-2 text-red-600">
-                              Cons:
-                            </h5>
-                            <ul className="space-y-1">
-                              {university.cons.map((con, conIndex) => (
+                          </ul>
+                        </div>
+                        <div>
+                          <h5 className="font-medium text-sm mb-2 text-red-300">
+                            Cons:
+                          </h5>
+                          <ul className="space-y-1">
+                            {university.cons
+                              .slice(0, 2)
+                              .map((con, conIndex) => (
                                 <li
                                   key={conIndex}
-                                  className="text-sm text-muted-foreground"
+                                  className="text-sm text-white/90"
                                 >
                                   • {con}
                                 </li>
                               ))}
-                            </ul>
-                          </div>
+                          </ul>
                         </div>
+                      </div>
+                    </div>
 
-                        <div className="flex justify-between items-center pt-4 border-t">
-                          <div className="text-sm">
-                            <span className="text-muted-foreground">
-                              Application Deadline:{" "}
-                            </span>
-                            <span className="font-medium">
-                              {university.deadline}
-                            </span>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm">
-                              Add to Wishlist
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="bg-primary hover:bg-primary/90"
-                            >
-                              View Details
-                              <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
+                    {/* Bottom Section - Actions and Deadline */}
+                    <div className="space-y-4">
+                      <div className="text-sm text-white/90">
+                        <span>Application Deadline: </span>
+                        <span className="font-medium text-white">
+                          {university.deadline}
+                        </span>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                        >
+                          Apply Now
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-white text-black hover:bg-white/90"
+                        >
+                          View Details
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   </div>
