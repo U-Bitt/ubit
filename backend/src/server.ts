@@ -10,6 +10,8 @@ import universityRoutes from "./routes/universities";
 import countryRoutes from "./routes/countries";
 import examRoutes from "./routes/exams";
 import userRoutes from "./routes/users";
+import testScoreRoutes from "./routes/testScores";
+import documentRoutes from "./routes/documents";
 
 // Import middleware
 import { errorHandler } from "./middleware/errorHandler";
@@ -73,6 +75,8 @@ app.use("/api/universities", universityRoutes);
 app.use("/api/countries", countryRoutes);
 app.use("/api/exams", examRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/test-scores", testScoreRoutes);
+app.use("/api/documents", documentRoutes);
 
 // 404 handler
 app.use(notFound);
