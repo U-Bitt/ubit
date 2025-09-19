@@ -30,6 +30,9 @@ import {
   ChevronDown,
   Users,
   Plane,
+  Bot,
+  Search,
+  FileCheck,
 } from "lucide-react";
 
 const navigationMenus = [
@@ -49,6 +52,13 @@ const navigationMenus = [
       { name: "Documents", href: "/prepare/documents", icon: FileText },
       { name: "Trainings", href: "/prepare/trainings", icon: Users },
       { name: "Visa", href: "/prepare/visa", icon: Plane },
+    ],
+  },
+  {
+    name: "AI Assistant",
+    items: [
+      { name: "Suggest Universities", href: "/ai/suggest-universities", icon: Search },
+      { name: "Improve CV", href: "/ai/improve-cv", icon: FileCheck },
     ],
   },
   {
