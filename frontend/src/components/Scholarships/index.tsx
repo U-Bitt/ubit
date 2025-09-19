@@ -48,12 +48,12 @@ export const Scholarships = () => {
       
       try {
         const response = await scholarshipApi.getAll();
-        setScholarships(response);
+        setScholarships(response as unknown as Scholarship[]);
       } catch (err) {
         console.error("Error loading scholarships:", err);
         setError("Failed to load scholarships");
         // Fallback to mock data
-        setScholarships(mockScholarships);
+        setScholarships(mockScholarships as unknown as Scholarship[]);
       } finally {
         setLoading(false);
       }
@@ -147,19 +147,9 @@ export const Scholarships = () => {
           </div>
         )}
 
-        {/* Error State */}
-        {error && (
-          <div className="text-center py-12">
-            <h3 className="text-lg font-semibold mb-2 text-red-600">Error Loading Scholarships</h3>
-            <p className="text-gray-600 mb-4">{error}</p>
-            <Button onClick={() => window.location.reload()}>
-              Try Again
-            </Button>
-          </div>
-        )}
 
         {/* Results Counter */}
-        {!loading && !error && (
+        {!loading && (
           <div className="mb-6">
             <p className="text-sm text-muted-foreground">
               Showing {filteredScholarships.length} of {scholarships.length} scholarships
@@ -168,7 +158,7 @@ export const Scholarships = () => {
         )}
 
         {/* Scholarships Grid */}
-        {!loading && !error && filteredScholarships.length === 0 ? (
+        {!loading && filteredScholarships.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
               <Search className="h-8 w-8 text-muted-foreground" />
@@ -181,8 +171,6 @@ export const Scholarships = () => {
               variant="outline" 
               onClick={() => {
                 setSearchQuery("");
-                setSelectedField("All");
-                setSelectedLevel("All");
                 setSelectedCountry("All");
               }}
             >
