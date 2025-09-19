@@ -1,7 +1,7 @@
 // API utility functions for the Ubit education platform
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+  process.env.NEXT_PUBLIC_API_URL || "https://u-bit-backend.vercel.app/api";
 
 export interface University {
   id: string;

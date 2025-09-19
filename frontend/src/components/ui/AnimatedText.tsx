@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 export function AnimatedText() {
   const [displayText, setDisplayText] = useState("");
@@ -8,7 +8,7 @@ export function AnimatedText() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
 
-  const words = ["U-BIT", "UNIVERSITY"];
+  const words = useMemo(() => ["U-BIT", "UNIVERSITY"], []);
   const typingSpeed = 100;
   const deletingSpeed = 50;
   const pauseTime = 2000;

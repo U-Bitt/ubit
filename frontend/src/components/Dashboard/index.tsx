@@ -4,6 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ProgressTracker } from "@/components/progress-tracker";
 import { MilestoneTracker } from "@/components/milestone-tracker";
+import Image from "next/image";
 import {
   GraduationCap,
   Calendar,
@@ -80,8 +81,9 @@ interface Exam {
 
 interface Section {
   name: string;
-  score: number;
+  score?: number;
   target: number;
+  progress: number;
   status: string;
 }
 
@@ -90,6 +92,7 @@ interface PracticeTest {
   score: number;
   date: string;
   status: string;
+  improvement?: string;
 }
 
 interface StudyTopic {
@@ -392,21 +395,21 @@ export const Dashboard = () => {
       location: "Downtown Test Center, Ulaanbaatar",
       duration: "3 hours 45 minutes",
       sections: [
-        { name: "Reading", score: 370, target: 380, progress: 95 },
-        { name: "Writing & Language", score: 360, target: 370, progress: 90 },
-        { name: "Math", score: 750, target: 750, progress: 100 }
+        { name: "Reading", score: 370, target: 380, progress: 95, status: "completed" },
+        { name: "Writing & Language", score: 360, target: 370, progress: 90, status: "completed" },
+        { name: "Math", score: 750, target: 750, progress: 100, status: "completed" }
       ],
       practiceTests: [
-        { date: "Nov 15, 2024", score: 1420, improvement: "+20" },
-        { date: "Nov 1, 2024", score: 1400, improvement: "+15" },
-        { date: "Oct 15, 2024", score: 1385, improvement: "Baseline" }
+        { name: "Practice Test 1", date: "Nov 15, 2024", score: 1420, status: "completed", improvement: "+20" },
+        { name: "Practice Test 2", date: "Nov 1, 2024", score: 1400, status: "completed", improvement: "+15" },
+        { name: "Practice Test 3", date: "Oct 15, 2024", score: 1385, status: "completed", improvement: "Baseline" }
       ],
       studyPlan: [
-        { topic: "Reading Comprehension", completed: true, priority: "high" },
-        { topic: "Grammar Rules", completed: true, priority: "high" },
-        { topic: "Algebra & Functions", completed: true, priority: "medium" },
-        { topic: "Advanced Math", completed: false, priority: "high" },
-        { topic: "Data Analysis", completed: false, priority: "medium" }
+        { topic: "Reading Comprehension", progress: 100, priority: "high", status: "completed" },
+        { topic: "Grammar Rules", progress: 100, priority: "high", status: "completed" },
+        { topic: "Algebra & Functions", progress: 100, priority: "medium", status: "completed" },
+        { topic: "Advanced Math", progress: 60, priority: "high", status: "in-progress" },
+        { topic: "Data Analysis", progress: 30, priority: "medium", status: "in-progress" }
       ],
       resources: [
         { name: "Khan Academy SAT Prep", type: "Practice Tests", status: "active", url: "https://www.khanacademy.org/test-prep/sat" },
@@ -421,28 +424,28 @@ export const Dashboard = () => {
       date: "Jan 20, 2025",
       daysLeft: 39,
       status: "preparing",
-      score: null,
+      score: undefined,
       target: "7.5+",
       progress: 60,
       registrationId: "IELTS-2025-01-20-67890",
       location: "British Council, Ulaanbaatar",
       duration: "2 hours 45 minutes",
       sections: [
-        { name: "Listening", score: null, target: 7.5, progress: 70 },
-        { name: "Reading", score: null, target: 7.5, progress: 65 },
-        { name: "Writing", score: null, target: 7.0, progress: 55 },
-        { name: "Speaking", score: null, target: 7.5, progress: 60 }
+        { name: "Listening", score: undefined, target: 7.5, progress: 70, status: "in-progress" },
+        { name: "Reading", score: undefined, target: 7.5, progress: 65, status: "in-progress" },
+        { name: "Writing", score: undefined, target: 7.0, progress: 55, status: "in-progress" },
+        { name: "Speaking", score: undefined, target: 7.5, progress: 60, status: "in-progress" }
       ],
       practiceTests: [
-        { date: "Dec 1, 2024", score: "6.5", improvement: "+0.5" },
-        { date: "Nov 15, 2024", score: "6.0", improvement: "Baseline" }
+        { name: "IELTS Practice Test 1", date: "Dec 1, 2024", score: 6.5, status: "completed", improvement: "+0.5" },
+        { name: "IELTS Practice Test 2", date: "Nov 15, 2024", score: 6.0, status: "completed", improvement: "Baseline" }
       ],
       studyPlan: [
-        { topic: "Academic Vocabulary", completed: true, priority: "high" },
-        { topic: "Listening Strategies", completed: true, priority: "high" },
-        { topic: "Reading Techniques", completed: false, priority: "high" },
-        { topic: "Essay Writing", completed: false, priority: "medium" },
-        { topic: "Speaking Fluency", completed: false, priority: "medium" }
+        { topic: "Academic Vocabulary", progress: 100, priority: "high", status: "completed" },
+        { topic: "Listening Strategies", progress: 100, priority: "high", status: "completed" },
+        { topic: "Reading Techniques", progress: 70, priority: "high", status: "in-progress" },
+        { topic: "Essay Writing", progress: 40, priority: "medium", status: "in-progress" },
+        { topic: "Speaking Fluency", progress: 30, priority: "medium", status: "in-progress" }
       ],
       resources: [
         { name: "IELTS Official Practice", type: "Practice Tests", status: "active", url: "https://www.ielts.org/for-test-takers/preparation" },
@@ -457,27 +460,27 @@ export const Dashboard = () => {
       date: "Feb 10, 2025",
       daysLeft: 60,
       status: "planning",
-      score: null,
+      score: undefined,
       target: "100+",
       progress: 25,
-      registrationId: null,
+      registrationId: undefined,
       location: "ETS Test Center, Ulaanbaatar",
       duration: "3 hours 30 minutes",
       sections: [
-        { name: "Reading", score: null, target: 25, progress: 20 },
-        { name: "Listening", score: null, target: 25, progress: 25 },
-        { name: "Speaking", score: null, target: 25, progress: 30 },
-        { name: "Writing", score: null, target: 25, progress: 25 }
+        { name: "Reading", score: undefined, target: 25, progress: 20, status: "in-progress" },
+        { name: "Listening", score: undefined, target: 25, progress: 25, status: "in-progress" },
+        { name: "Speaking", score: undefined, target: 25, progress: 30, status: "in-progress" },
+        { name: "Writing", score: undefined, target: 25, progress: 25, status: "in-progress" }
       ],
       practiceTests: [
-        { date: "Dec 5, 2024", score: "85", improvement: "Baseline" }
+        { name: "TOEFL Practice Test 1", date: "Dec 5, 2024", score: 85, status: "completed", improvement: "Baseline" }
       ],
       studyPlan: [
-        { topic: "TOEFL Format Overview", completed: true, priority: "high" },
-        { topic: "Academic Reading Skills", completed: false, priority: "high" },
-        { topic: "Listening Comprehension", completed: false, priority: "high" },
-        { topic: "Speaking Tasks", completed: false, priority: "medium" },
-        { topic: "Integrated Writing", completed: false, priority: "medium" }
+        { topic: "TOEFL Format Overview", progress: 100, priority: "high", status: "completed" },
+        { topic: "Academic Reading Skills", progress: 20, priority: "high", status: "in-progress" },
+        { topic: "Listening Comprehension", progress: 25, priority: "high", status: "in-progress" },
+        { topic: "Speaking Tasks", progress: 10, priority: "medium", status: "in-progress" },
+        { topic: "Integrated Writing", progress: 5, priority: "medium", status: "in-progress" }
       ],
       resources: [
         { name: "ETS Official TOEFL Guide", type: "Study Material", status: "planned", url: "https://www.ets.org/toefl/test-takers/ibt/prepare" },
@@ -884,7 +887,7 @@ export const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {savedUniversities.map((uni, _) => (
+                {savedUniversities.map((uni) => (
                   <div
                     key={uni.id}
                     className="p-3 rounded-lg border hover:shadow-sm transition-shadow"
@@ -1049,9 +1052,11 @@ export const Dashboard = () => {
             <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <img 
+                  <Image 
                     src={selectedApplication.image} 
                     alt={selectedApplication.university}
+                    width={64}
+                    height={64}
                     className="w-16 h-16 rounded-lg object-cover"
                   />
                   <div>
@@ -1459,11 +1464,11 @@ export const Dashboard = () => {
                     {selectedExam.studyPlan.map((topic: StudyTopic, index: number) => (
                       <div key={index} className="flex items-center gap-3 p-3 rounded-lg border">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                          topic.completed 
+                          topic.status === "completed"
                             ? "bg-green-500 text-white" 
                             : "bg-gray-200 text-gray-500"
                         }`}>
-                          {topic.completed ? (
+                          {topic.status === "completed" ? (
                             <CheckCircle className="h-4 w-4" />
                           ) : (
                             <span className="text-xs font-bold">{index + 1}</span>
@@ -1471,7 +1476,7 @@ export const Dashboard = () => {
                         </div>
                         <div className="flex-1">
                           <span className={`font-medium text-sm ${
-                            topic.completed ? "text-foreground" : "text-muted-foreground"
+                            topic.status === "completed" ? "text-foreground" : "text-muted-foreground"
                           }`}>
                             {topic.topic}
                           </span>

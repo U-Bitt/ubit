@@ -34,6 +34,11 @@ interface Scholarship {
   eligibility: string;
   benefits: string[];
   image: string;
+  field?: string;
+  level?: string;
+  longDescription?: string;
+  applications?: number;
+  spots?: number;
 }
 
 interface ScholarshipDetailsProps {
@@ -53,7 +58,7 @@ export const ScholarshipDetails = ({ scholarshipId }: ScholarshipDetailsProps) =
         setLoading(true);
         setError(null);
         const response = await scholarshipApi.getById(scholarshipId);
-        setScholarship(response);
+        setScholarship(response as unknown as Scholarship);
       } catch (err) {
         console.error("Error fetching scholarship:", err);
         setError("Failed to load scholarship details");
