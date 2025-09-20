@@ -22,7 +22,7 @@ interface NotificationCubeProps {
 }
 
 export const NotificationCube = ({ isOpen, onClose, onOpenSettings }: NotificationCubeProps) => {
-  const [notifications] = useState([
+  const [notifications, setNotifications] = useState([
     {
       id: 1,
       type: "university",
@@ -87,6 +87,28 @@ export const NotificationCube = ({ isOpen, onClose, onOpenSettings }: Notificati
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
+  };
+
+  const markAsRead = (id: number) => {
+    setNotifications(prev => 
+      prev.map(notification => 
+        notification.id === id 
+          ? { ...notification, read: true }
+          : notification
+      )
+    );
+  };
+
+  const deleteNotification = (id: number) => {
+    setNotifications(prev => 
+      prev.filter(notification => notification.id !== id)
+    );
+  };
+
+  const markAllAsRead = () => {
+    setNotifications(prev => 
+      prev.map(notification => ({ ...notification, read: true }))
+    );
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -195,6 +217,7 @@ export const NotificationCube = ({ isOpen, onClose, onOpenSettings }: Notificati
                             <Button
                               variant="ghost"
                               size="sm"
+                              onClick={() => markAsRead(notification.id)}
                               className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
                             >
                               <Check className="h-4 w-4" />
@@ -203,6 +226,7 @@ export const NotificationCube = ({ isOpen, onClose, onOpenSettings }: Notificati
                           <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => deleteNotification(notification.id)}
                             className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50"
                           >
                             <X className="h-4 w-4" />
@@ -223,18 +247,31 @@ export const NotificationCube = ({ isOpen, onClose, onOpenSettings }: Notificati
             <div className="text-sm text-gray-500">
               Total {notifications.length} notifications
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="px-4"
-              onClick={() => {
-                onClose();
-                onOpenSettings();
-              }}
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </Button>
+            <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="px-3"
+                  onClick={markAllAsRead}
+                >
+                  <Check className="h-4 w-4 mr-2" />
+                  Mark All Read
+                </Button>
+              )}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="px-4"
+                onClick={() => {
+                  onClose();
+                  onOpenSettings();
+                }}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </Button>
+            </div>
           </div>
         </div>
       </div>
