@@ -12,9 +12,9 @@ interface ExamCardProps {
     nextDate: string;
     preparation: string;
     difficulty: string;
+    category?: string;
     website?: string;
     registrationUrl?: string;
-    seatSelectionUrl?: string;
   };
   onRegister?: (id: string) => void;
   onViewDetails?: (id: string) => void;
@@ -45,6 +45,11 @@ export default function ExamCard({
           <div>
             <CardTitle className="text-xl">{exam.name}</CardTitle>
             <p className="text-sm text-muted-foreground">{exam.fullName}</p>
+            {exam.category && (
+              <Badge variant="outline" className="mt-1 text-xs">
+                {exam.category}
+              </Badge>
+            )}
           </div>
           <Badge variant={getDifficultyColor(exam.difficulty)}>
             {exam.difficulty}
