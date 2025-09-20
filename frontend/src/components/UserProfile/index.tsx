@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { GraduationCap, Award, Edit, Save, Camera, Search, FileCheck, X } from "lucide-react";
 import { useRouter } from "next/router";
+import { SuggestUniversitiesModal } from "../SuggestUniversitiesModal";
+import { ImproveCVModal } from "../ImproveCVModal";
 
 export const UserProfile = () => {
   const router = useRouter();
@@ -55,6 +57,10 @@ export const UserProfile = () => {
   // State for profile picture
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
+
+  // State for AI modals
+  const [isSuggestUniversitiesOpen, setIsSuggestUniversitiesOpen] = useState(false);
+  const [isImproveCVOpen, setIsImproveCVOpen] = useState(false);
 
   // Load data from localStorage on component mount
   useEffect(() => {
@@ -301,7 +307,7 @@ export const UserProfile = () => {
                     <Button 
                       variant="outline" 
                       className="w-full justify-start"
-                      onClick={() => router.push('/ai/suggest-universities')}
+                      onClick={() => setIsSuggestUniversitiesOpen(true)}
                     >
                       <Search className="h-4 w-4 mr-2" />
                       Suggest Universities
@@ -309,7 +315,7 @@ export const UserProfile = () => {
                     <Button 
                       variant="outline" 
                       className="w-full justify-start"
-                      onClick={() => router.push('/ai/improve-cv')}
+                      onClick={() => setIsImproveCVOpen(true)}
                     >
                       <FileCheck className="h-4 w-4 mr-2" />
                       Improve CV
@@ -536,6 +542,29 @@ export const UserProfile = () => {
             )}
           </div>
         </div>
+
+        {/* AI Modals */}
+        <SuggestUniversitiesModal
+          isOpen={isSuggestUniversitiesOpen}
+          onClose={() => setIsSuggestUniversitiesOpen(false)}
+          userProfile={{
+            personalInfo,
+            academicInfo,
+            testScores,
+            interests
+          }}
+        />
+
+        <ImproveCVModal
+          isOpen={isImproveCVOpen}
+          onClose={() => setIsImproveCVOpen(false)}
+          userProfile={{
+            personalInfo,
+            academicInfo,
+            testScores,
+            interests
+          }}
+        />
       </div>
     </div>
   );
