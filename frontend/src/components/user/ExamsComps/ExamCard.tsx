@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, BookOpen, Clock, Target } from "lucide-react";
+import { Calendar, BookOpen, Clock, Target, ExternalLink } from "lucide-react";
 
 interface ExamCardProps {
   exam: {
@@ -12,6 +12,9 @@ interface ExamCardProps {
     nextDate: string;
     preparation: string;
     difficulty: string;
+    website?: string;
+    registrationUrl?: string;
+    seatSelectionUrl?: string;
   };
   onRegister?: (id: string) => void;
   onViewDetails?: (id: string) => void;
@@ -77,24 +80,43 @@ export default function ExamCard({
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={() => onViewDetails?.(exam.id)}
-          >
-            <BookOpen className="h-4 w-4 mr-2" />
-            Study Plan
-          </Button>
+        <div className="space-y-2">
           <Button
             size="sm"
-            className="flex-1 bg-primary hover:bg-primary/90"
-            onClick={() => onRegister?.(exam.id)}
+            className="w-full bg-primary hover:bg-primary/90"
+            onClick={() => {
+              if (exam.registrationUrl) {
+                window.open(exam.registrationUrl, '_blank');
+              } else {
+                onRegister?.(exam.id);
+              }
+            }}
           >
             <Target className="h-4 w-4 mr-2" />
-            Register
+            Register for {exam.name}
           </Button>
+          <div className="flex gap-2">
+            {exam.website && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => window.open(exam.website, '_blank')}
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Official Website
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => onViewDetails?.(exam.id)}
+            >
+              <BookOpen className="h-4 w-4 mr-2" />
+              Study Plan
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

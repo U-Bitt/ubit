@@ -11,6 +11,7 @@ import {
   CheckCircle,
   Download,
   Play,
+  ExternalLink,
 } from "lucide-react";
 
 export const Exams = () => {
@@ -22,6 +23,9 @@ export const Exams = () => {
       nextDate: "Dec 7, 2024",
       preparation: "3-6 months",
       difficulty: "High",
+      website: "https://satsuite.collegeboard.org/sat",
+      registrationUrl: "https://satsuite.collegeboard.org/sat/registration",
+      seatSelectionUrl: "https://satsuite.collegeboard.org/sat/registration/test-center-search",
     },
     {
       name: "TOEFL",
@@ -30,6 +34,9 @@ export const Exams = () => {
       nextDate: "Dec 14, 2024",
       preparation: "2-4 months",
       difficulty: "Medium",
+      website: "https://www.ets.org/toefl",
+      registrationUrl: "https://www.ets.org/toefl/test-takers/ibt/register",
+      seatSelectionUrl: "https://www.ets.org/toefl/test-takers/ibt/register/centers-dates",
     },
     {
       name: "IELTS",
@@ -38,6 +45,9 @@ export const Exams = () => {
       nextDate: "Dec 21, 2024",
       preparation: "2-4 months",
       difficulty: "Medium",
+      website: "https://www.ielts.org",
+      registrationUrl: "https://www.ielts.org/book-a-test",
+      seatSelectionUrl: "https://www.ielts.org/book-a-test/find-a-test-location",
     },
     {
       name: "GRE",
@@ -46,6 +56,9 @@ export const Exams = () => {
       nextDate: "Jan 4, 2025",
       preparation: "4-6 months",
       difficulty: "High",
+      website: "https://www.ets.org/gre",
+      registrationUrl: "https://www.ets.org/gre/test-takers/general-test/register",
+      seatSelectionUrl: "https://www.ets.org/gre/test-takers/general-test/register/centers-dates",
     },
   ];
 
@@ -57,6 +70,8 @@ export const Exams = () => {
       targetScore: "1500",
       currentPrep: 75,
       lastScore: null,
+      website: "https://satsuite.collegeboard.org/sat",
+      seatSelectionUrl: "https://satsuite.collegeboard.org/sat/registration/test-center-search",
     },
     {
       name: "TOEFL",
@@ -65,6 +80,8 @@ export const Exams = () => {
       targetScore: "110",
       currentPrep: 100,
       lastScore: "108",
+      website: "https://www.ets.org/toefl",
+      seatSelectionUrl: "https://www.ets.org/toefl/test-takers/ibt/register/centers-dates",
     },
   ];
 
@@ -184,9 +201,24 @@ export const Exams = () => {
                       </div>
                     </div>
 
-                    <Button className="w-full bg-primary hover:bg-primary/90">
-                      Register for {exam.name}
-                    </Button>
+                    <div className="space-y-2">
+                      <Button 
+                        className="w-full bg-primary hover:bg-primary/90"
+                        onClick={() => window.open(exam.registrationUrl, '_blank')}
+                      >
+                        <Target className="h-4 w-4 mr-2" />
+                        Register for {exam.name}
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full"
+                        onClick={() => window.open(exam.website, '_blank')}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Official Website
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -244,33 +276,46 @@ export const Exams = () => {
                       </div>
                     </div>
 
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="bg-transparent"
-                      >
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Reschedule
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="bg-transparent"
-                      >
-                        <BookOpen className="h-4 w-4 mr-2" />
-                        Study Plan
-                      </Button>
-                      {exam.lastScore && (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="bg-transparent"
+                          className="bg-transparent flex-1"
+                          onClick={() => window.open(exam.website, '_blank')}
                         >
-                          <Download className="h-4 w-4 mr-2" />
-                          Score Report
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Official Website
                         </Button>
-                      )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-transparent flex-1"
+                        >
+                          <Calendar className="h-4 w-4 mr-2" />
+                          Reschedule
+                        </Button>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-transparent flex-1"
+                        >
+                          <BookOpen className="h-4 w-4 mr-2" />
+                          Study Plan
+                        </Button>
+                        {exam.lastScore && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-transparent flex-1"
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Score Report
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
