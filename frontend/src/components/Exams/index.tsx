@@ -627,60 +627,316 @@ export const Exams = () => {
           </TabsContent>
 
           <TabsContent value="practice" className="space-y-6">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BookOpen className="h-5 w-5" />
-                    SAT Practice Test
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Full-length practice tests for all major exams
-                  </p>
-                  <Button className="w-full bg-primary hover:bg-primary/90">
-                    <Play className="h-4 w-4 mr-2" />
-                    Start Practice Test
-                  </Button>
-                </CardContent>
-              </Card>
+            {/* SAT Practice Tests */}
+            <div>
+              <h3 className="text-xl font-semibold mb-4 text-primary">SAT Practice Tests</h3>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BookOpen className="h-5 w-5" />
+                      SAT Full Practice Test
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Complete 3-hour practice test
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Reading, Writing, Math sections
+                    </p>
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90"
+                      onClick={() => window.open('https://satsuite.collegeboard.org/sat/practice-preparation/practice-tests', '_blank')}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Start Full Test
+                    </Button>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="h-5 w-5" />
-                    TOEFL Practice
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Practice all four sections of the TOEFL exam
-                  </p>
-                  <Button className="w-full bg-primary hover:bg-primary/90">
-                    <Play className="h-4 w-4 mr-2" />
-                    Start Practice
-                  </Button>
-                </CardContent>
-              </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5" />
+                      SAT Math Practice
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Math section focused practice
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      80 minutes, 58 questions
+                    </p>
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90"
+                      onClick={() => window.open('https://satsuite.collegeboard.org/sat/practice-preparation/practice-tests', '_blank')}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Start Math Test
+                    </Button>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    Progress Analytics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Track your improvement over time
-                  </p>
-                  <Button className="w-full bg-primary hover:bg-primary/90">
-                    <TrendingUp className="h-4 w-4 mr-2" />
-                    View Analytics
-                  </Button>
-                </CardContent>
-              </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BookOpen className="h-5 w-5" />
+                      SAT Reading Practice
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Reading comprehension practice
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      65 minutes, 52 questions
+                    </p>
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90"
+                      onClick={() => window.open('https://satsuite.collegeboard.org/sat/practice-preparation/practice-tests', '_blank')}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Start Reading Test
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* TOEFL Practice Tests */}
+            <div>
+              <h3 className="text-xl font-semibold mb-4 text-primary">TOEFL Practice Tests</h3>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5" />
+                      TOEFL Full Practice Test
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Complete 4-hour practice test
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Reading, Listening, Speaking, Writing
+                    </p>
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90"
+                      onClick={() => window.open('https://www.ets.org/toefl/test-takers/ibt/prepare/practice-tests', '_blank')}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Start Full Test
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BookOpen className="h-5 w-5" />
+                      TOEFL Speaking Practice
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Speaking section practice
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      17 minutes, 4 tasks
+                    </p>
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90"
+                      onClick={() => window.open('https://www.ets.org/toefl/test-takers/ibt/prepare/practice-tests', '_blank')}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Start Speaking
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      TOEFL Writing Practice
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Writing section practice
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      50 minutes, 2 tasks
+                    </p>
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90"
+                      onClick={() => window.open('https://www.ets.org/toefl/test-takers/ibt/prepare/practice-tests', '_blank')}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Start Writing
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* IELTS Practice Tests */}
+            <div>
+              <h3 className="text-xl font-semibold mb-4 text-primary">IELTS Practice Tests</h3>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BookOpen className="h-5 w-5" />
+                      IELTS Academic Practice
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Academic module practice test
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Reading, Writing, Listening, Speaking
+                    </p>
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90"
+                      onClick={() => window.open('https://www.ielts.org/for-test-takers/sample-test-questions', '_blank')}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Start Academic Test
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5" />
+                      IELTS General Practice
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      General training practice test
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Reading, Writing, Listening, Speaking
+                    </p>
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90"
+                      onClick={() => window.open('https://www.ielts.org/for-test-takers/sample-test-questions', '_blank')}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Start General Test
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      IELTS Progress Tracker
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Track your improvement over time
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Monitor scores and weak areas
+                    </p>
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90"
+                      onClick={() => window.open('https://www.ielts.org/for-test-takers/sample-test-questions', '_blank')}
+                    >
+                      <TrendingUp className="h-4 w-4 mr-2" />
+                      View Progress
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* GRE Practice Tests */}
+            <div>
+              <h3 className="text-xl font-semibold mb-4 text-primary">GRE Practice Tests</h3>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BookOpen className="h-5 w-5" />
+                      GRE Full Practice Test
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Complete GRE practice test
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Verbal, Quantitative, Analytical Writing
+                    </p>
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90"
+                      onClick={() => window.open('https://www.ets.org/gre/test-takers/general-test/prepare/practice-tests', '_blank')}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Start Full Test
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5" />
+                      GRE Verbal Practice
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Verbal reasoning practice
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      60 minutes, 2 sections
+                    </p>
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90"
+                      onClick={() => window.open('https://www.ets.org/gre/test-takers/general-test/prepare/practice-tests', '_blank')}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Start Verbal Test
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      GRE Math Practice
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Quantitative reasoning practice
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      70 minutes, 2 sections
+                    </p>
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90"
+                      onClick={() => window.open('https://www.ets.org/gre/test-takers/general-test/prepare/practice-tests', '_blank')}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Start Math Test
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
