@@ -52,6 +52,10 @@ export const UserProfile = () => {
   // State for editing
   const [isEditing, setIsEditing] = useState(false);
 
+  // State for profile picture
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
+
   // Load data from localStorage on component mount
   useEffect(() => {
     try {
@@ -59,6 +63,7 @@ export const UserProfile = () => {
       const savedAcademicInfo = localStorage.getItem('userAcademicInfo');
       const savedTestScores = localStorage.getItem('userTestScores');
       const savedInterests = localStorage.getItem('userInterests');
+      const savedProfilePicture = localStorage.getItem('userProfilePicture');
 
       if (savedPersonalInfo) {
         setPersonalInfo(JSON.parse(savedPersonalInfo));
@@ -72,6 +77,9 @@ export const UserProfile = () => {
       if (savedInterests) {
         setInterests(JSON.parse(savedInterests));
       }
+      if (savedProfilePicture) {
+        setProfilePicture(savedProfilePicture);
+      }
     } catch (error) {
       console.error('Error loading user data:', error);
     }
@@ -84,10 +92,13 @@ export const UserProfile = () => {
       localStorage.setItem('userAcademicInfo', JSON.stringify(academicInfo));
       localStorage.setItem('userTestScores', JSON.stringify(testScores));
       localStorage.setItem('userInterests', JSON.stringify(interests));
+      if (profilePicture) {
+        localStorage.setItem('userProfilePicture', profilePicture);
+      }
     } catch (error) {
       console.error('Error saving user data:', error);
     }
-  }, [personalInfo, academicInfo, testScores, interests]);
+  }, [personalInfo, academicInfo, testScores, interests, profilePicture]);
 
   // Handler functions
   const handlePersonalInfoChange = (field: string, value: string) => {
@@ -137,6 +148,39 @@ export const UserProfile = () => {
     setInterests(prev => prev.filter(interest => interest !== interestToRemove));
   };
 
+  const handleProfilePictureChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB');
+        return;
+      }
+      
+      setProfilePictureFile(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setProfilePicture(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeProfilePicture = () => {
+    setProfilePicture(null);
+    setProfilePictureFile(null);
+    localStorage.removeItem('userProfilePicture');
+  };
+
   const handleSave = () => {
     try {
       // Save all data to localStorage
@@ -144,6 +188,9 @@ export const UserProfile = () => {
       localStorage.setItem('userAcademicInfo', JSON.stringify(academicInfo));
       localStorage.setItem('userTestScores', JSON.stringify(testScores));
       localStorage.setItem('userInterests', JSON.stringify(interests));
+      if (profilePicture) {
+        localStorage.setItem('userProfilePicture', profilePicture);
+      }
       
       setIsEditing(false);
       alert("Profile updated successfully!");
@@ -172,15 +219,45 @@ export const UserProfile = () => {
             <Card>
               <CardContent className="p-6 text-center">
                 <div className="relative inline-block mb-4">
-                  <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center text-white font-bold text-2xl">
-                    AS
-                  </div>
-                  <Button
-                    size="sm"
-                    className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0"
-                  >
-                    <Camera className="h-4 w-4" />
-                  </Button>
+                  {profilePicture ? (
+                    <img
+                      src={profilePicture}
+                      alt="Profile"
+                      className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center text-white font-bold text-2xl">
+                      {personalInfo.firstName.charAt(0)}{personalInfo.lastName.charAt(0)}
+                    </div>
+                  )}
+                  {isEditing && (
+                    <div className="absolute -bottom-2 -right-2 flex gap-1">
+                      <Button
+                        size="sm"
+                        className="rounded-full w-8 h-8 p-0"
+                        onClick={() => document.getElementById('profilePictureInput')?.click()}
+                      >
+                        <Camera className="h-4 w-4" />
+                      </Button>
+                      {profilePicture && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="rounded-full w-8 h-8 p-0"
+                          onClick={removeProfilePicture}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                  <input
+                    id="profilePictureInput"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfilePictureChange}
+                    className="hidden"
+                  />
                 </div>
                 <h2 className="text-2xl font-bold mb-2">{personalInfo.firstName} {personalInfo.lastName}</h2>
                 <p className="text-muted-foreground mb-4">
