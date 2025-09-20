@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, BookOpen, Clock, Target, ExternalLink } from "lucide-react";
+import { Calendar, BookOpen, Clock, Target } from "lucide-react";
 
 interface ExamCardProps {
   exam: {
@@ -100,28 +100,15 @@ export default function ExamCard({
             <Target className="h-4 w-4 mr-2" />
             Register for {exam.name}
           </Button>
-          <div className="flex gap-2">
-            {exam.website && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1"
-                onClick={() => window.open(exam.website, '_blank')}
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Official Website
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1"
-              onClick={() => onViewDetails?.(exam.id)}
-            >
-              <BookOpen className="h-4 w-4 mr-2" />
-              Study Plan
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={() => onViewDetails?.(exam.id)}
+          >
+            <BookOpen className="h-4 w-4 mr-2" />
+            Study Plan
+          </Button>
         </div>
       </CardContent>
     </Card>
