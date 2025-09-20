@@ -11,7 +11,6 @@ import {
   CheckCircle,
   Download,
   Play,
-  ExternalLink,
 } from "lucide-react";
 
 export const Exams = () => {
@@ -330,24 +329,13 @@ export const Exams = () => {
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Button 
-                          className="w-full bg-primary hover:bg-primary/90"
-                          onClick={() => window.open(exam.registrationUrl, '_blank')}
-                        >
-                          <Target className="h-4 w-4 mr-2" />
-                          Register for {exam.name}
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="w-full"
-                          onClick={() => window.open(exam.website, '_blank')}
-                        >
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          Official Website
-                        </Button>
-                      </div>
+                      <Button 
+                        className="w-full bg-primary hover:bg-primary/90"
+                        onClick={() => window.open(exam.registrationUrl, '_blank')}
+                      >
+                        <Target className="h-4 w-4 mr-2" />
+                        Register for {exam.name}
+                      </Button>
                     </CardContent>
                   </Card>
                 ))}
@@ -415,24 +403,13 @@ export const Exams = () => {
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Button 
-                          className="w-full bg-primary hover:bg-primary/90"
-                          onClick={() => window.open(exam.registrationUrl, '_blank')}
-                        >
-                          <Target className="h-4 w-4 mr-2" />
-                          Register for {exam.name}
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="w-full"
-                          onClick={() => window.open(exam.website, '_blank')}
-                        >
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          Official Website
-                        </Button>
-                      </div>
+                      <Button 
+                        className="w-full bg-primary hover:bg-primary/90"
+                        onClick={() => window.open(exam.registrationUrl, '_blank')}
+                      >
+                        <Target className="h-4 w-4 mr-2" />
+                        Register for {exam.name}
+                      </Button>
                     </CardContent>
                   </Card>
                 ))}
@@ -500,24 +477,13 @@ export const Exams = () => {
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Button 
-                          className="w-full bg-primary hover:bg-primary/90"
-                          onClick={() => window.open(exam.registrationUrl, '_blank')}
-                        >
-                          <Target className="h-4 w-4 mr-2" />
-                          Register for {exam.name}
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="w-full"
-                          onClick={() => window.open(exam.website, '_blank')}
-                        >
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          Official Website
-                        </Button>
-                      </div>
+                      <Button 
+                        className="w-full bg-primary hover:bg-primary/90"
+                        onClick={() => window.open(exam.registrationUrl, '_blank')}
+                      >
+                        <Target className="h-4 w-4 mr-2" />
+                        Register for {exam.name}
+                      </Button>
                     </CardContent>
                   </Card>
                 ))}
@@ -576,46 +542,33 @@ export const Exams = () => {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="bg-transparent flex-1"
-                          onClick={() => window.open(exam.website, '_blank')}
-                        >
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          Official Website
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="bg-transparent flex-1"
-                        >
-                          <Calendar className="h-4 w-4 mr-2" />
-                          Reschedule
-                        </Button>
-                      </div>
-                      <div className="flex gap-2">
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-transparent flex-1"
+                      >
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Reschedule
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-transparent flex-1"
+                      >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        Study Plan
+                      </Button>
+                      {exam.lastScore && (
                         <Button
                           variant="outline"
                           size="sm"
                           className="bg-transparent flex-1"
                         >
-                          <BookOpen className="h-4 w-4 mr-2" />
-                          Study Plan
+                          <Download className="h-4 w-4 mr-2" />
+                          Score Report
                         </Button>
-                        {exam.lastScore && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="bg-transparent flex-1"
-                          >
-                            <Download className="h-4 w-4 mr-2" />
-                            Score Report
-                          </Button>
-                        )}
-                      </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
