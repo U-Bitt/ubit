@@ -16,6 +16,7 @@ import {
 
 export const Exams = () => {
   const exams = [
+    // Undergraduate Admissions
     {
       name: "SAT",
       fullName: "Scholastic Assessment Test",
@@ -23,10 +24,113 @@ export const Exams = () => {
       nextDate: "Dec 7, 2024",
       preparation: "3-6 months",
       difficulty: "High",
+      category: "Undergraduate",
       website: "https://satsuite.collegeboard.org/sat",
       registrationUrl: "https://satsuite.collegeboard.org/sat/registration",
-      seatSelectionUrl: "https://satsuite.collegeboard.org/sat/registration/test-center-search",
     },
+    {
+      name: "ACT",
+      fullName: "American College Testing",
+      sections: ["English", "Math", "Reading", "Science", "Writing"],
+      nextDate: "Jan 11, 2025",
+      preparation: "2-4 months",
+      difficulty: "High",
+      category: "Undergraduate",
+      website: "https://www.act.org",
+      registrationUrl: "https://www.act.org/register",
+    },
+    {
+      name: "AP Exams",
+      fullName: "Advanced Placement Exams",
+      sections: ["Various Subjects (38 subjects available)"],
+      nextDate: "May 2025",
+      preparation: "6-12 months",
+      difficulty: "High",
+      category: "Undergraduate",
+      website: "https://apstudents.collegeboard.org",
+      registrationUrl: "https://apstudents.collegeboard.org/register",
+    },
+    {
+      name: "IB Exams",
+      fullName: "International Baccalaureate Exams",
+      sections: ["Various Subjects (6 subject groups)"],
+      nextDate: "May 2025",
+      preparation: "2 years",
+      difficulty: "High",
+      category: "Undergraduate",
+      website: "https://www.ibo.org",
+      registrationUrl: "https://www.ibo.org/programmes/diploma-programme/assessment-and-exams",
+    },
+    {
+      name: "A-Levels",
+      fullName: "Advanced Level Qualifications",
+      sections: ["Various Subjects (50+ subjects available)"],
+      nextDate: "May 2025",
+      preparation: "2 years",
+      difficulty: "High",
+      category: "Undergraduate",
+      website: "https://www.cambridgeinternational.org",
+      registrationUrl: "https://www.cambridgeinternational.org/programmes-and-qualifications/cambridge-advanced/cambridge-international-as-and-a-levels",
+    },
+    
+    // Graduate Admissions
+    {
+      name: "GRE",
+      fullName: "Graduate Record Examinations",
+      sections: ["Verbal", "Quantitative", "Analytical Writing"],
+      nextDate: "Jan 4, 2025",
+      preparation: "4-6 months",
+      difficulty: "High",
+      category: "Graduate",
+      website: "https://www.ets.org/gre",
+      registrationUrl: "https://www.ets.org/gre/test-takers/general-test/register",
+    },
+    {
+      name: "GMAT",
+      fullName: "Graduate Management Admission Test",
+      sections: ["Verbal", "Quantitative", "Integrated Reasoning", "Analytical Writing"],
+      nextDate: "Jan 8, 2025",
+      preparation: "3-6 months",
+      difficulty: "High",
+      category: "Graduate",
+      website: "https://www.mba.com/exams/gmat",
+      registrationUrl: "https://www.mba.com/exams/gmat/register",
+    },
+    {
+      name: "GMAT Focus",
+      fullName: "GMAT Focus Edition",
+      sections: ["Quantitative Reasoning", "Verbal Reasoning", "Data Insights"],
+      nextDate: "Jan 22, 2025",
+      preparation: "2-4 months",
+      difficulty: "High",
+      category: "Graduate",
+      website: "https://www.mba.com/exams/gmat-focus",
+      registrationUrl: "https://www.mba.com/exams/gmat-focus/register",
+    },
+    {
+      name: "LSAT",
+      fullName: "Law School Admission Test",
+      sections: ["Logical Reasoning", "Analytical Reasoning", "Reading Comprehension", "Writing Sample"],
+      nextDate: "Jan 15, 2025",
+      preparation: "4-8 months",
+      difficulty: "High",
+      category: "Graduate",
+      website: "https://www.lsac.org/lsat",
+      registrationUrl: "https://www.lsac.org/lsat/register",
+    },
+    {
+      name: "MCAT",
+      fullName: "Medical College Admission Test",
+      sections: ["Biological Sciences", "Physical Sciences", "Verbal Reasoning", "Writing Sample"],
+      nextDate: "Jan 18, 2025",
+      preparation: "6-12 months",
+      difficulty: "High",
+      category: "Graduate",
+      website: "https://www.aamc.org/mcat",
+      registrationUrl: "https://www.aamc.org/mcat/register",
+    },
+    
+    // English Language Tests
     {
       name: "TOEFL",
       fullName: "Test of English as a Foreign Language",
@@ -34,9 +138,9 @@ export const Exams = () => {
       nextDate: "Dec 14, 2024",
       preparation: "2-4 months",
       difficulty: "Medium",
+      category: "English Language",
       website: "https://www.ets.org/toefl",
       registrationUrl: "https://www.ets.org/toefl/test-takers/ibt/register",
-      seatSelectionUrl: "https://www.ets.org/toefl/test-takers/ibt/register/centers-dates",
     },
     {
       name: "IELTS",
@@ -45,20 +149,42 @@ export const Exams = () => {
       nextDate: "Dec 21, 2024",
       preparation: "2-4 months",
       difficulty: "Medium",
+      category: "English Language",
       website: "https://www.ielts.org",
       registrationUrl: "https://www.ielts.org/book-a-test",
-      seatSelectionUrl: "https://www.ielts.org/book-a-test/find-a-test-location",
     },
     {
-      name: "GRE",
-      fullName: "Graduate Record Examinations",
-      sections: ["Verbal", "Quantitative", "Analytical Writing"],
-      nextDate: "Jan 4, 2025",
-      preparation: "4-6 months",
-      difficulty: "High",
-      website: "https://www.ets.org/gre",
-      registrationUrl: "https://www.ets.org/gre/test-takers/general-test/register",
-      seatSelectionUrl: "https://www.ets.org/gre/test-takers/general-test/register/centers-dates",
+      name: "Duolingo English Test",
+      fullName: "Duolingo English Test",
+      sections: ["Reading", "Writing", "Speaking", "Listening"],
+      nextDate: "Available Anytime",
+      preparation: "1-2 months",
+      difficulty: "Medium",
+      category: "English Language",
+      website: "https://englishtest.duolingo.com",
+      registrationUrl: "https://englishtest.duolingo.com/register",
+    },
+    {
+      name: "PTE Academic",
+      fullName: "Pearson Test of English Academic",
+      sections: ["Speaking & Writing", "Reading", "Listening"],
+      nextDate: "Jan 25, 2025",
+      preparation: "1-3 months",
+      difficulty: "Medium",
+      category: "English Language",
+      website: "https://pearsonpte.com",
+      registrationUrl: "https://pearsonpte.com/book-now",
+    },
+    {
+      name: "Cambridge English",
+      fullName: "Cambridge English Qualifications",
+      sections: ["Reading", "Writing", "Listening", "Speaking"],
+      nextDate: "Feb 1, 2025",
+      preparation: "2-6 months",
+      difficulty: "Medium",
+      category: "English Language",
+      website: "https://www.cambridgeenglish.org",
+      registrationUrl: "https://www.cambridgeenglish.org/exams-and-tests",
     },
   ];
 
@@ -143,85 +269,259 @@ export const Exams = () => {
           </TabsList>
 
           <TabsContent value="available" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              {exams.map((exam, index) => (
-                <Card
-                  key={index}
-                  className="hover:shadow-lg transition-all duration-300"
-                >
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
+            {/* Undergraduate Admissions */}
+            <div>
+              <h3 className="text-xl font-semibold mb-4 text-primary">Undergraduate Admissions</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                {exams.filter(exam => exam.category === "Undergraduate").map((exam, index) => (
+                  <Card
+                    key={index}
+                    className="hover:shadow-lg transition-all duration-300"
+                  >
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-xl">{exam.name}</CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            {exam.fullName}
+                          </p>
+                        </div>
+                        <Badge
+                          variant={
+                            exam.difficulty === "High"
+                              ? "destructive"
+                              : exam.difficulty === "Medium"
+                                ? "default"
+                                : "secondary"
+                          }
+                        >
+                          {exam.difficulty}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
                       <div>
-                        <CardTitle className="text-xl">{exam.name}</CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                          {exam.fullName}
-                        </p>
+                        <p className="text-sm font-medium mb-2">Sections:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {exam.sections.map((section, sectionIndex) => (
+                            <Badge
+                              key={sectionIndex}
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              {section}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                      <Badge
-                        variant={
-                          exam.difficulty === "High"
-                            ? "destructive"
-                            : exam.difficulty === "Medium"
-                              ? "default"
-                              : "secondary"
-                        }
-                      >
-                        {exam.difficulty}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <p className="text-sm font-medium mb-2">Sections:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {exam.sections.map((section, sectionIndex) => (
-                          <Badge
-                            key={sectionIndex}
-                            variant="outline"
-                            className="text-xs"
-                          >
-                            {section}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
 
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">
-                          Next Test Date
-                        </span>
-                        <span className="font-medium">{exam.nextDate}</span>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Next Test Date
+                          </span>
+                          <span className="font-medium">{exam.nextDate}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Prep Time Needed
+                          </span>
+                          <span className="font-medium">{exam.preparation}</span>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">
-                          Prep Time Needed
-                        </span>
-                        <span className="font-medium">{exam.preparation}</span>
-                      </div>
-                    </div>
 
-                    <div className="space-y-2">
-                      <Button 
-                        className="w-full bg-primary hover:bg-primary/90"
-                        onClick={() => window.open(exam.registrationUrl, '_blank')}
-                      >
-                        <Target className="h-4 w-4 mr-2" />
-                        Register for {exam.name}
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full"
-                        onClick={() => window.open(exam.website, '_blank')}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Official Website
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      <div className="space-y-2">
+                        <Button 
+                          className="w-full bg-primary hover:bg-primary/90"
+                          onClick={() => window.open(exam.registrationUrl, '_blank')}
+                        >
+                          <Target className="h-4 w-4 mr-2" />
+                          Register for {exam.name}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full"
+                          onClick={() => window.open(exam.website, '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Official Website
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Graduate Admissions */}
+            <div>
+              <h3 className="text-xl font-semibold mb-4 text-primary">Graduate Admissions</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                {exams.filter(exam => exam.category === "Graduate").map((exam, index) => (
+                  <Card
+                    key={index}
+                    className="hover:shadow-lg transition-all duration-300"
+                  >
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-xl">{exam.name}</CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            {exam.fullName}
+                          </p>
+                        </div>
+                        <Badge
+                          variant={
+                            exam.difficulty === "High"
+                              ? "destructive"
+                              : exam.difficulty === "Medium"
+                                ? "default"
+                                : "secondary"
+                          }
+                        >
+                          {exam.difficulty}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <p className="text-sm font-medium mb-2">Sections:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {exam.sections.map((section, sectionIndex) => (
+                            <Badge
+                              key={sectionIndex}
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              {section}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Next Test Date
+                          </span>
+                          <span className="font-medium">{exam.nextDate}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Prep Time Needed
+                          </span>
+                          <span className="font-medium">{exam.preparation}</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Button 
+                          className="w-full bg-primary hover:bg-primary/90"
+                          onClick={() => window.open(exam.registrationUrl, '_blank')}
+                        >
+                          <Target className="h-4 w-4 mr-2" />
+                          Register for {exam.name}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full"
+                          onClick={() => window.open(exam.website, '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Official Website
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* English Language Tests */}
+            <div>
+              <h3 className="text-xl font-semibold mb-4 text-primary">English Language Tests</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                {exams.filter(exam => exam.category === "English Language").map((exam, index) => (
+                  <Card
+                    key={index}
+                    className="hover:shadow-lg transition-all duration-300"
+                  >
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-xl">{exam.name}</CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            {exam.fullName}
+                          </p>
+                        </div>
+                        <Badge
+                          variant={
+                            exam.difficulty === "High"
+                              ? "destructive"
+                              : exam.difficulty === "Medium"
+                                ? "default"
+                                : "secondary"
+                          }
+                        >
+                          {exam.difficulty}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <p className="text-sm font-medium mb-2">Sections:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {exam.sections.map((section, sectionIndex) => (
+                            <Badge
+                              key={sectionIndex}
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              {section}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Next Test Date
+                          </span>
+                          <span className="font-medium">{exam.nextDate}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Prep Time Needed
+                          </span>
+                          <span className="font-medium">{exam.preparation}</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Button 
+                          className="w-full bg-primary hover:bg-primary/90"
+                          onClick={() => window.open(exam.registrationUrl, '_blank')}
+                        >
+                          <Target className="h-4 w-4 mr-2" />
+                          Register for {exam.name}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full"
+                          onClick={() => window.open(exam.website, '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Official Website
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           </TabsContent>
 

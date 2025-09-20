@@ -26,6 +26,8 @@ The exam page has been updated to include direct links to official exam websites
 - **External Site Access**: Easy access to official exam information
 - **Simplified Interface**: Clean, straightforward button layout
 - **Official Website Access**: Direct links to exam provider websites
+- **Categorized Display**: Exams organized by Undergraduate, Graduate, and English Language categories
+- **Comprehensive Coverage**: 15 international standardized exams included
 
 ## Technical Implementation
 
@@ -39,11 +41,28 @@ frontend/src/components/
 ```
 
 ### Exam Data:
-Each exam includes official website URLs:
+Exams are organized by categories with official website URLs:
+
+**Undergraduate Admissions:**
 - **SAT**: College Board official website
-- **TOEFL**: ETS official website  
-- **IELTS**: IELTS official website
-- **GRE**: ETS official website
+- **ACT**: ACT official website
+- **AP Exams**: College Board Advanced Placement
+- **IB Exams**: International Baccalaureate
+- **A-Levels**: Cambridge International
+
+**Graduate Admissions:**
+- **GRE**: ETS Graduate Record Examinations
+- **GMAT**: MBA.com Graduate Management Admission Test
+- **GMAT Focus**: MBA.com GMAT Focus Edition
+- **LSAT**: Law School Admission Council
+- **MCAT**: AAMC Medical College Admission Test
+
+**English Language Tests:**
+- **TOEFL**: ETS Test of English as a Foreign Language
+- **IELTS**: IELTS International English Language Testing System
+- **Duolingo English Test**: Duolingo English Test
+- **PTE Academic**: Pearson Test of English Academic
+- **Cambridge English**: Cambridge English Qualifications
 
 ## Usage
 
