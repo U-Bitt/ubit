@@ -16,6 +16,13 @@ export interface University {
   programs: string[];
   highlights: string[];
   deadline: string;
+  description?: string;
+  website?: string;
+  founded?: number;
+  type?: "public" | "private";
+  size?: "small" | "medium" | "large";
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Country {
@@ -29,6 +36,14 @@ export interface Country {
   workRights: string;
   avgTuition: string;
   livingCost: string;
+  currency: string;
+  language: string[];
+  climate: string;
+  isEnglishSpeaking?: boolean;
+  isLowCost?: boolean;
+  hasWorkRights?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Exam {
@@ -91,11 +106,18 @@ export const universityApi = {
 
 // Country API functions
 export const countryApi = {
-  getAll: (): Promise<Country[]> => apiCall<Country[]>("/countries"),
-  getById: (id: string): Promise<Country> =>
-    apiCall<Country>(`/countries/${id}`),
-  search: (query: string): Promise<Country[]> =>
-    apiCall<Country[]>(`/countries/search?q=${encodeURIComponent(query)}`),
+  getAll: async (): Promise<Country[]> => {
+    const response = await apiCall<{ success: boolean; data: Country[] }>("/countries");
+    return response.data;
+  },
+  getById: async (id: string): Promise<Country> => {
+    const response = await apiCall<{ success: boolean; data: Country }>(`/countries/${id}`);
+    return response.data;
+  },
+  search: async (query: string): Promise<Country[]> => {
+    const response = await apiCall<{ success: boolean; data: Country[] }>(`/countries/search?q=${encodeURIComponent(query)}`);
+    return response.data;
+  },
 };
 
 // Exam API functions

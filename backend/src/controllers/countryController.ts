@@ -1,120 +1,77 @@
 import { Request, Response, NextFunction } from "express";
 import { Country, ApiResponse, SearchQuery } from "../types";
+import CountryModel from "../models/Country";
 
-// Mock data for countries
-const countries: Country[] = [
-  {
-    id: "usa",
-    name: "United States",
-    flag: "🇺🇸",
-    popularCities: ["New York", "Los Angeles", "Boston", "San Francisco"],
-    rating: 4.5,
-    description:
-      "Home to world-renowned universities and diverse opportunities.",
-    visaType: "F-1 Student Visa",
-    workRights: "OPT/CPT available",
-    avgTuition: "$50,000/year",
-    livingCost: "$15,000-25,000/year",
-    currency: "USD",
-    language: ["English"],
-    climate: "Varied",
-  },
-  {
-    id: "uk",
-    name: "United Kingdom",
-    flag: "🇬🇧",
-    popularCities: ["London", "Oxford", "Cambridge", "Edinburgh"],
-    rating: 4.3,
-    description: "Rich academic tradition with prestigious universities.",
-    visaType: "Student Visa",
-    workRights: "Part-time work allowed",
-    avgTuition: "£25,000/year",
-    livingCost: "£12,000-18,000/year",
-    currency: "GBP",
-    language: ["English"],
-    climate: "Temperate",
-  },
-  {
-    id: "canada",
-    name: "Canada",
-    flag: "🇨🇦",
-    popularCities: ["Toronto", "Vancouver", "Montreal", "Ottawa"],
-    rating: 4.4,
-    description: "High-quality education with welcoming immigration policies.",
-    visaType: "Study Permit",
-    workRights: "Work during studies",
-    avgTuition: "CAD $30,000/year",
-    livingCost: "CAD $12,000-20,000/year",
-    currency: "CAD",
-    language: ["English", "French"],
-    climate: "Cold winters, mild summers",
-  },
-  {
-    id: "australia",
-    name: "Australia",
-    flag: "🇦🇺",
-    popularCities: ["Sydney", "Melbourne", "Brisbane", "Perth"],
-    rating: 4.2,
-    description:
-      "Beautiful country with excellent universities and quality of life.",
-    visaType: "Student Visa",
-    workRights: "Part-time work allowed",
-    avgTuition: "AUD $35,000/year",
-    livingCost: "AUD $15,000-25,000/year",
-    currency: "AUD",
-    language: ["English"],
-    climate: "Warm and sunny",
-  },
-];
-
+// Get all countries
 export const getAllCountries = async (
   req: Request<{}, ApiResponse<Country[]>, {}, SearchQuery>,
   res: Response<ApiResponse<Country[]>>,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { page = 1, limit = 10, sort = "rating", order = "desc" } = req.query;
+    const { page = 1, limit = 10, sort = "name", order = "asc" } = req.query;
 
-    // Apply sorting
-    const sortedCountries = [...countries].sort((a, b) => {
-      const aValue = a[sort as keyof Country];
-      const bValue = b[sort as keyof Country];
+    // Build sort object for MongoDB
+    const sortObj: any = {};
+    sortObj[sort] = order === "asc" ? 1 : -1;
 
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        return order === "asc"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      }
+    // Calculate pagination
+    const skip = (page - 1) * limit;
 
-      if (typeof aValue === "number" && typeof bValue === "number") {
-        return order === "asc" ? aValue - bValue : bValue - aValue;
-      }
+    // Get countries from MongoDB
+    const countries = await CountryModel.find()
+      .sort(sortObj)
+      .skip(skip)
+      .limit(limit)
+      .lean();
 
-      return 0;
-    });
+    // Get total count for pagination
+    const total = await CountryModel.countDocuments();
 
-    // Apply pagination
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedCountries = sortedCountries.slice(startIndex, endIndex);
+    // Convert MongoDB documents to Country interface
+    const countryData: Country[] = countries.map((country) => ({
+      id: (country._id as any).toString(),
+      name: country.name,
+      flag: country.flag,
+      popularCities: country.popularCities,
+      rating: country.rating,
+      description: country.description,
+      visaType: country.visaType,
+      workRights: country.workRights,
+      avgTuition: country.avgTuition,
+      livingCost: country.livingCost,
+      currency: country.currency,
+      language: country.language,
+      climate: country.climate,
+      isEnglishSpeaking: country.isEnglishSpeaking,
+      isLowCost: country.isLowCost,
+      hasWorkRights: country.hasWorkRights,
+      createdAt: country.createdAt,
+      updatedAt: country.updatedAt,
+    }));
 
-    const response: ApiResponse<Country[]> = {
+    res.status(200).json({
       success: true,
-      data: paginatedCountries,
+      data: countryData,
+      message: "Countries retrieved successfully",
       pagination: {
-        page,
-        limit,
-        total: countries.length,
-        pages: Math.ceil(countries.length / limit),
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        pages: Math.ceil(total / Number(limit)),
       },
-    };
-
-    res.status(200).json(response);
+    });
   } catch (error) {
-    next(error);
+    console.error("Error fetching countries:", error);
+    res.status(500).json({
+      success: false,
+      data: [] as Country[],
+      message: "Internal server error",
+    });
   }
 };
 
+// Get country by ID
 export const getCountryById = async (
   req: Request<{ id: string }>,
   res: Response<ApiResponse<Country>>,
@@ -122,7 +79,18 @@ export const getCountryById = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const country = countries.find((c) => c.id === id);
+
+    // Validate ObjectId format
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      res.status(400).json({
+        success: false,
+        data: {} as Country,
+        message: "Invalid country ID format",
+      });
+      return;
+    }
+
+    const country = await CountryModel.findById(id).lean();
 
     if (!country) {
       res.status(404).json({
@@ -133,47 +101,108 @@ export const getCountryById = async (
       return;
     }
 
-    const response: ApiResponse<Country> = {
-      success: true,
-      data: country,
+    const countryData: Country = {
+      id: (country._id as any).toString(),
+      name: country.name,
+      flag: country.flag,
+      popularCities: country.popularCities,
+      rating: country.rating,
+      description: country.description,
+      visaType: country.visaType,
+      workRights: country.workRights,
+      avgTuition: country.avgTuition,
+      livingCost: country.livingCost,
+      currency: country.currency,
+      language: country.language,
+      climate: country.climate,
+      isEnglishSpeaking: country.isEnglishSpeaking,
+      isLowCost: country.isLowCost,
+      hasWorkRights: country.hasWorkRights,
+      createdAt: country.createdAt,
+      updatedAt: country.updatedAt,
     };
 
-    res.status(200).json(response);
+    res.status(200).json({
+      success: true,
+      data: countryData,
+      message: "Country retrieved successfully",
+    });
   } catch (error) {
-    next(error);
+    console.error("Error fetching country by ID:", error);
+    res.status(500).json({
+      success: false,
+      data: {} as Country,
+      message: "Internal server error",
+    });
   }
 };
 
+// Search countries
 export const searchCountries = async (
-  req: Request<{}, ApiResponse<Country[]>, {}, SearchQuery>,
+  req: Request<{}, ApiResponse<Country[]>, {}, { q: string }>,
   res: Response<ApiResponse<Country[]>>,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { q = "" } = req.query;
+    const { q } = req.query;
 
-    let filteredCountries = [...countries];
-
-    // Text search
-    if (q) {
-      const searchTerm = q.toLowerCase();
-      filteredCountries = filteredCountries.filter(
-        (country) =>
-          country.name.toLowerCase().includes(searchTerm) ||
-          country.popularCities.some((city) =>
-            city.toLowerCase().includes(searchTerm)
-          ) ||
-          country.description.toLowerCase().includes(searchTerm)
-      );
+    if (!q || typeof q !== "string") {
+      res.status(400).json({
+        success: false,
+        data: [] as Country[],
+        message: "Search query is required",
+      });
+      return;
     }
 
-    const response: ApiResponse<Country[]> = {
-      success: true,
-      data: filteredCountries,
-    };
+    // Create search regex
+    const searchRegex = new RegExp(q, "i");
 
-    res.status(200).json(response);
+    // Search in multiple fields
+    const countries = await CountryModel.find({
+      $or: [
+        { name: searchRegex },
+        { description: searchRegex },
+        { popularCities: { $in: [searchRegex] } },
+        { language: { $in: [searchRegex] } },
+      ],
+    })
+      .sort({ name: 1 })
+      .lean();
+
+    // Convert MongoDB documents to Country interface
+    const countryData: Country[] = countries.map((country) => ({
+      id: (country._id as any).toString(),
+      name: country.name,
+      flag: country.flag,
+      popularCities: country.popularCities,
+      rating: country.rating,
+      description: country.description,
+      visaType: country.visaType,
+      workRights: country.workRights,
+      avgTuition: country.avgTuition,
+      livingCost: country.livingCost,
+      currency: country.currency,
+      language: country.language,
+      climate: country.climate,
+      isEnglishSpeaking: country.isEnglishSpeaking,
+      isLowCost: country.isLowCost,
+      hasWorkRights: country.hasWorkRights,
+      createdAt: country.createdAt,
+      updatedAt: country.updatedAt,
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: countryData,
+      message: `Found ${countryData.length} countries matching "${q}"`,
+    });
   } catch (error) {
-    next(error);
+    console.error("Error searching countries:", error);
+    res.status(500).json({
+      success: false,
+      data: [] as Country[],
+      message: "Internal server error",
+    });
   }
 };

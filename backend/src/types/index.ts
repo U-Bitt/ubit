@@ -33,9 +33,14 @@ export interface Country {
   workRights: string;
   avgTuition: string;
   livingCost: string;
-  currency?: string;
-  language?: string[];
-  climate?: string;
+  currency: string;
+  language: string[];
+  climate: string;
+  isEnglishSpeaking?: boolean;
+  isLowCost?: boolean;
+  hasWorkRights?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // Exam types
@@ -93,15 +98,26 @@ export interface Application {
 // Scholarship types
 export interface Scholarship {
   id: string;
-  name: string;
+  title: string;
+  description: string;
+  amount: string;
   university: string;
   country: string;
-  amount: string;
-  type: "merit" | "need" | "athletic" | "academic";
-  requirements: string[];
   deadline: string;
-  description: string;
-  applicationUrl?: string;
+  type: string;
+  requirements: string[];
+  coverage: string;
+  duration: string;
+  applicationProcess: string;
+  eligibility: string;
+  benefits: string[];
+  image: string;
+  donor?: string;
+  contactEmail?: string;
+  website?: string;
+  isActive?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // API Response types
