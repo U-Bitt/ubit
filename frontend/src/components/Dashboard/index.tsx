@@ -30,6 +30,7 @@ import {
   Mail,
   Globe,
   Search,
+  Trash2,
 } from "lucide-react";
 
 interface Application {
@@ -259,7 +260,7 @@ export const Dashboard = () => {
       "Innovation",
     ]
   });
-  const applications = [
+  const [applications, setApplications] = useState([
     {
       id: 1,
       university: "MIT",
@@ -416,10 +417,17 @@ export const Dashboard = () => {
         { title: "Submission", date: "Jan 15, 2025", completed: false },
       ],
     },
-  ];
+  ]);
   const handleViewDetails = (application: Application) => {
     setSelectedApplication(application);
     setIsModalOpen(true);
+  };
+  
+  const handleDeleteApplication = (applicationId: number) => {
+    if (confirm('Are you sure you want to delete this application? This action cannot be undone.')) {
+      setApplications(prev => prev.filter(app => app.id !== applicationId));
+      alert('Application deleted successfully!');
+    }
   };
   const closeModal = () => {
     setIsModalOpen(false);
@@ -1024,6 +1032,7 @@ export const Dashboard = () => {
     if (confirm('Are you sure you want to clear all saved data? This action cannot be undone.')) {
       localStorage.removeItem('milestoneProgress');
       localStorage.removeItem('savedUniversities');
+      localStorage.removeItem('applications');
       // Reset to default values
       setMilestoneProgress({
         "1": { completedSteps: 4, status: "completed" },
@@ -1033,6 +1042,126 @@ export const Dashboard = () => {
         "5": { completedSteps: 0, status: "upcoming" }
       });
       setSavedUnis(savedUniversities);
+      // Reset applications to default (keep the original 3 applications)
+      setApplications([
+        {
+          id: 1,
+          university: "MIT",
+          program: "Computer Science",
+          status: "In Progress",
+          deadline: "Jan 1, 2025",
+          progress: 75,
+          ranking: 1,
+          location: "Cambridge, MA, USA",
+          tuition: "$57,986/year",
+          acceptance: "6.7%",
+          image: "/mit-campus-aerial.png",
+          description: "The Computer Science program at MIT focuses on the fundamental principles of computing and their applications.",
+          website: "https://www.mit.edu",
+          requirements: [
+            "SAT: 1500+ or ACT: 34+",
+            "IELTS: 7.0+ or TOEFL: 100+",
+            "High school transcripts",
+            "Letters of recommendation (2)",
+            "Personal statement",
+            "Extracurricular activities",
+          ],
+          documents: [
+            { name: "High School Transcript", status: "uploaded", required: true },
+            { name: "SAT Scores", status: "uploaded", required: true },
+            { name: "Personal Statement", status: "draft", required: true },
+            { name: "Letters of Recommendation", status: "pending", required: true },
+            { name: "Portfolio", status: "not-required", required: false },
+            { name: "Financial Aid Forms", status: "pending", required: false },
+          ],
+          milestones: [
+            { title: "Application Started", date: "Nov 1, 2024", completed: true },
+            { title: "Documents Uploaded", date: "Nov 15, 2024", completed: true },
+            { title: "Personal Statement Draft", date: "Dec 1, 2024", completed: true },
+            { title: "Letters of Recommendation", date: "Dec 20, 2024", completed: false },
+            { title: "Final Review", date: "Dec 28, 2024", completed: false },
+            { title: "Submission", date: "Jan 1, 2025", completed: false },
+          ],
+        },
+        {
+          id: 2,
+          university: "Stanford",
+          program: "AI/ML",
+          status: "Submitted",
+          deadline: "Jan 2, 2025",
+          progress: 100,
+          ranking: 2,
+          location: "Stanford, CA, USA",
+          tuition: "$61,731/year",
+          acceptance: "4.3%",
+          image: "/stanford-campus.jpg",
+          description: "Stanford's AI/ML program is one of the leading programs in artificial intelligence and machine learning.",
+          website: "https://www.stanford.edu",
+          requirements: [
+            "SAT: 1520+ or ACT: 35+",
+            "IELTS: 7.5+ or TOEFL: 110+",
+            "High school transcripts",
+            "Letters of recommendation (3)",
+            "Personal statement",
+            "Research experience preferred",
+          ],
+          documents: [
+            { name: "High School Transcript", status: "uploaded", required: true },
+            { name: "SAT Scores", status: "uploaded", required: true },
+            { name: "Personal Statement", status: "uploaded", required: true },
+            { name: "Letters of Recommendation", status: "uploaded", required: true },
+            { name: "Research Portfolio", status: "uploaded", required: false },
+            { name: "Financial Aid Forms", status: "uploaded", required: false },
+          ],
+          milestones: [
+            { title: "Application Started", date: "Oct 15, 2024", completed: true },
+            { title: "Documents Uploaded", date: "Nov 1, 2024", completed: true },
+            { title: "Personal Statement", date: "Nov 15, 2024", completed: true },
+            { title: "Letters of Recommendation", date: "Dec 1, 2024", completed: true },
+            { title: "Final Review", date: "Dec 20, 2024", completed: true },
+            { title: "Submission", date: "Jan 2, 2025", completed: true },
+          ],
+        },
+        {
+          id: 3,
+          university: "Harvard",
+          program: "Data Science",
+          status: "Draft",
+          deadline: "Jan 15, 2025",
+          progress: 45,
+          ranking: 3,
+          location: "Cambridge, MA, USA",
+          tuition: "$57,261/year",
+          acceptance: "3.4%",
+          image: "/harvard-campus.jpg",
+          description: "Harvard's Data Science program combines statistical methods with computational techniques for data analysis.",
+          website: "https://www.harvard.edu",
+          requirements: [
+            "SAT: 1540+ or ACT: 36+",
+            "IELTS: 7.5+ or TOEFL: 110+",
+            "High school transcripts",
+            "Letters of recommendation (2)",
+            "Personal statement",
+            "Leadership experience",
+          ],
+          documents: [
+            { name: "High School Transcript", status: "uploaded", required: true },
+            { name: "SAT Scores", status: "pending", required: true },
+            { name: "Personal Statement", status: "draft", required: true },
+            { name: "Letters of Recommendation", status: "pending", required: true },
+            { name: "Leadership Portfolio", status: "not-started", required: false },
+            { name: "Financial Aid Forms", status: "not-started", required: false },
+          ],
+          milestones: [
+            { title: "Application Started", date: "Nov 20, 2024", completed: true },
+            { title: "Documents Uploaded", date: "Dec 1, 2024", completed: false },
+            { title: "Personal Statement Draft", date: "Dec 15, 2024", completed: false },
+            { title: "Letters of Recommendation", date: "Dec 25, 2024", completed: false },
+            { title: "Final Review", date: "Jan 10, 2025", completed: false },
+            { title: "Submission", date: "Jan 15, 2025", completed: false },
+          ],
+        },
+      ]);
       alert('All saved data has been cleared!');
     }
   };
@@ -1053,6 +1182,18 @@ export const Dashboard = () => {
     } else {
       // Ensure we always have the default 4 universities
       setSavedUnis(savedUniversities);
+    }
+
+    // Load saved applications
+    const savedApps = localStorage.getItem('applications');
+    if (savedApps) {
+      try {
+        const parsedApps = JSON.parse(savedApps);
+        setApplications(parsedApps);
+      } catch (error) {
+        console.error('Error loading saved applications:', error);
+        // If there's an error parsing, keep default applications
+      }
     }
 
     // Load milestone progress
@@ -1085,6 +1226,11 @@ export const Dashboard = () => {
   useEffect(() => {
     localStorage.setItem('savedUniversities', JSON.stringify(savedUnis));
   }, [savedUnis]);
+
+  // Save applications to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('applications', JSON.stringify(applications));
+  }, [applications]);
 
   // Listen for user profile changes and update exam progress
   useEffect(() => {
@@ -1498,13 +1644,24 @@ export const Dashboard = () => {
                       <span className="text-muted-foreground">
                         Deadline: {app.deadline}
                       </span>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handleViewDetails(app)}
-                      >
-                        View Details
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleViewDetails(app)}
+                        >
+                          View Details
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleDeleteApplication(app.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                        >
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -1713,159 +1870,131 @@ export const Dashboard = () => {
               <div className="space-y-6">
                 {/* Application Progress Items */}
                 <div className="space-y-4">
-                  {/* MIT Application */}
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 hover:shadow-md transition-all duration-200">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                          <span className="text-white font-bold text-sm">MIT</span>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900">MIT Application</h4>
-                          <p className="text-sm text-gray-600">Computer Science</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-orange-200">
-                          In Progress
-                        </Badge>
-                        <Badge variant="outline" className="text-red-600 border-red-200">
-                          High Priority
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Progress</span>
-                        <span className="font-semibold text-blue-600">75%</span>
-                      </div>
-                      <Progress value={75} className="h-3 bg-gray-200">
-                        <div className="h-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-300" style={{ width: '75%' }} />
-                      </Progress>
-                    </div>
-                    <div className="flex justify-between items-center mt-3 text-sm">
-                      <div className="flex items-center gap-1 text-gray-600">
-                        <Calendar className="h-4 w-4" />
-                        <span>Deadline: Jan 1, 2025</span>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                        onClick={() => {
-                          // Open MIT application details
-                          alert('Opening MIT Application Details...');
-                          // You can add more functionality here like opening a modal or navigating to a page
-                        }}
-                      >
-                        <ExternalLink className="h-3 w-3 mr-1" />
-                        View Details
-                      </Button>
-                    </div>
-                  </div>
+                  {applications.map((app) => {
+                    // Get color scheme based on application
+                    const getAppColor = (university: string) => {
+                      switch (university.toLowerCase()) {
+                        case 'mit':
+                          return {
+                            bg: 'from-blue-50 to-indigo-50',
+                            border: 'border-blue-200',
+                            icon: 'bg-blue-600',
+                            text: 'text-blue-600',
+                            initials: 'MIT'
+                          };
+                        case 'stanford':
+                          return {
+                            bg: 'from-green-50 to-emerald-50',
+                            border: 'border-green-200',
+                            icon: 'bg-green-600',
+                            text: 'text-green-600',
+                            initials: 'SU'
+                          };
+                        case 'harvard':
+                          return {
+                            bg: 'from-purple-50 to-violet-50',
+                            border: 'border-purple-200',
+                            icon: 'bg-purple-600',
+                            text: 'text-purple-600',
+                            initials: 'HU'
+                          };
+                        default:
+                          return {
+                            bg: 'from-gray-50 to-slate-50',
+                            border: 'border-gray-200',
+                            icon: 'bg-gray-600',
+                            text: 'text-gray-600',
+                            initials: app.university.substring(0, 2).toUpperCase()
+                          };
+                      }
+                    };
 
-                  {/* Stanford Application */}
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 hover:shadow-md transition-all duration-200">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-                          <span className="text-white font-bold text-sm">SU</span>
-                        </div>
-                      <div>
-                          <h4 className="font-semibold text-gray-900">Stanford Application</h4>
-                          <p className="text-sm text-gray-600">Engineering</p>
-                    </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Completed
-                        </Badge>
-                        <Badge variant="outline" className="text-red-600 border-red-200">
-                          High Priority
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Progress</span>
-                        <span className="font-semibold text-green-600">100%</span>
-                      </div>
-                      <Progress value={100} className="h-3 bg-gray-200">
-                        <div className="h-3 bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-300" style={{ width: '100%' }} />
-                      </Progress>
-                    </div>
-                    <div className="flex justify-between items-center mt-3 text-sm">
-                      <div className="flex items-center gap-1 text-gray-600">
-                        <Calendar className="h-4 w-4" />
-                        <span>Deadline: Jan 2, 2025</span>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="text-green-600 border-green-200 hover:bg-green-50"
-                        onClick={() => {
-                          // Open Stanford application results
-                          alert('Opening Stanford Application Results...');
-                          // You can add more functionality here like opening a modal or navigating to a page
-                        }}
-                      >
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        View Results
-                      </Button>
-                    </div>
-                  </div>
+                    const colors = getAppColor(app.university);
+                    const isCompleted = app.status === 'Submitted';
+                    const isInProgress = app.status === 'In Progress';
+                    const isDraft = app.status === 'Draft';
 
-                  {/* Harvard Application */}
-                  <div className="bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200 rounded-lg p-4 hover:shadow-md transition-all duration-200">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
-                          <span className="text-white font-bold text-sm">HU</span>
+                    return (
+                      <div key={app.id} className={`bg-gradient-to-r ${colors.bg} border ${colors.border} rounded-lg p-4 hover:shadow-md transition-all duration-200`}>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 ${colors.icon} rounded-lg flex items-center justify-center`}>
+                              <span className="text-white font-bold text-sm">{colors.initials}</span>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-gray-900">{app.university} Application</h4>
+                              <p className="text-sm text-gray-600">{app.program}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant={isCompleted ? "default" : isInProgress ? "secondary" : "outline"}
+                              className={
+                                isCompleted 
+                                  ? "bg-green-100 text-green-800 border-green-200"
+                                  : isInProgress 
+                                  ? "bg-orange-100 text-orange-800 border-orange-200"
+                                  : "bg-gray-100 text-gray-800 border-gray-200"
+                              }
+                            >
+                              {isCompleted && <CheckCircle className="h-3 w-3 mr-1" />}
+                              {app.status}
+                            </Badge>
+                            <Badge variant="outline" className={
+                              app.progress >= 80 ? "text-red-600 border-red-200" : 
+                              app.progress >= 50 ? "text-orange-600 border-orange-200" : 
+                              "text-blue-600 border-blue-200"
+                            }>
+                              {app.progress >= 80 ? "High Priority" : 
+                               app.progress >= 50 ? "Medium Priority" : 
+                               "Low Priority"}
+                            </Badge>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900">Harvard Application</h4>
-                          <p className="text-sm text-gray-600">Business</p>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Progress</span>
+                            <span className={`font-semibold ${colors.text}`}>{app.progress}%</span>
+                          </div>
+                          <Progress value={app.progress} className="h-3 bg-gray-200">
+                            <div 
+                              className={`h-3 bg-gradient-to-r ${colors.icon.replace('bg-', 'from-').replace('-600', '-500')} ${colors.icon} rounded-full transition-all duration-300`} 
+                              style={{ width: `${app.progress}%` }} 
+                            />
+                          </Progress>
+                        </div>
+                        <div className="flex justify-between items-center mt-3 text-sm">
+                          <div className="flex items-center gap-1 text-gray-600">
+                            <Calendar className="h-4 w-4" />
+                            <span>Deadline: {app.deadline}</span>
+                          </div>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className={`${colors.text} ${colors.border.replace('border-', 'border-')} hover:bg-opacity-10`}
+                            onClick={() => handleViewDetails(app)}
+                          >
+                            {isCompleted ? (
+                              <>
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                View Results
+                              </>
+                            ) : isDraft ? (
+                              <>
+                                <ExternalLink className="h-3 w-3 mr-1" />
+                                Continue
+                              </>
+                            ) : (
+                              <>
+                                <ExternalLink className="h-3 w-3 mr-1" />
+                                View Details
+                              </>
+                            )}
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200">
-                          Pending
-                        </Badge>
-                        <Badge variant="outline" className="text-orange-600 border-orange-200">
-                          Medium Priority
-                    </Badge>
-                    </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Progress</span>
-                        <span className="font-semibold text-purple-600">45%</span>
-                      </div>
-                      <Progress value={45} className="h-3 bg-gray-200">
-                        <div className="h-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-300" style={{ width: '45%' }} />
-                      </Progress>
-                    </div>
-                    <div className="flex justify-between items-center mt-3 text-sm">
-                      <div className="flex items-center gap-1 text-gray-600">
-                        <Calendar className="h-4 w-4" />
-                        <span>Deadline: Jan 15, 2025</span>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="text-purple-600 border-purple-200 hover:bg-purple-50"
-                        onClick={() => {
-                          // Continue Harvard application
-                          alert('Continuing Harvard Application...');
-                          // You can add more functionality here like opening a modal or navigating to a page
-                        }}
-                      >
-                        <ExternalLink className="h-3 w-3 mr-1" />
-                        Continue
-                      </Button>
-                    </div>
-                  </div>
+                    );
+                  })}
                 </div>
 
                 {/* Summary Stats */}
@@ -1873,16 +2002,22 @@ export const Dashboard = () => {
                   <h5 className="font-semibold text-gray-900 mb-3">Application Summary</h5>
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
-                      <div className="text-2xl font-bold text-green-600">1</div>
+                      <div className="text-2xl font-bold text-green-600">
+                        {applications.filter(app => app.status === 'Submitted').length}
+                      </div>
                       <div className="text-xs text-gray-600">Completed</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-blue-600">1</div>
+                      <div className="text-2xl font-bold text-blue-600">
+                        {applications.filter(app => app.status === 'In Progress').length}
+                      </div>
                       <div className="text-xs text-gray-600">In Progress</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-purple-600">1</div>
-                      <div className="text-xs text-gray-600">Pending</div>
+                      <div className="text-2xl font-bold text-purple-600">
+                        {applications.filter(app => app.status === 'Draft').length}
+                      </div>
+                      <div className="text-xs text-gray-600">Draft</div>
                     </div>
                   </div>
                 </div>
@@ -2261,7 +2396,22 @@ export const Dashboard = () => {
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Visit University Website
                 </Button>
-                <Button variant="outline">
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    // Open email client or contact form
+                    const email = "admissions@" + selectedApplication.university.toLowerCase().replace(/\s+/g, '') + ".edu";
+                    const subject = `Application Inquiry - ${selectedApplication.program}`;
+                    const body = `Dear Admissions Office,\n\nI am writing to inquire about my application for the ${selectedApplication.program} program at ${selectedApplication.university}.\n\nApplication ID: ${selectedApplication.id}\nStatus: ${selectedApplication.status}\nProgress: ${selectedApplication.progress}%\n\nPlease let me know if you need any additional information.\n\nThank you,\n[Your Name]`;
+                    
+                    // Create mailto link
+                    const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                    window.open(mailtoLink, '_blank');
+                    
+                    // Also show an alert with contact info
+                    alert(`Contacting ${selectedApplication.university} Admissions:\n\nEmail: ${email}\n\nThis will open your email client with a pre-filled message.`);
+                  }}
+                >
                   <Mail className="h-4 w-4 mr-2" />
                   Contact Admissions
                 </Button>
@@ -3097,10 +3247,50 @@ export const Dashboard = () => {
                             size="sm" 
                             className="flex-1 bg-blue-600 hover:bg-blue-700"
                             onClick={() => {
-                              // Here you would typically start the application process
-                              console.log(
-                                `Starting application for ${university.name}`
-                              );
+                              // Add new application to the applications list
+                              const newApplication = {
+                                id: applications.length + 1,
+                                university: university.name,
+                                program: university.programs[0] || "General Studies",
+                                status: "Draft",
+                                deadline: university.deadline,
+                                progress: 0,
+                                ranking: university.ranking,
+                                location: university.location,
+                                tuition: university.tuition,
+                                acceptance: university.acceptance,
+                                image: university.image,
+                                description: `Application for ${university.name} - ${university.programs[0] || "General Studies"}`,
+                                website: `https://www.${university.name.toLowerCase().replace(/\s+/g, "")}.edu`,
+                                requirements: [
+                                  "SAT/ACT scores",
+                                  "High school transcripts",
+                                  "Letters of recommendation",
+                                  "Personal statement",
+                                  "English proficiency test (if applicable)"
+                                ],
+                                documents: [
+                                  { name: "High School Transcript", status: "not-started", required: true },
+                                  { name: "SAT/ACT Scores", status: "not-started", required: true },
+                                  { name: "Personal Statement", status: "not-started", required: true },
+                                  { name: "Letters of Recommendation", status: "not-started", required: true },
+                                  { name: "English Test Scores", status: "not-started", required: false }
+                                ],
+                                milestones: [
+                                  { title: "Application Started", date: new Date().toISOString().split('T')[0], completed: true },
+                                  { title: "Documents Uploaded", date: "", completed: false },
+                                  { title: "Personal Statement", date: "", completed: false },
+                                  { title: "Letters of Recommendation", date: "", completed: false },
+                                  { title: "Final Review", date: "", completed: false },
+                                  { title: "Submission", date: university.deadline, completed: false }
+                                ]
+                              };
+                              
+                              // Add to applications array
+                              setApplications(prev => [...prev, newApplication]);
+                              console.log('Adding new application:', newApplication);
+                              alert(`Successfully added ${university.name} application!\n\nStatus: Draft\nProgress: 0%\nDeadline: ${university.deadline}\n\nYou can now track your progress in the Application Progress section.`);
+                              
                               closeAddApplicationModal();
                             }}
                           >
