@@ -20,15 +20,13 @@ import { notFound } from "./middleware/notFound";
 
 // Import database connection
 import connectDB from "./config/database";
-import { seedUniversities } from "./utils/seedData";
 
 // Load environment variables
 dotenv.config();
 
-// Connect to database and seed data
+// Connect to database
 const initializeDatabase = async () => {
   await connectDB();
-  await seedUniversities();
 };
 
 initializeDatabase();
@@ -65,8 +63,8 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({
-    status: "OK",
-    message: "Ubit Education API is running",
+    success: true,
+    message: "Server is running",
     timestamp: new Date().toISOString(),
   });
 });
@@ -75,7 +73,7 @@ app.get("/health", (req, res) => {
 app.use("/api/universities", universityRoutes);
 app.use("/api/countries", countryRoutes);
 app.use("/api/exams", examRoutes);
-app.use("/api/user", userRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/test-scores", testScoreRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/scholarships", scholarshipRoutes);
@@ -88,9 +86,9 @@ app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
-  console.log(`📚 Ubit Education API is ready!`);
-  console.log(`🌐 Health check: http://localhost:${PORT}/health`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`🌐 API Base URL: http://localhost:${PORT}/api`);
 });
 
 export default app;
