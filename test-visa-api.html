@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Visa API Test</title>
+</head>
+<body>
+    <h1>Visa API Test</h1>
+    <div id="result"></div>
+    
+    <script>
+        async function testVisaAPI() {
+            try {
+                const response = await fetch('http://localhost:5002/api/visas');
+                const data = await response.json();
+                document.getElementById('result').innerHTML = 
+                    '<h2>Success!</h2><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    '<h2>Error:</h2><p>' + error.message + '</p>';
+            }
+        }
+        
+        testVisaAPI();
+    </script>
+</body>
+</html>
