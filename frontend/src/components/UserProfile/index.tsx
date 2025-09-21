@@ -65,42 +65,31 @@ export const UserProfile = () => {
   // Load data from localStorage on component mount
   useEffect(() => {
     try {
-      const savedPersonalInfo = localStorage.getItem('userPersonalInfo');
-      const savedAcademicInfo = localStorage.getItem('userAcademicInfo');
-      const savedTestScores = localStorage.getItem('userTestScores');
-      const savedInterests = localStorage.getItem('userInterests');
-      const savedProfilePicture = localStorage.getItem('userProfilePicture');
-
-      if (savedPersonalInfo) {
-        setPersonalInfo(JSON.parse(savedPersonalInfo));
-      }
-      if (savedAcademicInfo) {
-        setAcademicInfo(JSON.parse(savedAcademicInfo));
-      }
-      if (savedTestScores) {
-        setTestScores(JSON.parse(savedTestScores));
-      }
-      if (savedInterests) {
-        setInterests(JSON.parse(savedInterests));
-      }
-      if (savedProfilePicture) {
-        setProfilePicture(savedProfilePicture);
+      const savedProfile = localStorage.getItem('userProfile');
+      if (savedProfile) {
+        const profileData = JSON.parse(savedProfile);
+        setPersonalInfo(profileData.personalInfo || personalInfo);
+        setAcademicInfo(profileData.academicInfo || academicInfo);
+        setTestScores(profileData.testScores || testScores);
+        setInterests(profileData.interests || interests);
+        setProfilePicture(profileData.profilePicture || null);
       }
     } catch (error) {
-      console.error('Error loading user data:', error);
+      console.error('Error loading profile data:', error);
     }
   }, []);
 
   // Save data to localStorage whenever data changes
   useEffect(() => {
     try {
-      localStorage.setItem('userPersonalInfo', JSON.stringify(personalInfo));
-      localStorage.setItem('userAcademicInfo', JSON.stringify(academicInfo));
-      localStorage.setItem('userTestScores', JSON.stringify(testScores));
-      localStorage.setItem('userInterests', JSON.stringify(interests));
-      if (profilePicture) {
-        localStorage.setItem('userProfilePicture', profilePicture);
-      }
+      const profileData = {
+        personalInfo,
+        academicInfo,
+        testScores,
+        interests,
+        profilePicture
+      };
+      localStorage.setItem('userProfile', JSON.stringify(profileData));
     } catch (error) {
       console.error('Error saving user data:', error);
     }
