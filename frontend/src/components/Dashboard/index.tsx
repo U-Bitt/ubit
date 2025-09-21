@@ -1,9 +1,9 @@
+import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { ProgressTracker } from "@/components/progress-tracker";
-import { MilestoneTracker } from "@/components/milestone-tracker";
+import { DetailedMilestoneTracker } from "@/components/DetailedMilestoneTracker";
 import Image from "next/image";
 import {
   GraduationCap,
@@ -15,7 +15,6 @@ import {
   Upload,
   Users,
   Clock,
-  AlertTriangle,
   TrendingUp,
   Target,
   Award,
@@ -29,12 +28,9 @@ import {
   DollarSign,
   Percent,
   Mail,
-  Phone,
   Globe,
-  ArrowRight,
   Search,
 } from "lucide-react";
-import { useState, useEffect } from "react";
 
 interface Application {
   image: string;
@@ -53,19 +49,16 @@ interface Application {
   milestones: Milestone[];
   website: string;
 }
-
 interface Document {
   name: string;
   status: string;
   required: boolean;
 }
-
 interface Milestone {
   title: string;
   date: string;
   completed: boolean;
 }
-
 interface Exam {
   exam: string;
   fullName: string;
@@ -83,7 +76,6 @@ interface Exam {
   studyPlan: StudyTopic[];
   resources: Resource[];
 }
-
 interface Section {
   name: string;
   score?: number;
@@ -91,7 +83,6 @@ interface Section {
   progress: number;
   status: string;
 }
-
 interface PracticeTest {
   name: string;
   score: number;
@@ -99,21 +90,44 @@ interface PracticeTest {
   status: string;
   improvement?: string;
 }
-
 interface StudyTopic {
   topic: string;
   progress: number;
   priority: string;
   status: string;
 }
-
 interface Resource {
   name: string;
   type: string;
   url: string;
   status: string;
 }
-
+interface University {
+  id: string;
+  name: string;
+  location: string;
+  ranking: number;
+  programs: string[];
+  tuition: string;
+  acceptance: string;
+  deadline: string;
+  image: string;
+}
+interface SavedUniversity {
+  id: number;
+  name: string;
+  location: string;
+  ranking: number;
+  image: string;
+  programs: string[];
+  tuition: string;
+  acceptanceRate: string;
+  savedDate: string;
+  notes: string;
+  website: string;
+  applicationDeadline: string;
+  requirements: string[];
+}
 export const Dashboard = () => {
   const [selectedApplication, setSelectedApplication] =
     useState<Application | null>(null);
@@ -124,10 +138,127 @@ export const Dashboard = () => {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isAddApplicationModalOpen, setIsAddApplicationModalOpen] =
     useState(false);
+  const [isUploadDocumentsModalOpen, setIsUploadDocumentsModalOpen] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{
+    id: string;
+    name: string;
+    type: string;
+    category: string;
+    file: File;
+    status: 'uploading' | 'uploaded' | 'error';
+  }>>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredUniversities, setFilteredUniversities] = useState<any[]>([]);
+  const [filteredUniversities, setFilteredUniversities] = useState<University[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSavedUni, setSelectedSavedUni] = useState<SavedUniversity | null>(null);
+  const [isSavedUniModalOpen, setIsSavedUniModalOpen] = useState(false);
+  
+  // Saved universities data
+  const savedUniversities = [
+    {
+      id: 1,
+      name: "Harvard University",
+      location: "Cambridge, MA, USA",
+      ranking: 1,
+      image: "/harvard-campus.jpg",
+      programs: ["Computer Science", "Business", "Medicine"],
+      tuition: "$54,269/year",
+      acceptanceRate: "3.4%",
+      savedDate: "2024-11-15",
+      notes: "Dream school - excellent CS program",
+      website: "https://www.harvard.edu",
+      applicationDeadline: "Jan 1, 2025",
+      requirements: ["SAT/ACT", "TOEFL/IELTS", "Essays", "Recommendations"],
+    },
+    {
+      id: 2,
+      name: "MIT",
+      location: "Cambridge, MA, USA", 
+      ranking: 2,
+      image: "/mit-campus-aerial.png",
+      programs: ["Engineering", "Computer Science", "Physics"],
+      tuition: "$57,986/year",
+      acceptanceRate: "6.7%",
+      savedDate: "2024-11-10",
+      notes: "Strong engineering focus",
+      website: "https://www.mit.edu",
+      applicationDeadline: "Jan 1, 2025",
+      requirements: ["SAT/ACT", "TOEFL/IELTS", "Essays", "Recommendations"],
+    },
+    {
+      id: 3,
+      name: "Stanford University",
+      location: "Stanford, CA, USA",
+      ranking: 3,
+      image: "/stanford-campus.jpg",
+      programs: ["Computer Science", "Engineering", "Business"],
+      tuition: "$61,731/year",
+      acceptanceRate: "4.3%",
+      savedDate: "2024-11-05",
+      notes: "Silicon Valley connections",
+      website: "https://www.stanford.edu",
+      applicationDeadline: "Jan 2, 2025",
+      requirements: ["SAT/ACT", "TOEFL/IELTS", "Essays", "Recommendations"],
+    },
+    {
+      id: 4,
+      name: "University of Toronto",
+      location: "Toronto, ON, Canada",
+      ranking: 18,
+      image: "/university-of-toronto-campus.png",
+      programs: ["Computer Science", "Engineering", "Business"],
+      tuition: "CAD $58,160/year",
+      acceptanceRate: "43%",
+      savedDate: "2024-10-28",
+      notes: "Good backup option - lower cost",
+      website: "https://www.utoronto.ca",
+      applicationDeadline: "Jan 15, 2025",
+      requirements: ["SAT/ACT", "IELTS/TOEFL", "Essays", "Transcripts"],
+    },
+  ];
 
+  // Saved universities state - initialize with default data for SSR
+  const [savedUnis, setSavedUnis] = useState<SavedUniversity[]>(savedUniversities);
+  
+  // Milestone progress state - initialize with default data for SSR
+  const [milestoneProgress, setMilestoneProgress] = useState<{[key: string]: {completedSteps: number, status: "completed" | "current" | "upcoming"}}>({
+    "1": { completedSteps: 4, status: "completed" },
+    "2": { completedSteps: 3, status: "current" },
+    "3": { completedSteps: 0, status: "upcoming" },
+    "4": { completedSteps: 0, status: "upcoming" },
+    "5": { completedSteps: 0, status: "upcoming" }
+  });
+
+  // User profile state
+  const [userProfile, setUserProfile] = useState({
+    personalInfo: {
+      firstName: "Alex",
+      lastName: "Smith",
+      email: "alex.smith@email.com",
+      phone: "+1 (555) 123-4567",
+      dateOfBirth: "2005-03-15",
+      nationality: "American",
+      address: "123 Main St, New York, NY 10001",
+      bio: "Passionate computer science student with a love for innovation and technology."
+    },
+    academicInfo: {
+      gpa: "3.8/4.0",
+      school: "International High School",
+      graduationYear: "2024",
+      major: "Computer Science",
+    },
+    testScores: [
+      { id: 1, test: "SAT", score: "1450", date: "Dec 2024" },
+      { id: 2, test: "TOEFL", score: "108", date: "Nov 2023" },
+      { id: 3, test: "IELTS", score: "6", date: "July 2021" },
+    ],
+    interests: [
+      "Computer Science",
+      "Engineering", 
+      "Research",
+      "Innovation",
+    ]
+  });
   const applications = [
     {
       id: 1,
@@ -286,17 +417,14 @@ export const Dashboard = () => {
       ],
     },
   ];
-
   const handleViewDetails = (application: Application) => {
     setSelectedApplication(application);
     setIsModalOpen(true);
   };
-
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedApplication(null);
   };
-
   const openExternalLink = (url: string) => {
     console.log("Opening URL:", url); // Debug log
     if (url && url.startsWith("http")) {
@@ -305,7 +433,6 @@ export const Dashboard = () => {
       console.error("Invalid URL:", url);
     }
   };
-
   const getExamOfficialWebsite = (exam: string) => {
     switch (exam) {
       case "SAT":
@@ -318,35 +445,12 @@ export const Dashboard = () => {
         return "#";
     }
   };
-
-  const upcomingTasks = [
-    {
-      task: "Submit MIT application",
-      dueDate: "Jan 1, 2025",
-      priority: "High",
-      completed: false,
-    },
-    {
-      task: "Take SAT retake",
-      dueDate: "Dec 7, 2024",
-      priority: "High",
-      completed: false,
-    },
-    {
-      task: "Request recommendation letters",
-      dueDate: "Dec 15, 2024",
-      priority: "Medium",
-      completed: true,
-    },
-  ];
-
   const stats = [
     { label: "Applications", value: "3", icon: FileText },
     { label: "Universities", value: "2,500+", icon: GraduationCap },
     { label: "Documents", value: "12", icon: BookOpen },
     { label: "Deadlines", value: "2", icon: Calendar },
   ];
-
   const scholarshipOpportunities = [
     {
       id: 1,
@@ -360,7 +464,7 @@ export const Dashboard = () => {
     {
       id: 2,
       title: "Stanford Engineering Excellence",
-      amount: "$30,000",
+      amount: "$30,000", 
       deadline: "Jan 5, 2025",
       daysLeft: 24,
       match: 88,
@@ -370,13 +474,12 @@ export const Dashboard = () => {
       id: 3,
       title: "Harvard Leadership Award",
       amount: "$20,000",
-      deadline: "Jan 10, 2025",
+      deadline: "Jan 10, 2025", 
       daysLeft: 29,
       match: 92,
       applied: false,
     },
   ];
-
   const availableExams = [
     {
       id: 1,
@@ -421,7 +524,6 @@ export const Dashboard = () => {
       ],
     },
   ];
-
   const popularUniversities = [
     {
       id: "mit",
@@ -470,7 +572,7 @@ export const Dashboard = () => {
     {
       id: "caltech",
       name: "Caltech",
-      location: "Pasadena, CA, USA",
+      location: "Pasadena, CA, USA", 
       ranking: 5,
       tuition: "$60,864/year",
       acceptance: "6.4%",
@@ -556,12 +658,10 @@ export const Dashboard = () => {
       programs: ["Computer Science", "Engineering", "Medicine", "Business"],
     },
   ];
-
   // Initialize filtered universities when component mounts
   useEffect(() => {
     setFilteredUniversities(popularUniversities);
   }, []);
-
   const quickActions = [
     {
       label: "Add Application",
@@ -589,42 +689,6 @@ export const Dashboard = () => {
       scholarships: scholarshipOpportunities,
     },
   ];
-
-  const upcomingDeadlines = [
-    {
-      id: 1,
-      title: "MIT Application",
-      deadline: "Jan 1, 2025",
-      daysLeft: 15,
-      priority: "high",
-      type: "application",
-    },
-    {
-      id: 2,
-      title: "Stanford Application",
-      deadline: "Jan 2, 2025",
-      daysLeft: 16,
-      priority: "high",
-      type: "application",
-    },
-    {
-      id: 3,
-      title: "SAT Registration",
-      deadline: "Dec 15, 2024",
-      daysLeft: 3,
-      priority: "critical",
-      type: "exam",
-    },
-    {
-      id: 4,
-      title: "Harvard Application",
-      deadline: "Jan 15, 2025",
-      daysLeft: 29,
-      priority: "medium",
-      type: "application",
-    },
-  ];
-
   const recentActivity = [
     {
       id: 1,
@@ -650,7 +714,6 @@ export const Dashboard = () => {
       time: "1 day ago",
       icon: GraduationCap,
     },
-
     {
       id: 4,
       type: "exam",
@@ -668,119 +731,24 @@ export const Dashboard = () => {
       icon: Award,
     },
   ];
-
-  const examProgress = [
+  // Generate dynamic exam progress based on user profile
+  const examProgress = useMemo(() => {
+    const baseExams = [
     {
       id: 1,
       exam: "SAT",
       fullName: "Scholastic Assessment Test",
       date: "Dec 14, 2024",
       daysLeft: 2,
-      status: "registered",
-      score: "1480",
       target: "1500+",
-      progress: 85,
       registrationId: "SAT-2024-12-14-12345",
       location: "Downtown Test Center, Ulaanbaatar",
       duration: "3 hours 45 minutes",
       sections: [
-        {
-          name: "Reading",
-          score: 370,
-          target: 380,
-          progress: 95,
-          status: "completed",
-        },
-        {
-          name: "Writing & Language",
-          score: 360,
-          target: 370,
-          progress: 90,
-          status: "completed",
-        },
-        {
-          name: "Math",
-          score: 750,
-          target: 750,
-          progress: 100,
-          status: "completed",
-        },
-      ],
-      practiceTests: [
-        {
-          name: "Practice Test 1",
-          date: "Nov 15, 2024",
-          score: 1420,
-          status: "completed",
-          improvement: "+20",
-        },
-        {
-          name: "Practice Test 2",
-          date: "Nov 1, 2024",
-          score: 1400,
-          status: "completed",
-          improvement: "+15",
-        },
-        {
-          name: "Practice Test 3",
-          date: "Oct 15, 2024",
-          score: 1385,
-          status: "completed",
-          improvement: "Baseline",
-        },
-      ],
-      studyPlan: [
-        {
-          topic: "Reading Comprehension",
-          progress: 100,
-          priority: "high",
-          status: "completed",
-        },
-        {
-          topic: "Grammar Rules",
-          progress: 100,
-          priority: "high",
-          status: "completed",
-        },
-        {
-          topic: "Algebra & Functions",
-          progress: 100,
-          priority: "medium",
-          status: "completed",
-        },
-        {
-          topic: "Advanced Math",
-          progress: 60,
-          priority: "high",
-          status: "in-progress",
-        },
-        {
-          topic: "Data Analysis",
-          progress: 30,
-          priority: "medium",
-          status: "in-progress",
-        },
-      ],
-      resources: [
-        {
-          name: "Khan Academy SAT Prep",
-          type: "Practice Tests",
-          status: "active",
-          url: "https://www.khanacademy.org/test-prep/sat",
-        },
-        {
-          name: "College Board Official Guide",
-          type: "Study Material",
-          status: "completed",
-          url: "https://satsuite.collegeboard.org/sat/practice-preparation",
-        },
-        {
-          name: "SAT Math Bootcamp",
-          type: "Course",
-          status: "in-progress",
-          url: "https://www.khanacademy.org/math",
-        },
-      ],
+          { name: "Reading", target: 380 },
+          { name: "Writing & Language", target: 370 },
+          { name: "Math", target: 750 },
+        ],
     },
     {
       id: 2,
@@ -788,310 +756,465 @@ export const Dashboard = () => {
       fullName: "International English Language Testing System",
       date: "Jan 20, 2025",
       daysLeft: 39,
-      status: "preparing",
-      score: undefined,
       target: "7.5+",
-      progress: 60,
       registrationId: "IELTS-2025-01-20-67890",
       location: "British Council, Ulaanbaatar",
       duration: "2 hours 45 minutes",
       sections: [
-        {
-          name: "Listening",
-          score: undefined,
-          target: 7.5,
-          progress: 70,
-          status: "in-progress",
-        },
-        {
-          name: "Reading",
-          score: undefined,
-          target: 7.5,
-          progress: 65,
-          status: "in-progress",
-        },
-        {
-          name: "Writing",
-          score: undefined,
-          target: 7.0,
-          progress: 55,
-          status: "in-progress",
-        },
-        {
-          name: "Speaking",
-          score: undefined,
-          target: 7.5,
-          progress: 60,
-          status: "in-progress",
-        },
-      ],
-      practiceTests: [
-        {
-          name: "IELTS Practice Test 1",
-          date: "Dec 1, 2024",
-          score: 6.5,
-          status: "completed",
-          improvement: "+0.5",
-        },
-        {
-          name: "IELTS Practice Test 2",
-          date: "Nov 15, 2024",
-          score: 6.0,
-          status: "completed",
-          improvement: "Baseline",
-        },
-      ],
-      studyPlan: [
-        {
-          topic: "Academic Vocabulary",
-          progress: 100,
-          priority: "high",
-          status: "completed",
-        },
-        {
-          topic: "Listening Strategies",
-          progress: 100,
-          priority: "high",
-          status: "completed",
-        },
-        {
-          topic: "Reading Techniques",
-          progress: 70,
-          priority: "high",
-          status: "in-progress",
-        },
-        {
-          topic: "Essay Writing",
-          progress: 40,
-          priority: "medium",
-          status: "in-progress",
-        },
-        {
-          topic: "Speaking Fluency",
-          progress: 30,
-          priority: "medium",
-          status: "in-progress",
-        },
-      ],
-      resources: [
-        {
-          name: "IELTS Official Practice",
-          type: "Practice Tests",
-          status: "active",
-          url: "https://www.ielts.org/for-test-takers/preparation",
-        },
-        {
-          name: "Cambridge IELTS Books",
-          type: "Study Material",
-          status: "in-progress",
-          url: "https://www.cambridge.org/cambridgeenglish/catalog/exams/cambridge-ielts",
-        },
-        {
-          name: "Speaking Partner Sessions",
-          type: "Practice",
-          status: "scheduled",
-          url: "https://www.italki.com/en/teachers/ielts",
-        },
-      ],
+          { name: "Listening", target: 7.5 },
+          { name: "Reading", target: 7.5 },
+          { name: "Writing", target: 7.0 },
+          { name: "Speaking", target: 7.5 },
+        ],
     },
     {
       id: 3,
       exam: "TOEFL",
       fullName: "Test of English as a Foreign Language",
-      date: "Feb 10, 2025",
-      daysLeft: 60,
-      status: "planning",
-      score: undefined,
-      target: "100+",
-      progress: 25,
-      registrationId: undefined,
-      location: "ETS Test Center, Ulaanbaatar",
-      duration: "3 hours 30 minutes",
+        date: "Feb 15, 2025",
+        daysLeft: 65,
+        target: "110+",
+        registrationId: "TOEFL-2025-02-15-11111",
+        location: "International Test Center, Ulaanbaatar",
+        duration: "3 hours 10 minutes",
       sections: [
-        {
-          name: "Reading",
-          score: undefined,
-          target: 25,
-          progress: 20,
-          status: "in-progress",
-        },
-        {
-          name: "Listening",
-          score: undefined,
-          target: 25,
-          progress: 25,
-          status: "in-progress",
-        },
-        {
-          name: "Speaking",
-          score: undefined,
-          target: 25,
-          progress: 30,
-          status: "in-progress",
-        },
-        {
-          name: "Writing",
-          score: undefined,
-          target: 25,
-          progress: 25,
-          status: "in-progress",
-        },
-      ],
-      practiceTests: [
-        {
-          name: "TOEFL Practice Test 1",
-          date: "Dec 5, 2024",
-          score: 85,
-          status: "completed",
-          improvement: "Baseline",
-        },
-      ],
-      studyPlan: [
-        {
-          topic: "TOEFL Format Overview",
-          progress: 100,
-          priority: "high",
-          status: "completed",
-        },
-        {
-          topic: "Academic Reading Skills",
-          progress: 20,
-          priority: "high",
-          status: "in-progress",
-        },
-        {
-          topic: "Listening Comprehension",
-          progress: 25,
-          priority: "high",
-          status: "in-progress",
-        },
-        {
-          topic: "Speaking Tasks",
-          progress: 10,
-          priority: "medium",
-          status: "in-progress",
-        },
-        {
-          topic: "Integrated Writing",
-          progress: 5,
-          priority: "medium",
-          status: "in-progress",
-        },
-      ],
-      resources: [
-        {
-          name: "ETS Official TOEFL Guide",
-          type: "Study Material",
-          status: "planned",
-          url: "https://www.ets.org/toefl/test-takers/ibt/prepare",
-        },
-        {
-          name: "TOEFL Practice Online",
-          type: "Practice Tests",
-          status: "planned",
-          url: "https://toeflpractice.ets.org",
-        },
-        {
-          name: "English Grammar Course",
-          type: "Course",
-          status: "active",
-          url: "https://www.grammarly.com/grammar-check",
-        },
-      ],
-    },
-  ];
+          { name: "Reading", target: 30 },
+          { name: "Listening", target: 28 },
+          { name: "Speaking", target: 28 },
+          { name: "Writing", target: 30 },
+        ],
+      },
+    ];
 
+    if (!userProfile || !userProfile.testScores) {
+      // Return default exam progress if userProfile is not loaded yet
+      return baseExams.map(exam => ({
+        ...exam,
+        score: "Not taken",
+        progress: 0,
+        status: "not-started",
+        sections: exam.sections.map(section => ({
+          ...section,
+          score: 0,
+          progress: 0,
+          status: "not-started",
+        })),
+      }));
+    }
+
+    return baseExams.map(exam => {
+      // Find user's test score for this exam
+      const userTestScore = userProfile.testScores.find(score => 
+        score.test.toLowerCase().includes(exam.exam.toLowerCase())
+      );
+
+      let score = "Not taken";
+      let progress = 0;
+      let status = "not-started";
+
+      if (userTestScore) {
+        score = userTestScore.score;
+        
+        // Calculate progress based on score vs target
+        if (exam.exam === "SAT") {
+          const currentScore = parseInt(score);
+          const targetScore = parseInt(exam.target.replace("+", ""));
+          progress = Math.min(Math.round((currentScore / targetScore) * 100), 100);
+          status = currentScore >= targetScore ? "completed" : "preparing";
+        } else if (exam.exam === "TOEFL") {
+          const currentScore = parseInt(score);
+          const targetScore = parseInt(exam.target.replace("+", ""));
+          progress = Math.min(Math.round((currentScore / targetScore) * 100), 100);
+          status = currentScore >= targetScore ? "completed" : "preparing";
+        } else if (exam.exam === "IELTS") {
+          const currentScore = parseFloat(score);
+          const targetScore = parseFloat(exam.target.replace("+", ""));
+          progress = Math.min(Math.round((currentScore / targetScore) * 100), 100);
+          status = currentScore >= targetScore ? "completed" : "preparing";
+        }
+
+        // Generate section scores based on overall progress
+        const sections = exam.sections.map(section => {
+          let sectionScore = 0;
+          let sectionProgress = 0;
+          let sectionStatus = "not-started";
+
+          if (exam.exam === "SAT") {
+            if (section.name === "Math") {
+              sectionScore = Math.round(750 * (progress / 100));
+            } else {
+              sectionScore = Math.round(370 * (progress / 100));
+            }
+            sectionProgress = Math.min(progress, 100);
+          } else if (exam.exam === "TOEFL") {
+            sectionScore = Math.round(parseInt(section.target) * (progress / 100));
+            sectionProgress = Math.min(progress, 100);
+          } else if (exam.exam === "IELTS") {
+            sectionScore = Math.round(parseFloat(section.target) * (progress / 100) * 10) / 10;
+            sectionProgress = Math.min(progress, 100);
+          }
+
+          if (sectionProgress >= 100) {
+            sectionStatus = "completed";
+          } else if (sectionProgress > 0) {
+            sectionStatus = "in-progress";
+          }
+
+          return {
+            ...section,
+            score: sectionScore,
+            progress: sectionProgress,
+            status: sectionStatus,
+          };
+        });
+
+        return {
+          ...exam,
+          score,
+          progress,
+          status,
+          sections,
+        };
+      }
+
+      // If no user test score, return exam with default values
+      return {
+        ...exam,
+        score: "Not taken",
+        progress: 0,
+        status: "not-started",
+        sections: exam.sections.map(section => ({
+          ...section,
+          score: 0,
+          progress: 0,
+          status: "not-started",
+        })),
+      };
+    });
+  }, [userProfile]);
   const handleExamDetails = (exam: Exam) => {
     setSelectedExam(exam);
     setIsExamModalOpen(true);
   };
-
   const closeExamModal = () => {
     setIsExamModalOpen(false);
     setSelectedExam(null);
   };
-
   const openScholarshipModal = () => {
     setIsScholarshipModalOpen(true);
   };
-
   const closeScholarshipModal = () => {
     setIsScholarshipModalOpen(false);
   };
-
   const openScheduleModal = () => {
     setIsScheduleModalOpen(true);
   };
-
   const closeScheduleModal = () => {
     setIsScheduleModalOpen(false);
   };
-
   const openAddApplicationModal = () => {
     setIsAddApplicationModalOpen(true);
   };
-
   const closeAddApplicationModal = () => {
     setIsAddApplicationModalOpen(false);
     setSearchQuery("");
     setFilteredUniversities(popularUniversities);
     setShowSuggestions(false);
   };
+  const openUploadDocumentsModal = () => {
+    setIsUploadDocumentsModalOpen(true);
+  };
+  const closeUploadDocumentsModal = () => {
+    setIsUploadDocumentsModalOpen(false);
+  };
 
+  // File upload functions
+  const handleFileUpload = (category: string, fileType: string) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const newFile = {
+          id: Date.now().toString(),
+          name: file.name,
+          type: fileType,
+          category: category,
+          file: file,
+          status: 'uploading' as const
+        };
+        
+        setUploadedFiles(prev => [...prev, newFile]);
+        
+        // Simulate upload process
+        setTimeout(() => {
+          setUploadedFiles(prev => 
+            prev.map(f => 
+              f.id === newFile.id 
+                ? { ...f, status: 'uploaded' as const }
+                : f
+            )
+          );
+        }, 2000);
+      }
+    };
+    input.click();
+  };
+
+  const removeFile = (fileId: string) => {
+    setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
+  };
+
+  const uploadAllFiles = () => {
+    const filesToUpload = uploadedFiles.filter(f => f.status === 'uploaded');
+    if (filesToUpload.length === 0) {
+      alert('No files to upload. Please select files first.');
+      return;
+    }
+    
+    // Simulate upload process
+    alert(`Uploading ${filesToUpload.length} files...`);
+    console.log('Files to upload:', filesToUpload);
+    
+    // In a real app, you would upload to a server here
+    setTimeout(() => {
+      alert('Files uploaded successfully!');
+      setUploadedFiles([]);
+      closeUploadDocumentsModal();
+    }, 3000);
+  };
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setShowSuggestions(query.length > 0);
-
     if (query.trim() === "") {
       setFilteredUniversities(popularUniversities);
     } else {
       const filtered = popularUniversities.filter(
         university =>
-          university.name.toLowerCase().includes(query.toLowerCase()) ||
-          university.location.toLowerCase().includes(query.toLowerCase()) ||
-          university.programs.some(program =>
-            program.toLowerCase().includes(query.toLowerCase())
-          )
+        university.name.toLowerCase().includes(query.toLowerCase()) ||
+        university.location.toLowerCase().includes(query.toLowerCase()) ||
+        university.programs.some(program => 
+          program.toLowerCase().includes(query.toLowerCase())
+        )
       );
       setFilteredUniversities(filtered);
     }
   };
-
   const handleSearchSubmit = () => {
     setShowSuggestions(false);
     // Search functionality is already handled by handleSearch
   };
+  const handleViewSavedUni = (university: SavedUniversity) => {
+    setSelectedSavedUni(university);
+    setIsSavedUniModalOpen(true);
+  };
+  const handleApplyToUni = (university: SavedUniversity) => {
+    // Add to applications logic
+    console.log('Adding to applications:', university.name);
+    // You can implement the actual logic here
+    alert(`Added ${university.name} to your applications!`);
+  };
+  const handleRemoveSavedUni = (universityId: number) => {
+    setSavedUnis(prev => prev.filter(uni => uni.id !== universityId));
+  };
 
-  const savedUniversities = [
-    {
-      id: "mit",
-      name: "MIT",
-      ranking: 1,
-      tuition: "$57,986",
-      acceptance: "6.7%",
-      deadline: "Jan 1, 2025",
-      status: "applying",
-    },
-    {
-      id: "stanford",
-      name: "Stanford",
-      ranking: 2,
-      tuition: "$61,731",
-      acceptance: "4.3%",
-      deadline: "Jan 2, 2025",
-      status: "applying",
-    },
-    {
-      id: "harvard",
-      name: "Harvard",
-      ranking: 3,
-      tuition: "$57,261",
-      acceptance: "3.4%",
-      deadline: "Jan 15, 2025",
-      status: "considering",
-    },
-  ];
+  // Function to clear all saved data
+  const clearAllSavedData = () => {
+    if (confirm('Are you sure you want to clear all saved data? This action cannot be undone.')) {
+      localStorage.removeItem('milestoneProgress');
+      localStorage.removeItem('savedUniversities');
+      // Reset to default values
+      setMilestoneProgress({
+        "1": { completedSteps: 4, status: "completed" },
+        "2": { completedSteps: 3, status: "current" },
+        "3": { completedSteps: 0, status: "upcoming" },
+        "4": { completedSteps: 0, status: "upcoming" },
+        "5": { completedSteps: 0, status: "upcoming" }
+      });
+      setSavedUnis(savedUniversities);
+      alert('All saved data has been cleared!');
+    }
+  };
 
+  // Load data from localStorage on client-side mount
+  useEffect(() => {
+    // Load saved universities
+    const savedUnis = localStorage.getItem('savedUniversities');
+    if (savedUnis) {
+      try {
+        const parsedUnis = JSON.parse(savedUnis);
+        setSavedUnis(parsedUnis);
+      } catch (error) {
+        console.error('Error loading saved universities:', error);
+        // If there's an error parsing, use default data
+        setSavedUnis(savedUniversities);
+      }
+    } else {
+      // Ensure we always have the default 4 universities
+      setSavedUnis(savedUniversities);
+    }
+
+    // Load milestone progress
+    const savedProgress = localStorage.getItem('milestoneProgress');
+    if (savedProgress) {
+      try {
+        setMilestoneProgress(JSON.parse(savedProgress));
+      } catch (error) {
+        console.error('Error loading milestone progress:', error);
+      }
+    }
+
+    // Load user profile data
+    const savedProfile = localStorage.getItem('userProfile');
+    if (savedProfile) {
+      try {
+        setUserProfile(JSON.parse(savedProfile));
+      } catch (error) {
+        console.error('Error loading user profile:', error);
+      }
+    }
+  }, []);
+
+  // Save milestone progress to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('milestoneProgress', JSON.stringify(milestoneProgress));
+  }, [milestoneProgress]);
+
+  // Save saved universities to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('savedUniversities', JSON.stringify(savedUnis));
+  }, [savedUnis]);
+
+  // Listen for user profile changes and update exam progress
+  useEffect(() => {
+    // This will trigger when userProfile changes
+    // The exam progress will be recalculated based on new test scores
+  }, [userProfile]);
+  // Detailed milestones data with dynamic state
+  const detailedMilestones = useMemo(() => [
+    {
+      id: "1",
+      title: "Step 1: Research Universities",
+      description: "Gather information about universities, requirements, rankings, and admission criteria",
+      status: milestoneProgress["1"].status,
+      date: "2024-10-01",
+      category: "Research",
+      priority: "high" as const,
+      estimatedTime: "2-3 weeks",
+      steps: [
+        "Research university websites",
+        "Check rankings and reputation",
+        "Gather tuition and cost information",
+        "Study admission requirements"
+      ],
+      completedSteps: milestoneProgress["1"].completedSteps,
+      totalSteps: 4,
+      tips: [
+        "Get information from official university websites",
+        "Consult with student representatives",
+        "Study university history, specialties, and programs"
+      ]
+    },
+    {
+      id: "2", 
+      title: "Step 2: Prepare Documents",
+      description: "Prepare and verify all required documents for applications",
+      status: milestoneProgress["2"].status,
+      date: "2024-12-15",
+      category: "Documents",
+      priority: "high" as const,
+      estimatedTime: "4-6 weeks",
+      steps: [
+        "Academic transcripts (diploma, grade reports)",
+        "IELTS/TOEFL test scores",
+        "Write personal statement",
+        "Get recommendation letters",
+        "Financial documents"
+      ],
+      completedSteps: milestoneProgress["2"].completedSteps,
+      totalSteps: 5,
+      tips: [
+        "Translate documents to English",
+        "Get official verification",
+        "Write personal statement clearly and interestingly",
+        "Contact recommenders in advance"
+      ]
+    },
+    {
+      id: "3",
+      title: "Step 3: Submit Applications",
+      description: "Complete and submit applications to all target universities",
+      status: milestoneProgress["3"].status,
+      date: "2024-12-31",
+      category: "Application",
+      priority: "high" as const,
+      estimatedTime: "1-2 weeks",
+      steps: [
+        "Fill out online application forms",
+        "Upload required documents",
+        "Pay application fees",
+        "Submit and verify",
+        "Wait for confirmation"
+      ],
+      completedSteps: milestoneProgress["3"].completedSteps,
+      totalSteps: 5,
+      tips: [
+        "Fill application forms carefully",
+        "Complete all required fields",
+        "Pay fees on time",
+        "Wait for confirmation after submission"
+      ]
+    },
+    {
+      id: "4",
+      title: "Step 4: Attend Interviews",
+      description: "Participate in university interviews if required",
+      status: milestoneProgress["4"].status,
+      date: "2025-01-15",
+      category: "Interview",
+      priority: "medium" as const,
+      estimatedTime: "1 week",
+      steps: [
+        "Schedule interview appointments",
+        "Prepare for interviews",
+        "Attend interviews",
+        "Wait for results"
+      ],
+      completedSteps: milestoneProgress["4"].completedSteps,
+      totalSteps: 4,
+      tips: [
+        "Research interview topics in advance",
+        "Prepare self-introduction",
+        "Prepare questions to ask",
+        "Test technical setup beforehand"
+      ]
+    },
+    {
+      id: "5",
+      title: "Step 5: Wait for Decisions",
+      description: "Wait for admission decisions from universities",
+      status: milestoneProgress["5"].status,
+      date: "2025-03-15",
+      category: "Decision",
+      priority: "low" as const,
+      estimatedTime: "2-3 months",
+      steps: [
+        "Wait for decision notifications",
+        "Receive acceptance letters",
+        "Make final choice",
+        "Plan next steps"
+      ],
+      completedSteps: milestoneProgress["5"].completedSteps,
+      totalSteps: 4,
+      tips: [
+        "Wait patiently for decision notifications",
+        "Compare options if multiple acceptances",
+        "Check financial aid and scholarships",
+        "Prepare for next steps"
+      ]
+    }
+  ], [milestoneProgress]);
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -1102,7 +1225,6 @@ export const Dashboard = () => {
             Track your university application progress
           </p>
         </div>
-
         {/* Quick Actions Panel */}
         <div className="mb-8">
           <Card>
@@ -1126,6 +1248,8 @@ export const Dashboard = () => {
                         openScheduleModal();
                       } else if (action.action === "add-application") {
                         openAddApplicationModal();
+                      } else if (action.action === "upload-docs") {
+                        openUploadDocumentsModal();
                       }
                     }}
                   >
@@ -1141,7 +1265,6 @@ export const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
-
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
@@ -1164,62 +1287,8 @@ export const Dashboard = () => {
             </Card>
           ))}
         </div>
-
-        {/* Upcoming Deadlines & Recent Activity */}
-        <div className="grid lg:grid-cols-2 gap-6 mb-8">
-          {/* Upcoming Deadlines */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5" />
-                Upcoming Deadlines
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {upcomingDeadlines.map(deadline => (
-                <div
-                  key={deadline.id}
-                  className={`p-4 rounded-lg border-l-4 ${
-                    deadline.priority === "critical"
-                      ? "border-red-500 bg-red-50"
-                      : deadline.priority === "high"
-                        ? "border-orange-500 bg-orange-50"
-                        : "border-blue-500 bg-blue-50"
-                  }`}
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-semibold text-sm">
-                        {deadline.title}
-                      </h4>
-                      <p className="text-xs text-muted-foreground">
-                        Due: {deadline.deadline}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <Badge
-                        variant={
-                          deadline.priority === "critical"
-                            ? "destructive"
-                            : deadline.priority === "high"
-                              ? "default"
-                              : "secondary"
-                        }
-                        className="text-xs"
-                      >
-                        {deadline.daysLeft} days left
-                      </Badge>
-                      <p className="text-xs text-muted-foreground mt-1 capitalize">
-                        {deadline.type}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
           {/* Recent Activity */}
+        <div className="mb-8">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -1247,187 +1316,8 @@ export const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
-
-        {/* Upcoming Tasks - Full Width */}
+        {/* Saved Universities */}
         <div className="mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5" />
-                Upcoming Tasks
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {upcomingTasks.map((task, index) => (
-                  <div
-                    key={index}
-                    className={`p-4 rounded-lg border transition-all hover:shadow-sm ${
-                      task.completed
-                        ? "bg-muted/30 border-muted"
-                        : "bg-background border-border hover:border-primary/20"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          task.completed
-                            ? "bg-green-500 text-white"
-                            : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {task.completed ? (
-                          <CheckCircle className="h-4 w-4" />
-                        ) : (
-                          <span className="text-xs font-bold">{index + 1}</span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm mb-1">
-                          {task.task}
-                        </h4>
-                        <p className="text-xs text-muted-foreground mb-2">
-                          Due: {task.dueDate}
-                        </p>
-                        <Badge
-                          variant={
-                            task.priority === "High"
-                              ? "destructive"
-                              : task.priority === "Medium"
-                                ? "default"
-                                : "secondary"
-                          }
-                          className="text-xs"
-                        >
-                          {task.priority}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Applications Progress - Full Width */}
-        <div className="mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Application Progress</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {applications.map((app, index) => (
-                <div key={index} className="space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-semibold">{app.university}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {app.program}
-                      </p>
-                    </div>
-                    <Badge
-                      variant={
-                        app.status === "Submitted"
-                          ? "default"
-                          : app.status === "In Progress"
-                            ? "secondary"
-                            : "outline"
-                      }
-                    >
-                      {app.status}
-                    </Badge>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Progress</span>
-                      <span>{app.progress}%</span>
-                    </div>
-                    <Progress value={app.progress} className="h-2" />
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">
-                      Deadline: {app.deadline}
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleViewDetails(app)}
-                    >
-                      View Details
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Additional Widgets Grid */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          {/* Exam Progress Tracker */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5" />
-                Exam Progress
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {examProgress.map((exam, index) => (
-                <div key={index} className="space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-semibold text-sm">{exam.exam}</h4>
-                      <p className="text-xs text-muted-foreground">
-                        {exam.date} ({exam.daysLeft} days left)
-                      </p>
-                    </div>
-                    <Badge
-                      variant={
-                        exam.status === "registered"
-                          ? "default"
-                          : exam.status === "preparing"
-                            ? "secondary"
-                            : "outline"
-                      }
-                      className="text-xs"
-                    >
-                      {exam.status}
-                    </Badge>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Progress</span>
-                      <span>{exam.progress}%</span>
-                    </div>
-                    <Progress value={exam.progress} className="h-2" />
-                  </div>
-                  <div className="flex justify-between items-center text-xs">
-                    {exam.score ? (
-                      <span className="text-green-600 font-medium">
-                        Score: {exam.score}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        Target: {exam.target}
-                      </span>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleExamDetails(exam)}
-                    >
-                      <ExternalLink className="h-3 w-3 mr-1" />
-                      Details
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* University Comparison */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -1435,124 +1325,668 @@ export const Dashboard = () => {
                 Saved Universities
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {savedUniversities.map(uni => (
-                <div
-                  key={uni.id}
-                  className="p-3 rounded-lg border hover:shadow-sm transition-shadow"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h4 className="font-semibold text-sm">{uni.name}</h4>
-                      <p className="text-xs text-muted-foreground">
-                        #{uni.ranking} • {uni.acceptance}
-                      </p>
+            <CardContent>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {savedUnis.map((university) => (
+                  <div
+                    key={university.id}
+                    className="group relative bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-all duration-200 hover:border-primary/20"
+                  >
+                    {/* University Image */}
+                    <div className="relative h-32 w-full mb-4 rounded-lg overflow-hidden">
+                      <Image
+                        src={university.image}
+                        alt={university.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-200"
+                      />
+                      <div className="absolute top-2 right-2">
+                        <Badge variant="secondary" className="text-xs">
+                          #{university.ranking}
+                        </Badge>
+                      </div>
                     </div>
-                    <Badge
-                      variant={
-                        uni.status === "applying" ? "default" : "secondary"
+                    {/* University Info */}
+                    <div className="space-y-3">
+                      <div>
+                        <h3 className="font-semibold text-lg text-gray-900 group-hover:text-primary transition-colors">
+                          {university.name}
+                        </h3>
+                        <p className="text-sm text-gray-600 flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {university.location}
+                        </p>
+                      </div>
+                      {/* Programs */}
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Programs:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {university.programs.slice(0, 2).map((program: string, index: number) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {program}
+                        </Badge>
+                          ))}
+                          {university.programs.length > 2 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{university.programs.length - 2} more
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      {/* Stats */}
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <p className="text-gray-500">Tuition</p>
+                          <p className="font-medium">{university.tuition}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500">Acceptance</p>
+                          <p className="font-medium">{university.acceptanceRate}</p>
+                        </div>
+                      </div>
+                      {/* Notes */}
+                      {university.notes && (
+                        <div className="bg-gray-50 p-2 rounded text-xs text-gray-600">
+                          <p className="font-medium mb-1">Notes:</p>
+                          <p>{university.notes}</p>
+                        </div>
+                      )}
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => window.open(university.website, '_blank')}
+                        >
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          Visit Website
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleApplyToUni(university)}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          Apply
+                        </Button>
+                      </div>
+                      {/* Additional Action Buttons */}
+                      <div className="flex gap-2 pt-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewSavedUni(university)}
+                          className="flex-1"
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          View Details
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleRemoveSavedUni(university.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      {/* Additional Info */}
+                      <div className="text-xs text-gray-500 space-y-1">
+                        <p>Deadline: {university.applicationDeadline}</p>
+                        <p>Saved: {new Date(university.savedDate).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* View All Button */}
+              <div className="mt-6 text-center">
+                <Button 
+                  variant="outline" 
+                  className="w-full max-w-xs"
+                  onClick={() => {
+                    // Navigate to universities page or open a modal
+                    alert(`Viewing all ${savedUnis.length} saved universities!`);
+                    console.log('Saved universities:', savedUnis);
+                    // In a real app, you would navigate to a universities page
+                    // router.push('/universities?filter=saved');
+                  }}
+                >
+                  <Search className="h-4 w-4 mr-2" />
+                  View All Saved Universities
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        {/* Applications Progress - Full Width */}
+        <div className="mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Application Progress</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {applications.map((app, index) => (
+                  <div key={index} className="space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-semibold">{app.university}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {app.program}
+                        </p>
+                      </div>
+                      <Badge
+                        variant={
+                          app.status === "Submitted"
+                            ? "default"
+                            : app.status === "In Progress"
+                              ? "secondary"
+                              : "outline"
+                        }
+                      >
+                        {app.status}
+                      </Badge>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Progress</span>
+                        <span>{app.progress}%</span>
+                      </div>
+                      <Progress value={app.progress} className="h-2" />
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">
+                        Deadline: {app.deadline}
+                      </span>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleViewDetails(app)}
+                      >
+                        View Details
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        {/* Cards in List Layout */}
+        <div className="space-y-6 mb-8">
+            {/* Exam Progress Tracker */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5" />
+                  Exam Progress
+                </CardTitle>
+              </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* Exam Progress Items */}
+                <div className="space-y-4">
+                  {examProgress.map((exam, index) => {
+                    const getExamColor = (status: string) => {
+                      switch (status) {
+                        case "registered":
+                          return {
+                            bg: "from-blue-50 to-indigo-50",
+                            border: "border-blue-200",
+                            icon: "bg-blue-600",
+                            text: "text-blue-600",
+                            badge: "bg-blue-100 text-blue-800 border-blue-200"
+                          };
+                        case "preparing":
+                          return {
+                            bg: "from-orange-50 to-amber-50",
+                            border: "border-orange-200",
+                            icon: "bg-orange-600",
+                            text: "text-orange-600",
+                            badge: "bg-orange-100 text-orange-800 border-orange-200"
+                          };
+                        case "completed":
+                          return {
+                            bg: "from-green-50 to-emerald-50",
+                            border: "border-green-200",
+                            icon: "bg-green-600",
+                            text: "text-green-600",
+                            badge: "bg-green-100 text-green-800 border-green-200"
+                          };
+                        default:
+                          return {
+                            bg: "from-gray-50 to-slate-50",
+                            border: "border-gray-200",
+                            icon: "bg-gray-600",
+                            text: "text-gray-600",
+                            badge: "bg-gray-100 text-gray-800 border-gray-200"
+                          };
                       }
-                      className="text-xs"
-                    >
-                      {uni.status}
-                    </Badge>
+                    };
+
+                    const colors = getExamColor(exam.status);
+                    const examInitials = exam.exam.split(' ').map(word => word[0]).join('').toUpperCase();
+
+                    return (
+                      <div key={index} className={`bg-gradient-to-r ${colors.bg} border ${colors.border} rounded-lg p-4 hover:shadow-md transition-all duration-200`}>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 ${colors.icon} rounded-lg flex items-center justify-center`}>
+                              <span className="text-white font-bold text-sm">{examInitials}</span>
+                            </div>
+                      <div>
+                              <h4 className="font-semibold text-gray-900">{exam.exam}</h4>
+                              <p className="text-sm text-gray-600">
+                          {exam.date} ({exam.daysLeft} days left)
+                        </p>
+                      </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className={`text-xs ${colors.badge}`}>
+                              {exam.status === "registered" && <CheckCircle className="h-3 w-3 mr-1" />}
+                              {exam.status === "preparing" && <Clock className="h-3 w-3 mr-1" />}
+                              {exam.status === "completed" && <CheckCircle className="h-3 w-3 mr-1" />}
+                              {exam.status.charAt(0).toUpperCase() + exam.status.slice(1)}
+                      </Badge>
+                          </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Progress</span>
+                            <span className={`font-semibold ${colors.text}`}>{exam.progress}%</span>
+                      </div>
+                          <Progress value={exam.progress} className="h-3 bg-gray-200">
+                            <div className={`h-3 bg-gradient-to-r ${colors.icon.replace('bg-', 'from-').replace('-600', '-500')} ${colors.icon.replace('bg-', 'to-')} rounded-full transition-all duration-300`} style={{ width: `${exam.progress}%` }} />
+                          </Progress>
+                    </div>
+                        <div className="flex justify-between items-center mt-3 text-sm">
+                          <div className="flex items-center gap-4">
+                      {exam.score ? (
+                              <div className="flex items-center gap-1 text-green-600">
+                                <CheckCircle className="h-4 w-4" />
+                                <span className="font-medium">Score: {exam.score}</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 text-gray-600">
+                                <Target className="h-4 w-4" />
+                                <span>Target: {exam.target}</span>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1 text-gray-600">
+                              <Calendar className="h-4 w-4" />
+                              <span>{exam.date}</span>
+                            </div>
+                          </div>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleExamDetails(exam)}
+                            className={`${colors.text} border-current hover:bg-opacity-10 transition-all duration-200`}
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Details
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center text-xs text-muted-foreground">
-                    <span>{uni.tuition}/year</span>
-                    <span>Due: {uni.deadline}</span>
-                  </div>
-                  <div className="flex gap-2 mt-3">
-                    <Button size="sm" variant="outline" className="flex-1">
-                      <Eye className="h-3 w-3 mr-1" />
-                      View
-                    </Button>
-                    <Button size="sm" variant="outline" className="flex-1">
-                      <Edit className="h-3 w-3 mr-1" />
-                      Edit
-                    </Button>
+                    );
+                  })}
+                </div>
+
+                {/* Exam Summary Stats */}
+                <div className="bg-gradient-to-r from-gray-50 to-indigo-50 rounded-lg p-4 border border-gray-200">
+                  <h5 className="font-semibold text-gray-900 mb-3">Exam Summary</h5>
+                  <div className="grid grid-cols-4 gap-4 text-center">
+                    <div>
+                      <div className="text-2xl font-bold text-blue-600">
+                        {examProgress.filter(e => e.status === "registered").length}
+                      </div>
+                      <div className="text-xs text-gray-600">Registered</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-orange-600">
+                        {examProgress.filter(e => e.status === "preparing").length}
+                      </div>
+                      <div className="text-xs text-gray-600">Preparing</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-green-600">
+                        {examProgress.filter(e => e.status === "completed").length}
+                      </div>
+                      <div className="text-xs text-gray-600">Completed</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-purple-600">
+                        {Math.round(examProgress.reduce((acc, exam) => acc + exam.progress, 0) / examProgress.length)}%
+                      </div>
+                      <div className="text-xs text-gray-600">Avg Progress</div>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
+              </div>
+              </CardContent>
+            </Card>
 
-        {/* Progress Tracker and Milestone Tracker */}
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Progress Tracker */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Overall Progress</CardTitle>
-            </CardHeader>
+          {/* Overall Progress Card */}
+            <Card>
+              <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Overall Progress
+                </CardTitle>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (confirm('Are you sure you want to reset all milestone progress? This action cannot be undone.')) {
+                        setMilestoneProgress({
+                          "1": { completedSteps: 0, status: "upcoming" },
+                          "2": { completedSteps: 0, status: "upcoming" },
+                          "3": { completedSteps: 0, status: "upcoming" },
+                          "4": { completedSteps: 0, status: "upcoming" },
+                          "5": { completedSteps: 0, status: "upcoming" }
+                        });
+                        // Set first milestone as current
+                        setMilestoneProgress(prev => ({
+                          ...prev,
+                          "1": { ...prev["1"], status: "current" as const }
+                        }));
+                        alert('Milestone progress has been reset!');
+                      }
+                    }}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    Reset Progress
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearAllSavedData}
+                    className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                  >
+                    Clear All Data
+                  </Button>
+                </div>
+              </div>
+              </CardHeader>
             <CardContent>
-              <ProgressTracker
-                title="Application Progress"
-                items={[
-                  {
-                    name: "MIT Application",
-                    progress: 75,
-                    status: "in-progress",
-                    deadline: "Jan 1, 2025",
-                    priority: "high",
-                  },
-                  {
-                    name: "Stanford Application",
-                    progress: 100,
-                    status: "completed",
-                    deadline: "Jan 2, 2025",
-                    priority: "high",
-                  },
-                  {
-                    name: "Harvard Application",
-                    progress: 45,
-                    status: "pending",
-                    deadline: "Jan 15, 2025",
-                    priority: "medium",
-                  },
-                ]}
-              />
-            </CardContent>
-          </Card>
+              <div className="space-y-6">
+                {/* Application Progress Items */}
+                <div className="space-y-4">
+                  {/* MIT Application */}
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 hover:shadow-md transition-all duration-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">MIT</span>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900">MIT Application</h4>
+                          <p className="text-sm text-gray-600">Computer Science</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-orange-200">
+                          In Progress
+                        </Badge>
+                        <Badge variant="outline" className="text-red-600 border-red-200">
+                          High Priority
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Progress</span>
+                        <span className="font-semibold text-blue-600">75%</span>
+                      </div>
+                      <Progress value={75} className="h-3 bg-gray-200">
+                        <div className="h-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-300" style={{ width: '75%' }} />
+                      </Progress>
+                    </div>
+                    <div className="flex justify-between items-center mt-3 text-sm">
+                      <div className="flex items-center gap-1 text-gray-600">
+                        <Calendar className="h-4 w-4" />
+                        <span>Deadline: Jan 1, 2025</span>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                        onClick={() => {
+                          // Open MIT application details
+                          alert('Opening MIT Application Details...');
+                          // You can add more functionality here like opening a modal or navigating to a page
+                        }}
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        View Details
+                      </Button>
+                    </div>
+                  </div>
 
-          {/* Milestone Tracker */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Milestones</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <MilestoneTracker
-                milestones={[
-                  {
-                    id: "1",
-                    title: "Application Submitted",
-                    description: "MIT application completed and submitted",
-                    status: "completed",
-                    date: "Dec 1, 2024",
-                    category: "Application",
-                  },
-                  {
-                    id: "2",
-                    title: "Interview Scheduled",
-                    description: "MIT interview scheduled for next week",
-                    status: "current",
-                    date: "Dec 15, 2024",
-                    category: "Interview",
-                  },
-                  {
-                    id: "3",
-                    title: "Decision Received",
-                    description: "Waiting for admission decision",
-                    status: "upcoming",
-                    date: "Mar 15, 2025",
-                    category: "Decision",
-                  },
-                ]}
-              />
-            </CardContent>
-          </Card>
+                  {/* Stanford Application */}
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 hover:shadow-md transition-all duration-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">SU</span>
+                        </div>
+                      <div>
+                          <h4 className="font-semibold text-gray-900">Stanford Application</h4>
+                          <p className="text-sm text-gray-600">Engineering</p>
+                    </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Completed
+                        </Badge>
+                        <Badge variant="outline" className="text-red-600 border-red-200">
+                          High Priority
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Progress</span>
+                        <span className="font-semibold text-green-600">100%</span>
+                      </div>
+                      <Progress value={100} className="h-3 bg-gray-200">
+                        <div className="h-3 bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-300" style={{ width: '100%' }} />
+                      </Progress>
+                    </div>
+                    <div className="flex justify-between items-center mt-3 text-sm">
+                      <div className="flex items-center gap-1 text-gray-600">
+                        <Calendar className="h-4 w-4" />
+                        <span>Deadline: Jan 2, 2025</span>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="text-green-600 border-green-200 hover:bg-green-50"
+                        onClick={() => {
+                          // Open Stanford application results
+                          alert('Opening Stanford Application Results...');
+                          // You can add more functionality here like opening a modal or navigating to a page
+                        }}
+                      >
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        View Results
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Harvard Application */}
+                  <div className="bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200 rounded-lg p-4 hover:shadow-md transition-all duration-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">HU</span>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900">Harvard Application</h4>
+                          <p className="text-sm text-gray-600">Business</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200">
+                          Pending
+                        </Badge>
+                        <Badge variant="outline" className="text-orange-600 border-orange-200">
+                          Medium Priority
+                    </Badge>
+                    </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Progress</span>
+                        <span className="font-semibold text-purple-600">45%</span>
+                      </div>
+                      <Progress value={45} className="h-3 bg-gray-200">
+                        <div className="h-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-300" style={{ width: '45%' }} />
+                      </Progress>
+                    </div>
+                    <div className="flex justify-between items-center mt-3 text-sm">
+                      <div className="flex items-center gap-1 text-gray-600">
+                        <Calendar className="h-4 w-4" />
+                        <span>Deadline: Jan 15, 2025</span>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                        onClick={() => {
+                          // Continue Harvard application
+                          alert('Continuing Harvard Application...');
+                          // You can add more functionality here like opening a modal or navigating to a page
+                        }}
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Continue
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Summary Stats */}
+                <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-4 border border-gray-200">
+                  <h5 className="font-semibold text-gray-900 mb-3">Application Summary</h5>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <div className="text-2xl font-bold text-green-600">1</div>
+                      <div className="text-xs text-gray-600">Completed</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-blue-600">1</div>
+                      <div className="text-xs text-gray-600">In Progress</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-purple-600">1</div>
+                      <div className="text-xs text-gray-600">Pending</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              </CardContent>
+            </Card>
+
+          {/* University Application Milestones Card */}
+          <DetailedMilestoneTracker 
+            milestones={detailedMilestones}
+            onStepComplete={(milestoneId, stepIndex) => {
+              console.log(`Step ${stepIndex + 1} completed for milestone ${milestoneId}`);
+              
+              // Update milestone progress
+              setMilestoneProgress(prev => {
+                const updated = { ...prev };
+                const currentProgress = updated[milestoneId];
+                
+                if (currentProgress) {
+                  const newCompletedSteps = Math.max(currentProgress.completedSteps, stepIndex + 1);
+                  updated[milestoneId] = {
+                    ...currentProgress,
+                    completedSteps: newCompletedSteps
+                  };
+                  
+                  // Check if all steps are completed
+                  const milestone = detailedMilestones.find(m => m.id === milestoneId);
+                  if (milestone && newCompletedSteps >= milestone.totalSteps) {
+                    updated[milestoneId] = {
+                      ...updated[milestoneId],
+                      status: "completed" as const
+                    };
+                  }
+                }
+                
+                return updated;
+              });
+            }}
+            onMilestoneComplete={(milestoneId) => {
+              console.log(`Milestone ${milestoneId} completed`);
+              
+              // Mark milestone as completed
+              setMilestoneProgress(prev => ({
+                ...prev,
+                [milestoneId]: {
+                  ...prev[milestoneId],
+                  status: "completed" as const
+                }
+              }));
+              
+              // Move to next milestone if it exists
+              const currentIndex = detailedMilestones.findIndex(m => m.id === milestoneId);
+              if (currentIndex < detailedMilestones.length - 1) {
+                const nextMilestoneId = detailedMilestones[currentIndex + 1].id;
+                setMilestoneProgress(prev => ({
+                  ...prev,
+                  [nextMilestoneId]: {
+                    ...prev[nextMilestoneId],
+                    status: "current" as const
+                  }
+                }));
+              }
+              
+              // Show success message
+              alert(`Congratulations! You've completed ${detailedMilestones.find(m => m.id === milestoneId)?.title}`);
+            }}
+            onStepUncomplete={(milestoneId, stepIndex) => {
+              console.log(`Step ${stepIndex + 1} uncompleted for milestone ${milestoneId}`);
+              
+              // Update milestone progress
+              setMilestoneProgress(prev => {
+                const updated = { ...prev };
+                const currentProgress = updated[milestoneId];
+                
+                if (currentProgress) {
+                  const newCompletedSteps = Math.min(currentProgress.completedSteps, stepIndex);
+                  updated[milestoneId] = {
+                    ...currentProgress,
+                    completedSteps: newCompletedSteps,
+                    status: "current" as const // Reset to current when uncompleting
+                  };
+                }
+                
+                return updated;
+              });
+            }}
+            onMilestoneUncomplete={(milestoneId) => {
+              console.log(`Milestone ${milestoneId} uncompleted`);
+              
+              // Mark milestone as current (not completed)
+              setMilestoneProgress(prev => ({
+                ...prev,
+                [milestoneId]: {
+                  ...prev[milestoneId],
+                  status: "current" as const
+                }
+              }));
+              
+              // Show message
+              alert(`Milestone uncompleted: ${detailedMilestones.find(m => m.id === milestoneId)?.title}`);
+            }}
+          />
+          </div>
         </div>
-      </div>
-
       {/* Application Details Modal */}
       {isModalOpen && selectedApplication && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -1561,8 +1995,8 @@ export const Dashboard = () => {
             <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <Image
-                    src={selectedApplication.image}
+                  <Image 
+                    src={selectedApplication.image} 
                     alt={selectedApplication.university}
                     width={64}
                     height={64}
@@ -1579,10 +2013,10 @@ export const Dashboard = () => {
                       <Badge variant="outline">
                         #{selectedApplication.ranking}
                       </Badge>
-                      <Badge
+                      <Badge 
                         variant={
-                          selectedApplication.status === "Submitted"
-                            ? "default"
+                          selectedApplication.status === "Submitted" 
+                            ? "default" 
                             : selectedApplication.status === "In Progress"
                               ? "secondary"
                               : "outline"
@@ -1590,7 +2024,7 @@ export const Dashboard = () => {
                       >
                         {selectedApplication.status}
                       </Badge>
-                    </div>
+      </div>
                   </div>
                 </div>
                 <Button variant="ghost" size="sm" onClick={closeModal}>
@@ -1598,7 +2032,6 @@ export const Dashboard = () => {
                 </Button>
               </div>
             </div>
-
             {/* Modal Content */}
             <div className="p-6 space-y-8">
               {/* University Overview */}
@@ -1637,7 +2070,6 @@ export const Dashboard = () => {
                     </div>
                   </CardContent>
                 </Card>
-
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -1666,7 +2098,6 @@ export const Dashboard = () => {
                   </CardContent>
                 </Card>
               </div>
-
               {/* Program Description */}
               <Card>
                 <CardHeader>
@@ -1678,7 +2109,6 @@ export const Dashboard = () => {
                   </p>
                 </CardContent>
               </Card>
-
               {/* Requirements */}
               <Card>
                 <CardHeader>
@@ -1695,15 +2125,14 @@ export const Dashboard = () => {
                           key={index}
                           className="flex items-start gap-2 text-sm"
                         >
-                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                          <span>{req}</span>
-                        </li>
+                        <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span>{req}</span>
+                      </li>
                       )
                     )}
                   </ul>
                 </CardContent>
               </Card>
-
               {/* Document Status */}
               <Card>
                 <CardHeader>
@@ -1720,55 +2149,54 @@ export const Dashboard = () => {
                           key={index}
                           className="flex items-center justify-between p-3 rounded-lg border"
                         >
-                          <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3">
                             <div
                               className={`w-3 h-3 rounded-full ${
-                                doc.status === "uploaded"
-                                  ? "bg-green-500"
-                                  : doc.status === "draft"
-                                    ? "bg-yellow-500"
-                                    : doc.status === "pending"
-                                      ? "bg-orange-500"
-                                      : doc.status === "not-required"
-                                        ? "bg-gray-300"
-                                        : "bg-gray-300"
+                            doc.status === "uploaded" 
+                              ? "bg-green-500" 
+                              : doc.status === "draft"
+                                ? "bg-yellow-500"
+                                : doc.status === "pending"
+                                  ? "bg-orange-500"
+                                  : doc.status === "not-required"
+                                    ? "bg-gray-300"
+                                    : "bg-gray-300"
                               }`}
                             />
-                            <div>
+                          <div>
                               <span className="font-medium text-sm">
                                 {doc.name}
                               </span>
-                              {doc.required && (
+                            {doc.required && (
                                 <Badge
                                   variant="destructive"
                                   className="ml-2 text-xs"
                                 >
                                   Required
                                 </Badge>
-                              )}
-                            </div>
+                            )}
                           </div>
-                          <Badge
-                            variant={
-                              doc.status === "uploaded"
-                                ? "default"
-                                : doc.status === "draft"
-                                  ? "secondary"
-                                  : doc.status === "pending"
-                                    ? "outline"
-                                    : "outline"
-                            }
-                            className="text-xs capitalize"
-                          >
-                            {doc.status.replace("-", " ")}
-                          </Badge>
                         </div>
+                        <Badge 
+                          variant={
+                            doc.status === "uploaded" 
+                              ? "default" 
+                              : doc.status === "draft"
+                                ? "secondary"
+                                : doc.status === "pending"
+                                  ? "outline"
+                                  : "outline"
+                          }
+                          className="text-xs capitalize"
+                        >
+                          {doc.status.replace("-", " ")}
+                        </Badge>
+                      </div>
                       )
                     )}
                   </div>
                 </CardContent>
               </Card>
-
               {/* Application Timeline */}
               <Card>
                 <CardHeader>
@@ -1781,24 +2209,24 @@ export const Dashboard = () => {
                   <div className="space-y-4">
                     {selectedApplication.milestones.map(
                       (milestone: Milestone, index: number) => (
-                        <div key={index} className="flex items-center gap-4">
+                      <div key={index} className="flex items-center gap-4">
                           <div
                             className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                              milestone.completed
-                                ? "bg-green-500 text-white"
-                                : "bg-gray-200 text-gray-500"
+                          milestone.completed 
+                            ? "bg-green-500 text-white" 
+                            : "bg-gray-200 text-gray-500"
                             }`}
                           >
-                            {milestone.completed ? (
-                              <CheckCircle className="h-4 w-4" />
-                            ) : (
+                          {milestone.completed ? (
+                            <CheckCircle className="h-4 w-4" />
+                          ) : (
                               <span className="text-sm font-bold">
                                 {index + 1}
                               </span>
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
                               <span
                                 className={`font-medium ${
                                   milestone.completed
@@ -1806,28 +2234,27 @@ export const Dashboard = () => {
                                     : "text-muted-foreground"
                                 }`}
                               >
-                                {milestone.title}
-                              </span>
-                              <span className="text-sm text-muted-foreground">
-                                {milestone.date}
-                              </span>
-                            </div>
+                              {milestone.title}
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                              {milestone.date}
+                            </span>
                           </div>
                         </div>
+                      </div>
                       )
                     )}
                   </div>
                 </CardContent>
               </Card>
-
               {/* Action Buttons */}
               <div className="flex gap-4 pt-4 border-t">
                 <Button className="flex-1">
                   <Edit className="h-4 w-4 mr-2" />
                   Continue Application
                 </Button>
-                <Button
-                  variant="outline"
+                <Button 
+                  variant="outline" 
                   className="flex-1"
                   onClick={() => openExternalLink(selectedApplication.website)}
                 >
@@ -1843,7 +2270,6 @@ export const Dashboard = () => {
           </div>
         </div>
       )}
-
       {/* Exam Details Modal */}
       {isExamModalOpen && selectedExam && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -1861,10 +2287,10 @@ export const Dashboard = () => {
                       {selectedExam.fullName}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge
+                      <Badge 
                         variant={
-                          selectedExam.status === "registered"
-                            ? "default"
+                          selectedExam.status === "registered" 
+                            ? "default" 
                             : selectedExam.status === "preparing"
                               ? "secondary"
                               : "outline"
@@ -1883,7 +2309,6 @@ export const Dashboard = () => {
                 </Button>
               </div>
             </div>
-
             {/* Modal Content */}
             <div className="p-6 space-y-8">
               {/* Exam Overview */}
@@ -1920,7 +2345,6 @@ export const Dashboard = () => {
                     )}
                   </CardContent>
                 </Card>
-
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -1961,7 +2385,6 @@ export const Dashboard = () => {
                   </CardContent>
                 </Card>
               </div>
-
               {/* Section Breakdown */}
               <Card>
                 <CardHeader>
@@ -1974,30 +2397,29 @@ export const Dashboard = () => {
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {selectedExam.sections.map(
                       (section: Section, index: number) => (
-                        <div key={index} className="p-4 rounded-lg border">
-                          <div className="flex justify-between items-center mb-2">
+                      <div key={index} className="p-4 rounded-lg border">
+                        <div className="flex justify-between items-center mb-2">
                             <h4 className="font-medium text-sm">
                               {section.name}
                             </h4>
-                            <Badge variant="outline" className="text-xs">
-                              {section.progress}%
-                            </Badge>
-                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            {section.progress}%
+                          </Badge>
+                        </div>
                           <Progress
                             value={section.progress}
                             className="h-2 mb-2"
                           />
-                          <div className="flex justify-between text-xs text-muted-foreground">
-                            <span>Score: {section.score || "N/A"}</span>
-                            <span>Target: {section.target}</span>
-                          </div>
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>Score: {section.score || "N/A"}</span>
+                          <span>Target: {section.target}</span>
                         </div>
+                      </div>
                       )
                     )}
                   </div>
                 </CardContent>
               </Card>
-
               {/* Practice Test History */}
               <Card>
                 <CardHeader>
@@ -2014,28 +2436,28 @@ export const Dashboard = () => {
                           key={index}
                           className="flex items-center justify-between p-3 rounded-lg border"
                         >
-                          <div className="flex items-center gap-4">
-                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <div className="flex items-center gap-4">
+                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                               <span className="text-sm font-bold text-blue-600">
                                 {index + 1}
                               </span>
-                            </div>
-                            <div>
+                          </div>
+                          <div>
                               <div className="font-medium text-sm">
                                 {test.date}
                               </div>
-                              <div className="text-xs text-muted-foreground">
-                                Improvement: {test.improvement}
-                              </div>
+                            <div className="text-xs text-muted-foreground">
+                              Improvement: {test.improvement}
                             </div>
                           </div>
-                          <div className="text-right">
+                        </div>
+                        <div className="text-right">
                             <div className="font-bold text-lg">
                               {test.score}
-                            </div>
+                        </div>
                             <div className="text-xs text-muted-foreground">
                               Score
-                            </div>
+                      </div>
                           </div>
                         </div>
                       )
@@ -2043,7 +2465,6 @@ export const Dashboard = () => {
                   </div>
                 </CardContent>
               </Card>
-
               {/* Study Plan */}
               <Card>
                 <CardHeader>
@@ -2062,20 +2483,20 @@ export const Dashboard = () => {
                         >
                           <div
                             className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                              topic.status === "completed"
-                                ? "bg-green-500 text-white"
-                                : "bg-gray-200 text-gray-500"
+                          topic.status === "completed"
+                            ? "bg-green-500 text-white" 
+                            : "bg-gray-200 text-gray-500"
                             }`}
                           >
-                            {topic.status === "completed" ? (
-                              <CheckCircle className="h-4 w-4" />
-                            ) : (
+                          {topic.status === "completed" ? (
+                            <CheckCircle className="h-4 w-4" />
+                          ) : (
                               <span className="text-xs font-bold">
                                 {index + 1}
                               </span>
-                            )}
-                          </div>
-                          <div className="flex-1">
+                          )}
+                        </div>
+                        <div className="flex-1">
                             <span
                               className={`font-medium text-sm ${
                                 topic.status === "completed"
@@ -2083,28 +2504,27 @@ export const Dashboard = () => {
                                   : "text-muted-foreground"
                               }`}
                             >
-                              {topic.topic}
-                            </span>
-                          </div>
-                          <Badge
-                            variant={
-                              topic.priority === "high"
-                                ? "destructive"
-                                : topic.priority === "medium"
-                                  ? "default"
-                                  : "secondary"
-                            }
-                            className="text-xs"
-                          >
-                            {topic.priority}
-                          </Badge>
+                            {topic.topic}
+                          </span>
                         </div>
+                        <Badge 
+                          variant={
+                            topic.priority === "high"
+                              ? "destructive"
+                              : topic.priority === "medium"
+                                ? "default"
+                                : "secondary"
+                          }
+                          className="text-xs"
+                        >
+                          {topic.priority}
+                        </Badge>
+                      </div>
                       )
                     )}
                   </div>
                 </CardContent>
               </Card>
-
               {/* Study Resources */}
               <Card>
                 <CardHeader>
@@ -2117,48 +2537,47 @@ export const Dashboard = () => {
                   <div className="grid md:grid-cols-2 gap-4">
                     {selectedExam.resources.map(
                       (resource: Resource, index: number) => (
-                        <div key={index} className="p-4 rounded-lg border">
-                          <div className="flex justify-between items-start mb-2">
+                      <div key={index} className="p-4 rounded-lg border">
+                        <div className="flex justify-between items-start mb-2">
                             <h4 className="font-medium text-sm">
                               {resource.name}
                             </h4>
-                            <Badge
-                              variant={
-                                resource.status === "active"
-                                  ? "default"
-                                  : resource.status === "completed"
-                                    ? "secondary"
-                                    : resource.status === "in-progress"
-                                      ? "outline"
-                                      : "outline"
-                              }
-                              className="text-xs"
-                            >
-                              {resource.status}
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground mb-3">
-                            Type: {resource.type}
-                          </p>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="w-full"
-                            onClick={() => openExternalLink(resource.url)}
+                          <Badge 
+                            variant={
+                              resource.status === "active" 
+                                ? "default" 
+                                : resource.status === "completed"
+                                  ? "secondary"
+                                  : resource.status === "in-progress"
+                                    ? "outline"
+                                    : "outline"
+                            }
+                            className="text-xs"
                           >
-                            <ExternalLink className="h-3 w-3 mr-2" />
-                            Access Resource
-                          </Button>
+                            {resource.status}
+                          </Badge>
                         </div>
+                        <p className="text-xs text-muted-foreground mb-3">
+                          Type: {resource.type}
+                        </p>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => openExternalLink(resource.url)}
+                        >
+                          <ExternalLink className="h-3 w-3 mr-2" />
+                          Access Resource
+                        </Button>
+                      </div>
                       )
                     )}
                   </div>
                 </CardContent>
               </Card>
-
               {/* Action Buttons */}
               <div className="flex justify-center pt-4 border-t">
-                <Button
+                <Button 
                   className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 min-w-[200px]"
                   onClick={() =>
                     openExternalLink(getExamOfficialWebsite(selectedExam.exam))
@@ -2172,7 +2591,6 @@ export const Dashboard = () => {
           </div>
         </div>
       )}
-
       {/* Scholarship Opportunities Modal */}
       {isScholarshipModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -2202,7 +2620,6 @@ export const Dashboard = () => {
                 </Button>
               </div>
             </div>
-
             {/* Modal Content */}
             <div className="p-6 space-y-6">
               {/* Scholarship List */}
@@ -2263,10 +2680,9 @@ export const Dashboard = () => {
                   </Card>
                 ))}
               </div>
-
               {/* Action Buttons */}
               <div className="flex justify-center pt-4 border-t">
-                <Button
+                <Button 
                   className="bg-yellow-600 hover:bg-yellow-700 text-white px-8 py-3 min-w-[200px]"
                   onClick={() =>
                     openExternalLink("https://www.scholarships.com")
@@ -2280,7 +2696,6 @@ export const Dashboard = () => {
           </div>
         </div>
       )}
-
       {/* Schedule Exam Modal */}
       {isScheduleModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -2304,7 +2719,6 @@ export const Dashboard = () => {
                 </Button>
               </div>
             </div>
-
             {/* Modal Content */}
             <div className="p-6 space-y-8">
               {/* Available Exams */}
@@ -2345,7 +2759,6 @@ export const Dashboard = () => {
                           <span className="text-sm">Multiple locations</span>
                         </div>
                       </div>
-
                       {/* Available Dates */}
                       <div>
                         <h4 className="font-semibold mb-3">
@@ -2371,7 +2784,7 @@ export const Dashboard = () => {
                                 </div>
                               </div>
                               <div className="flex items-center gap-3">
-                                <Badge
+                                <Badge 
                                   variant={
                                     testDate.spots > 10
                                       ? "default"
@@ -2383,8 +2796,8 @@ export const Dashboard = () => {
                                 >
                                   {testDate.spots} spots left
                                 </Badge>
-                                <Button
-                                  size="sm"
+                                <Button 
+                                  size="sm" 
                                   variant="outline"
                                   onClick={() =>
                                     openExternalLink(exam.registrationUrl)
@@ -2397,10 +2810,9 @@ export const Dashboard = () => {
                           ))}
                         </div>
                       </div>
-
                       {/* Quick Register Button */}
                       <div className="pt-4 border-t">
-                        <Button
+                        <Button 
                           className="w-full bg-purple-600 hover:bg-purple-700"
                           onClick={() => openExternalLink(exam.registrationUrl)}
                         >
@@ -2412,7 +2824,6 @@ export const Dashboard = () => {
                   </Card>
                 ))}
               </div>
-
               {/* Help Section */}
               <Card className="bg-blue-50 border-blue-200">
                 <CardContent className="p-6">
@@ -2455,7 +2866,6 @@ export const Dashboard = () => {
           </div>
         </div>
       )}
-
       {/* Add Application Modal */}
       {isAddApplicationModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -2483,9 +2893,8 @@ export const Dashboard = () => {
                 </Button>
               </div>
             </div>
-
             {/* Modal Content */}
-            <div
+            <div 
               className="p-6 space-y-8"
               onClick={() => setShowSuggestions(false)}
             >
@@ -2511,7 +2920,6 @@ export const Dashboard = () => {
                           }
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
-
                         {/* Search Suggestions Dropdown */}
                         {showSuggestions && searchQuery.length > 0 && (
                           <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
@@ -2519,42 +2927,42 @@ export const Dashboard = () => {
                               filteredUniversities
                                 .slice(0, 5)
                                 .map(university => (
-                                  <div
-                                    key={university.id}
-                                    className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                                    onClick={() => {
-                                      setSearchQuery(university.name);
-                                      setShowSuggestions(false);
-                                      setFilteredUniversities([university]);
-                                    }}
-                                  >
-                                    <div className="flex items-center gap-3">
-                                      <img
-                                        src={university.image}
-                                        alt={university.name}
-                                        className="w-8 h-8 rounded object-cover"
+                                <div
+                                  key={university.id}
+                                  className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                  onClick={() => {
+                                    setSearchQuery(university.name);
+                                    setShowSuggestions(false);
+                                    setFilteredUniversities([university]);
+                                  }}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <img 
+                                      src={university.image} 
+                                      alt={university.name}
+                                      className="w-8 h-8 rounded object-cover"
                                         onError={e => {
                                           e.currentTarget.src =
                                             "/placeholder-logo.svg";
-                                        }}
-                                      />
-                                      <div>
+                                      }}
+                                    />
+                                    <div>
                                         <p className="font-medium text-sm">
                                           {university.name}
                                         </p>
                                         <p className="text-xs text-gray-500">
                                           {university.location}
                                         </p>
-                                      </div>
+                                    </div>
                                       <Badge
                                         variant="outline"
                                         className="ml-auto text-xs"
                                       >
-                                        #{university.ranking}
-                                      </Badge>
-                                    </div>
+                                      #{university.ranking}
+                                    </Badge>
                                   </div>
-                                ))
+                                </div>
+                              ))
                             ) : (
                               <div className="px-4 py-3 text-gray-500 text-sm">
                                 No universities found for "{searchQuery}"
@@ -2563,7 +2971,7 @@ export const Dashboard = () => {
                           </div>
                         )}
                       </div>
-                      <Button
+                      <Button 
                         className="bg-blue-600 hover:bg-blue-700"
                         onClick={handleSearchSubmit}
                       >
@@ -2571,7 +2979,7 @@ export const Dashboard = () => {
                         Search
                       </Button>
                       {searchQuery && (
-                        <Button
+                        <Button 
                           variant="outline"
                           onClick={() => {
                             setSearchQuery("");
@@ -2583,7 +2991,6 @@ export const Dashboard = () => {
                         </Button>
                       )}
                     </div>
-
                     {/* Search Results Summary */}
                     {searchQuery && (
                       <div className="mt-3 text-sm text-gray-600">
@@ -2603,7 +3010,6 @@ export const Dashboard = () => {
                   </div>
                 </CardContent>
               </Card>
-
               {/* Popular Universities */}
               <div>
                 <h3 className="text-xl font-semibold mb-6">
@@ -2617,8 +3023,8 @@ export const Dashboard = () => {
                     >
                       <CardContent className="p-6">
                         <div className="flex items-start gap-4 mb-4">
-                          <img
-                            src={university.image}
+                          <img 
+                            src={university.image} 
                             alt={university.name}
                             className="w-16 h-16 rounded-lg object-cover"
                             onError={e => {
@@ -2637,7 +3043,6 @@ export const Dashboard = () => {
                             </Badge>
                           </div>
                         </div>
-
                         <div className="space-y-2 mb-4">
                           <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">
@@ -2664,7 +3069,6 @@ export const Dashboard = () => {
                             </span>
                           </div>
                         </div>
-
                         <div className="mb-4">
                           <p className="text-xs text-muted-foreground mb-2">
                             Popular Programs:
@@ -2678,9 +3082,9 @@ export const Dashboard = () => {
                                   variant="secondary"
                                   className="text-xs"
                                 >
-                                  {program}
-                                </Badge>
-                              ))}
+                                {program}
+                              </Badge>
+                            ))}
                             {university.programs.length > 3 && (
                               <Badge variant="outline" className="text-xs">
                                 +{university.programs.length - 3} more
@@ -2688,10 +3092,9 @@ export const Dashboard = () => {
                             )}
                           </div>
                         </div>
-
                         <div className="flex gap-2">
-                          <Button
-                            size="sm"
+                          <Button 
+                            size="sm" 
                             className="flex-1 bg-blue-600 hover:bg-blue-700"
                             onClick={() => {
                               // Here you would typically start the application process
@@ -2704,8 +3107,8 @@ export const Dashboard = () => {
                             <Plus className="h-3 w-3 mr-1" />
                             Apply Now
                           </Button>
-                          <Button
-                            size="sm"
+                          <Button 
+                            size="sm" 
                             variant="outline"
                             onClick={() =>
                               openExternalLink(
@@ -2721,7 +3124,6 @@ export const Dashboard = () => {
                   ))}
                 </div>
               </div>
-
               {/* Quick Actions */}
               <Card className="bg-gray-50 border-gray-200">
                 <CardContent className="p-6">
@@ -2739,11 +3141,23 @@ export const Dashboard = () => {
                       <Button
                         variant="outline"
                         className="border-gray-300 text-gray-700"
+                        onClick={() => {
+                          alert('Opening all universities page...');
+                          console.log('Navigate to universities page');
+                          // In a real app: router.push('/universities');
+                        }}
                       >
                         <Globe className="h-4 w-4 mr-2" />
                         Browse All Universities
                       </Button>
-                      <Button className="bg-blue-600 hover:bg-blue-700">
+                      <Button 
+                        className="bg-blue-600 hover:bg-blue-700"
+                        onClick={() => {
+                          alert('Add Custom University feature coming soon!');
+                          console.log('Open add custom university modal');
+                          // In a real app: openAddCustomUniversityModal();
+                        }}
+                      >
                         <Plus className="h-4 w-4 mr-2" />
                         Add Custom University
                       </Button>
@@ -2751,6 +3165,371 @@ export const Dashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Saved University Details Modal */}
+      {isSavedUniModalOpen && selectedSavedUni && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <GraduationCap className="h-8 w-8 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold">{selectedSavedUni.name}</h2>
+                    <p className="text-lg text-muted-foreground">
+                      {selectedSavedUni.location}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="secondary">
+                        #{selectedSavedUni.ranking} Ranking
+                      </Badge>
+                      <Badge variant="outline">
+                        {selectedSavedUni.acceptanceRate} Acceptance Rate
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => setIsSavedUniModalOpen(false)}>
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+            {/* Modal Content */}
+            <div className="p-6 space-y-8">
+              {/* University Overview */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="h-5 w-5" />
+                      University Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{selectedSavedUni.location}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">Tuition: {selectedSavedUni.tuition}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Percent className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">Acceptance Rate: {selectedSavedUni.acceptanceRate}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">Deadline: {selectedSavedUni.applicationDeadline}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BookOpen className="h-5 w-5" />
+                      Programs Offered
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {selectedSavedUni.programs.map((program: string, index: number) => (
+                        <Badge key={index} variant="outline" className="mr-2 mb-2">
+                          {program}
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              {/* Requirements */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Application Requirements
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {selectedSavedUni.requirements.map((req: string, index: number) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span className="text-sm">{req}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+              {/* Notes */}
+              {selectedSavedUni.notes && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Edit className="h-5 w-5" />
+                      Your Notes
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-700">{selectedSavedUni.notes}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              {/* Action Buttons */}
+              <div className="flex gap-4 pt-4 border-t">
+                <Button 
+                  className="flex-1"
+                  onClick={() => handleApplyToUni(selectedSavedUni)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Apply to This University
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => window.open(selectedSavedUni.website, '_blank')}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Visit University Website
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => handleRemoveSavedUni(selectedSavedUni.id)}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Remove from Saved
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Upload Documents Modal */}
+      {isUploadDocumentsModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Upload Documents</h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={closeUploadDocumentsModal}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="space-y-6">
+                {/* Document Categories */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Academic Documents */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-blue-600" />
+                        Academic Documents
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div 
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
+                        onClick={() => handleFileUpload('Academic', 'High School Transcript')}
+                      >
+                        <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 mb-2">High School Transcript</p>
+                        <Button size="sm" variant="outline">
+                          Choose File
+                        </Button>
+                      </div>
+                      <div 
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
+                        onClick={() => handleFileUpload('Academic', 'Diploma/Certificate')}
+                      >
+                        <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 mb-2">Diploma/Certificate</p>
+                        <Button size="sm" variant="outline">
+                          Choose File
+                        </Button>
+                      </div>
+                      <div 
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
+                        onClick={() => handleFileUpload('Academic', 'Academic Records')}
+                      >
+                        <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 mb-2">Academic Records</p>
+                        <Button size="sm" variant="outline">
+                          Choose File
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Test Scores */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Award className="h-5 w-5 text-green-600" />
+                        Test Scores
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div 
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-400 transition-colors cursor-pointer"
+                        onClick={() => handleFileUpload('Test Scores', 'SAT/ACT Scores')}
+                      >
+                        <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 mb-2">SAT/ACT Scores</p>
+                        <Button size="sm" variant="outline">
+                          Choose File
+                        </Button>
+                      </div>
+                      <div 
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-400 transition-colors cursor-pointer"
+                        onClick={() => handleFileUpload('Test Scores', 'TOEFL/IELTS Scores')}
+                      >
+                        <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 mb-2">TOEFL/IELTS Scores</p>
+                        <Button size="sm" variant="outline">
+                          Choose File
+                        </Button>
+                      </div>
+                      <div 
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-400 transition-colors cursor-pointer"
+                        onClick={() => handleFileUpload('Test Scores', 'Other Test Scores')}
+                      >
+                        <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 mb-2">Other Test Scores</p>
+                        <Button size="sm" variant="outline">
+                          Choose File
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Personal Documents */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5 text-purple-600" />
+                      Personal Documents
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div 
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-purple-400 transition-colors cursor-pointer"
+                        onClick={() => handleFileUpload('Personal', 'Passport/ID')}
+                      >
+                        <Upload className="h-6 w-6 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 mb-2">Passport/ID</p>
+                        <Button size="sm" variant="outline">
+                          Choose File
+                        </Button>
+                      </div>
+                      <div 
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-purple-400 transition-colors cursor-pointer"
+                        onClick={() => handleFileUpload('Personal', 'Recommendation Letters')}
+                      >
+                        <Upload className="h-6 w-6 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 mb-2">Recommendation Letters</p>
+                        <Button size="sm" variant="outline">
+                          Choose File
+                        </Button>
+                      </div>
+                      <div 
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-purple-400 transition-colors cursor-pointer"
+                        onClick={() => handleFileUpload('Personal', 'Essays/Statements')}
+                      >
+                        <Upload className="h-6 w-6 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 mb-2">Essays/Statements</p>
+                        <Button size="sm" variant="outline">
+                          Choose File
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Uploaded Files List */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-orange-600" />
+                      Uploaded Files
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {uploadedFiles.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">
+                          <FileText className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                          <p>No files uploaded yet</p>
+                          <p className="text-sm">Click on any upload area above to add files</p>
+                        </div>
+                      ) : (
+                        uploadedFiles.map((file) => (
+                          <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <FileText className="h-4 w-4 text-gray-500" />
+                              <span className="text-sm font-medium">{file.name}</span>
+                              <Badge variant="secondary" className="text-xs">{file.category}</Badge>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge 
+                                variant="outline" 
+                                className={
+                                  file.status === 'uploaded' 
+                                    ? "text-green-600 border-green-200" 
+                                    : file.status === 'uploading'
+                                    ? "text-blue-600 border-blue-200"
+                                    : "text-red-600 border-red-200"
+                                }
+                              >
+                                {file.status === 'uploaded' ? 'Uploaded' : file.status === 'uploading' ? 'Uploading...' : 'Error'}
+                              </Badge>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="text-red-600 hover:text-red-700"
+                                onClick={() => removeFile(file.id)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end gap-3 pt-4 border-t">
+                  <Button variant="outline" onClick={closeUploadDocumentsModal}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700"
+                    onClick={uploadAllFiles}
+                    disabled={uploadedFiles.length === 0}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Selected Files ({uploadedFiles.length})
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
