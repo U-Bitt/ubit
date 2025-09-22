@@ -114,6 +114,42 @@ export const universityApi = {
     );
     return response.data;
   },
+  getAllPaginated: async (): Promise<University[]> => {
+    const allUniversities: University[] = [];
+    let page = 1;
+    let hasMore = true;
+    const limit = 50; // Increased limit per page
+
+    while (hasMore) {
+      try {
+        const response = await apiCall<{ 
+          success: boolean; 
+          data: University[];
+          pagination: {
+            page: number;
+            limit: number;
+            total: number;
+            pages: number;
+          };
+        }>(`/universities?page=${page}&limit=${limit}`);
+        
+        if (response.success && response.data) {
+          allUniversities.push(...response.data);
+          
+          // Check if there are more pages
+          hasMore = page < response.pagination.pages;
+          page++;
+        } else {
+          hasMore = false;
+        }
+      } catch (error) {
+        console.error(`Error fetching page ${page}:`, error);
+        hasMore = false;
+      }
+    }
+
+    return allUniversities;
+  },
   getById: async (id: string): Promise<University> => {
     const response = await apiCall<{ success: boolean; data: University }>(
       `/universities/${id}`

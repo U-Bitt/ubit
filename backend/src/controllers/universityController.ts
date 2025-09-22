@@ -9,23 +9,18 @@ export const getAllUniversities = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { page = 1, limit = 10, sort = "ranking", order = "asc" } = req.query;
+    const { sort = "ranking", order = "asc" } = req.query;
 
     // Build sort object for MongoDB
     const sortObj: any = {};
     sortObj[sort] = order === "asc" ? 1 : -1;
 
-    // Calculate pagination
-    const skip = (page - 1) * limit;
-
-    // Get universities from MongoDB
+    // Get all universities from MongoDB without pagination
     const universities = await UniversityModel.find()
       .sort(sortObj)
-      .skip(skip)
-      .limit(limit)
       .lean();
 
-    // Get total count for pagination
+    // Get total count
     const total = await UniversityModel.countDocuments();
 
     // Convert MongoDB documents to University interface
@@ -55,10 +50,10 @@ export const getAllUniversities = async (
       success: true,
       data: universityData,
       pagination: {
-        page,
-        limit,
+        page: 1,
+        limit: total,
         total,
-        pages: Math.ceil(total / limit),
+        pages: 1,
       },
     };
 
