@@ -35,9 +35,11 @@ export const Universities = () => {
       setLoading(true);
       
       try {
+        // Now getAll() returns all universities without pagination
         const response = await universityApi.getAll();
         // Ensure response is an array
         setUniversities(Array.isArray(response) ? response : []);
+        console.log(`Loaded ${response.length} universities`);
       } catch (err) {
         console.error("Error loading universities:", err);
         // Set empty array on error
