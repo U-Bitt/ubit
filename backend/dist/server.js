@@ -16,15 +16,14 @@ const users_1 = __importDefault(require("./routes/users"));
 const testScores_1 = __importDefault(require("./routes/testScores"));
 const documents_1 = __importDefault(require("./routes/documents"));
 const scholarships_1 = __importDefault(require("./routes/scholarships"));
+const visas_1 = __importDefault(require("./routes/visas"));
 const ai_1 = __importDefault(require("./routes/ai"));
 const errorHandler_1 = require("./middleware/errorHandler");
 const notFound_1 = require("./middleware/notFound");
 const database_1 = __importDefault(require("./config/database"));
-const seedData_1 = require("./utils/seedData");
 dotenv_1.default.config();
 const initializeDatabase = async () => {
     await (0, database_1.default)();
-    await (0, seedData_1.seedUniversities)();
 };
 initializeDatabase();
 const app = (0, express_1.default)();
@@ -45,25 +44,26 @@ app.use(express_1.default.json({ limit: "10mb" }));
 app.use(express_1.default.urlencoded({ extended: true, limit: "10mb" }));
 app.get("/health", (req, res) => {
     res.status(200).json({
-        status: "OK",
-        message: "Ubit Education API is running",
+        success: true,
+        message: "Server is running",
         timestamp: new Date().toISOString(),
     });
 });
 app.use("/api/universities", universities_1.default);
 app.use("/api/countries", countries_1.default);
 app.use("/api/exams", exams_1.default);
-app.use("/api/user", users_1.default);
+app.use("/api/users", users_1.default);
 app.use("/api/test-scores", testScores_1.default);
 app.use("/api/documents", documents_1.default);
 app.use("/api/scholarships", scholarships_1.default);
+app.use("/api/visas", visas_1.default);
 app.use("/api/ai", ai_1.default);
 app.use(notFound_1.notFound);
 app.use(errorHandler_1.errorHandler);
 app.listen(PORT, () => {
-    console.log(`🚀 Server is running on port ${PORT}`);
-    console.log(`📚 Ubit Education API is ready!`);
-    console.log(`🌐 Health check: http://localhost:${PORT}/health`);
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📊 Health check: http://localhost:${PORT}/health`);
+    console.log(`🌐 API Base URL: http://localhost:${PORT}/api`);
 });
 exports.default = app;
 //# sourceMappingURL=server.js.map

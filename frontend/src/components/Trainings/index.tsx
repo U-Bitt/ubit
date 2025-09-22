@@ -12,106 +12,29 @@ import {
   BookOpen,
   Calendar,
   Filter,
+  Globe,
+  Award,
+  Video,
+  Book,
+  Zap,
 } from "lucide-react";
+import { trainings, categories, Training } from "@/mockData/trainings";
+import { useState } from "react";
 
 export const Trainings = () => {
-  const trainings = [
-    {
-      id: 1,
-      title: "SAT Math Mastery",
-      instructor: "Dr. Sarah Johnson",
-      duration: "8 weeks",
-      level: "Intermediate",
-      rating: 4.8,
-      students: 1250,
-      price: "$199",
-      description:
-        "Master all SAT Math concepts with comprehensive practice and expert guidance.",
-      topics: ["Algebra", "Geometry", "Trigonometry", "Data Analysis"],
-      nextStart: "Dec 15, 2024",
-      image: "/sat-math-course.jpg",
-    },
-    {
-      id: 2,
-      title: "TOEFL Speaking Excellence",
-      instructor: "Prof. Michael Chen",
-      duration: "6 weeks",
-      level: "All Levels",
-      rating: 4.9,
-      students: 890,
-      price: "$149",
-      description:
-        "Improve your TOEFL speaking skills with structured practice and feedback.",
-      topics: [
-        "Speaking Fluency",
-        "Pronunciation",
-        "Task Response",
-        "Time Management",
-      ],
-      nextStart: "Dec 20, 2024",
-      image: "/toefl-speaking-course.jpg",
-    },
-    {
-      id: 3,
-      title: "University Essay Writing",
-      instructor: "Dr. Emily Rodriguez",
-      duration: "10 weeks",
-      level: "Advanced",
-      rating: 4.7,
-      students: 2100,
-      price: "$299",
-      description:
-        "Craft compelling personal statements and essays that stand out to admissions officers.",
-      topics: [
-        "Personal Statement",
-        "Supplemental Essays",
-        "Storytelling",
-        "Editing",
-      ],
-      nextStart: "Jan 5, 2025",
-      image: "/essay-writing-course.jpg",
-    },
-    {
-      id: 4,
-      title: "Interview Preparation",
-      instructor: "Ms. Lisa Wang",
-      duration: "4 weeks",
-      level: "All Levels",
-      rating: 4.6,
-      students: 750,
-      price: "$99",
-      description:
-        "Prepare for university interviews with mock sessions and expert tips.",
-      topics: [
-        "Interview Techniques",
-        "Common Questions",
-        "Body Language",
-        "Confidence Building",
-      ],
-      nextStart: "Dec 25, 2024",
-      image: "/interview-prep-course.jpg",
-    },
-  ];
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
+  const [showLiveOnly, setShowLiveOnly] = useState(false);
 
-  const categories = [
-    { name: "All Trainings", count: trainings.length },
-    {
-      name: "Test Prep",
-      count: trainings.filter(
-        t => t.title.includes("SAT") || t.title.includes("TOEFL")
-      ).length,
-    },
-    {
-      name: "Writing",
-      count: trainings.filter(
-        t => t.title.includes("Essay") || t.title.includes("Writing")
-      ).length,
-    },
-    {
-      name: "Interview",
-      count: trainings.filter(t => t.title.includes("Interview")).length,
-    },
-  ];
+  const filteredTrainings = trainings.filter(training => {
+    const matchesSearch = training.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         training.instructor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         training.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesLevel = !selectedLevel || training.level === selectedLevel;
+    const matchesLive = !showLiveOnly || training.isLive;
+    
+    return matchesSearch && matchesLevel && matchesLive;
+  });
 
   return (
     <div className="min-h-screen bg-white">
@@ -134,23 +57,33 @@ export const Trainings = () => {
               <Input
                 placeholder="Search training programs..."
                 className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button variant="outline" size="sm">
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
               </Button>
+              <div className="flex gap-2">
+                {["All Levels", "Beginner", "Intermediate", "Advanced"].map(level => (
+                  <Badge
+                    key={level}
+                    variant={selectedLevel === level || (level === "All Levels" && !selectedLevel) ? "default" : "outline"}
+                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                    onClick={() => setSelectedLevel(level === "All Levels" ? null : level)}
+                  >
+                    {level}
+                  </Badge>
+                ))}
+              </div>
               <Badge
-                variant="outline"
+                variant={showLiveOnly ? "default" : "outline"}
                 className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                onClick={() => setShowLiveOnly(!showLiveOnly)}
               >
-                All Levels
-              </Badge>
-              <Badge
-                variant="outline"
-                className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
-              >
+                <Video className="h-3 w-3 mr-1" />
                 Live Sessions
               </Badge>
             </div>
@@ -171,7 +104,7 @@ export const Trainings = () => {
 
           <TabsContent value="all" className="space-y-6">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {trainings.map(training => (
+              {filteredTrainings.map(training => (
                 <Card
                   key={training.id}
                   className="hover:shadow-lg transition-all duration-300"
@@ -180,9 +113,23 @@ export const Trainings = () => {
                     <div className="w-full h-48 bg-muted rounded-t-lg flex items-center justify-center">
                       <BookOpen className="h-16 w-16 text-muted-foreground" />
                     </div>
-                    <Badge className="absolute top-4 right-4 bg-primary text-primary-foreground">
-                      {training.level}
-                    </Badge>
+                    <div className="absolute top-4 right-4 flex flex-col gap-2">
+                      <Badge className="bg-primary text-primary-foreground">
+                        {training.level}
+                      </Badge>
+                      {training.isLive && (
+                        <Badge variant="destructive" className="flex items-center gap-1">
+                          <Video className="h-3 w-3" />
+                          Live
+                        </Badge>
+                      )}
+                      {training.certificate && (
+                        <Badge variant="secondary" className="flex items-center gap-1">
+                          <Award className="h-3 w-3" />
+                          Certificate
+                        </Badge>
+                      )}
+                    </div>
                   </div>
 
                   <CardContent className="p-6">
@@ -208,12 +155,21 @@ export const Trainings = () => {
                           <Users className="h-4 w-4" />
                           <span>{training.students} students</span>
                         </div>
+                        <div className="flex items-center gap-1">
+                          <Globe className="h-4 w-4" />
+                          <span>{training.language}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium">
-                          {training.rating}
-                        </span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <span className="text-sm font-medium">
+                            {training.rating}
+                          </span>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          {training.category}
+                        </Badge>
                       </div>
                     </div>
 
@@ -265,23 +221,8 @@ export const Trainings = () => {
               className="space-y-6"
             >
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {trainings
-                  .filter(training => {
-                    if (category.name === "Test Prep") {
-                      return (
-                        training.title.includes("SAT") ||
-                        training.title.includes("TOEFL")
-                      );
-                    } else if (category.name === "Writing") {
-                      return (
-                        training.title.includes("Essay") ||
-                        training.title.includes("Writing")
-                      );
-                    } else if (category.name === "Interview") {
-                      return training.title.includes("Interview");
-                    }
-                    return true;
-                  })
+                {filteredTrainings
+                  .filter(training => training.category === category.name)
                   .map(training => (
                     <Card
                       key={training.id}
@@ -291,9 +232,23 @@ export const Trainings = () => {
                         <div className="w-full h-48 bg-muted rounded-t-lg flex items-center justify-center">
                           <BookOpen className="h-16 w-16 text-muted-foreground" />
                         </div>
-                        <Badge className="absolute top-4 right-4 bg-primary text-primary-foreground">
-                          {training.level}
-                        </Badge>
+                        <div className="absolute top-4 right-4 flex flex-col gap-2">
+                          <Badge className="bg-primary text-primary-foreground">
+                            {training.level}
+                          </Badge>
+                          {training.isLive && (
+                            <Badge variant="destructive" className="flex items-center gap-1">
+                              <Video className="h-3 w-3" />
+                              Live
+                            </Badge>
+                          )}
+                          {training.certificate && (
+                            <Badge variant="secondary" className="flex items-center gap-1">
+                              <Award className="h-3 w-3" />
+                              Certificate
+                            </Badge>
+                          )}
+                        </div>
                       </div>
 
                       <CardContent className="p-6">
@@ -319,12 +274,21 @@ export const Trainings = () => {
                               <Users className="h-4 w-4" />
                               <span>{training.students} students</span>
                             </div>
+                            <div className="flex items-center gap-1">
+                              <Globe className="h-4 w-4" />
+                              <span>{training.language}</span>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                            <span className="text-sm font-medium">
-                              {training.rating}
-                            </span>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1">
+                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                              <span className="text-sm font-medium">
+                                {training.rating}
+                              </span>
+                            </div>
+                            <Badge variant="outline" className="text-xs">
+                              {training.category}
+                            </Badge>
                           </div>
                         </div>
 

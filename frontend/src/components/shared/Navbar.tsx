@@ -7,6 +7,7 @@ import { SettingsSidebar } from "@/components/SettingsSidebar";
 import { NotificationCube } from "@/components/NotificationCube";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/Logo";
+import { useUser } from "@/contexts/UserContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -80,6 +81,7 @@ export default function Navbar() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const router = useRouter();
+  const { user, isLoading } = useUser();
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -157,7 +159,7 @@ export default function Navbar() {
             </Button>
             <Link href="/user/profile" className="flex items-center space-x-2">
               <User className="h-4 w-4 mr-2" />
-              Profile
+              {isLoading ? "Loading..." : user?.firstName || "Profile"}
             </Link>
           </div>
 
@@ -232,10 +234,10 @@ export default function Navbar() {
                 </div>
                 <div className="ml-3">
                   <div className="text-base font-medium text-foreground">
-                    Alex Smith
+                    {isLoading ? "Loading..." : user?.firstName || "User"}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    alex.smith@email.com
+                    {isLoading ? "Loading..." : user?.email || "user@example.com"}
                   </div>
                 </div>
               </div>

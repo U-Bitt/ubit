@@ -7,31 +7,33 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
   GraduationCap,
-  Award,
   Edit,
   Save,
   Camera,
   Search,
   FileCheck,
   X,
+  Users,
 } from "lucide-react";
 import { useRouter } from "next/router";
 import { SuggestUniversitiesModal } from "@/components/SuggestUniversitiesModal";
 import { ImproveCVModal } from "@/components/ImproveCVModal";
+import { ProfileSwitchModal } from "@/components/ProfileSwitchModal";
+import { useUser } from "@/contexts/UserContext";
+import { userApi } from "@/utils/api";
 
 export const UserProfile = () => {
   const router = useRouter();
+  const { user, updateUser } = useUser();
 
   // State for Personal Information
   const [personalInfo, setPersonalInfo] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    dateOfBirth: "2005-06-15",
-    nationality: "American",
-    address: "123 Main St, Anytown, USA",
-    bio: "Passionate student with a love for technology and innovation.",
+    firstName: user?.firstName || "John",
+    lastName: user?.lastName || "Doe",
+    email: user?.email || "john.doe@example.com",
+    phone: user?.phone || "+1 (555) 123-4567",
+    dateOfBirth: user?.dateOfBirth || "2005-06-15",
+    nationality: user?.nationality || "American",
   });
 
   const [academicInfo, setAcademicInfo] = useState({
@@ -41,11 +43,6 @@ export const UserProfile = () => {
     major: "Computer Science",
   });
 
-  const [testScores, setTestScores] = useState([
-    { id: 1, test: "SAT", score: "1450", date: "Dec 2023" },
-    { id: 2, test: "TOEFL", score: "108", date: "Nov 2023" },
-    { id: 3, test: "AP Computer Science", score: "5", date: "May 2023" },
-  ]);
 
   // State for Areas of Interest
   const [interests, setInterests] = useState([
@@ -72,6 +69,74 @@ export const UserProfile = () => {
     useState(false);
   const [isImproveCVOpen, setIsImproveCVOpen] = useState(false);
 
+  // State for profile switching
+  const [isProfileSwitchOpen, setIsProfileSwitchOpen] = useState(false);
+  const [currentProfileId, setCurrentProfileId] = useState("68d0e375f42237519f071445"); // John Doe's ID
+  const [profiles, setProfiles] = useState<any[]>([]);
+  const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
+
+  // Load profiles from backend
+  const loadProfiles = async () => {
+    try {
+      setIsLoadingProfiles(true);
+      const users = await userApi.getAll();
+      const profilesData = users.map(user => ({
+        id: user.id,
+        name: `${user.firstName} ${user.lastName}`,
+        email: user.email,
+        role: "Student",
+        isActive: true,
+        personalInfo: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          phone: user.phone || "",
+          dateOfBirth: user.dateOfBirth || "",
+          nationality: user.nationality || "",
+        },
+        academicInfo: user.academicInfo,
+        interests: user.areasOfInterest || [],
+      }));
+      setProfiles(profilesData);
+    } catch (error) {
+      console.error("Error loading profiles:", error);
+    } finally {
+      setIsLoadingProfiles(false);
+    }
+  };
+
+  // Sync with user context
+  useEffect(() => {
+    if (user) {
+      setPersonalInfo({
+        firstName: user.firstName || "John",
+        lastName: user.lastName || "Doe",
+        email: user.email || "john.doe@example.com",
+        phone: user.phone || "+1 (555) 123-4567",
+        dateOfBirth: user.dateOfBirth || "2005-06-15",
+        nationality: user.nationality || "American",
+      });
+      
+      if (user.academicInfo) {
+        setAcademicInfo({
+          gpa: user.academicInfo.gpa?.toString() || "",
+          school: user.academicInfo.highSchoolName || "",
+          graduationYear: user.academicInfo.graduationYear?.toString() || "",
+          major: user.academicInfo.intendedMajors?.[0] || "Computer Science",
+        });
+      }
+      
+      if (user.areasOfInterest) {
+        setInterests(user.areasOfInterest);
+      }
+    }
+  }, [user]);
+
+  // Load profiles on component mount
+  useEffect(() => {
+    loadProfiles();
+  }, []);
+
   // Load data from localStorage on component mount
   useEffect(() => {
     try {
@@ -80,7 +145,6 @@ export const UserProfile = () => {
         const profileData = JSON.parse(savedProfile);
         setPersonalInfo(profileData.personalInfo || personalInfo);
         setAcademicInfo(profileData.academicInfo || academicInfo);
-        setTestScores(profileData.testScores || testScores);
         setInterests(profileData.interests || interests);
         setProfilePicture(profileData.profilePicture || null);
       }
@@ -95,7 +159,6 @@ export const UserProfile = () => {
       const profileData = {
         personalInfo,
         academicInfo,
-        testScores,
         interests,
         profilePicture,
       };
@@ -103,7 +166,7 @@ export const UserProfile = () => {
     } catch (error) {
       console.error("Error saving user data:", error);
     }
-  }, [personalInfo, academicInfo, testScores, interests, profilePicture]);
+  }, [personalInfo, academicInfo, interests, profilePicture]);
 
   // Handler functions
   const handlePersonalInfoChange = (field: string, value: string) => {
@@ -120,27 +183,6 @@ export const UserProfile = () => {
     }));
   };
 
-  const handleTestScoreChange = (id: number, field: string, value: string) => {
-    setTestScores(prev =>
-      prev.map(score =>
-        score.id === id ? { ...score, [field]: value } : score
-      )
-    );
-  };
-
-  const addTestScore = () => {
-    const newScore = {
-      id: Date.now(),
-      test: "",
-      score: "",
-      date: "",
-    };
-    setTestScores(prev => [...prev, newScore]);
-  };
-
-  const removeTestScore = (id: number) => {
-    setTestScores(prev => prev.filter(score => score.id !== id));
-  };
 
   const addInterest = () => {
     if (newInterest.trim() && !interests.includes(newInterest.trim())) {
@@ -190,12 +232,72 @@ export const UserProfile = () => {
     localStorage.removeItem("userProfilePicture");
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     try {
-      // Save all data to localStorage
+      // Validate and prepare academic info
+      const gpa = academicInfo.gpa ? parseFloat(academicInfo.gpa) : undefined;
+      const graduationYear = academicInfo.graduationYear ? parseInt(academicInfo.graduationYear) : undefined;
+      
+      // Only include academicInfo if we have valid data
+      const academicInfoData = (gpa !== undefined && gpa >= 0 && gpa <= 4) || 
+                              academicInfo.school || 
+                              (graduationYear !== undefined && graduationYear >= 1900) || 
+                              academicInfo.major ? {
+        ...(gpa !== undefined && gpa >= 0 && gpa <= 4 && { gpa }),
+        ...(academicInfo.school && { highSchoolName: academicInfo.school }),
+        ...(graduationYear !== undefined && graduationYear >= 1900 && { graduationYear }),
+        ...(academicInfo.major && { intendedMajors: [academicInfo.major] }),
+      } : undefined;
+
+      // Validate email format
+      const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+      if (personalInfo.email && !emailRegex.test(personalInfo.email)) {
+        alert("Please enter a valid email address");
+        return;
+      }
+
+      const updatedUserData = {
+        firstName: personalInfo.firstName,
+        lastName: personalInfo.lastName,
+        email: personalInfo.email,
+        phone: personalInfo.phone,
+        dateOfBirth: personalInfo.dateOfBirth,
+        nationality: personalInfo.nationality,
+        personalInfo: personalInfo,
+        ...(academicInfoData && { academicInfo: academicInfoData }),
+        areasOfInterest: interests,
+      };
+
+      // Update user context
+      updateUser(updatedUserData);
+
+      // Save to backend if user has an ID
+      if (user?.id) {
+        try {
+          console.log("Sending user data to backend:", {
+            userId: user.id,
+            data: updatedUserData
+          });
+          await userApi.update(user.id, updatedUserData as any);
+          console.log("Profile saved to backend successfully");
+          alert("Profile updated successfully!");
+        } catch (apiError: any) {
+          console.error("Error saving to backend:", apiError);
+          
+          // Try to extract meaningful error message
+          let errorMessage = "Failed to update profile. Please try again.";
+          if (apiError.message) {
+            errorMessage = apiError.message;
+          }
+          
+          alert(`Error: ${errorMessage}`);
+          // Continue with local storage even if backend fails
+        }
+      }
+
+      // Save all data to localStorage as backup
       localStorage.setItem("userPersonalInfo", JSON.stringify(personalInfo));
       localStorage.setItem("userAcademicInfo", JSON.stringify(academicInfo));
-      localStorage.setItem("userTestScores", JSON.stringify(testScores));
       localStorage.setItem("userInterests", JSON.stringify(interests));
       if (profilePicture) {
         localStorage.setItem("userProfilePicture", profilePicture);
@@ -209,13 +311,95 @@ export const UserProfile = () => {
     }
   };
 
+  const handleSwitchProfile = async (profileId: string) => {
+    // Save current user's data before switching if there are unsaved changes
+    if (isEditing) {
+      try {
+        await handleSave();
+      } catch (error) {
+        console.error("Error saving current profile before switching:", error);
+        // Continue with switch even if save fails
+      }
+    }
+
+    setCurrentProfileId(profileId);
+    
+    // Load the selected profile's data from backend
+    try {
+      const selectedUser = await userApi.getById(profileId);
+      
+      // Update personal information
+      setPersonalInfo({
+        firstName: selectedUser.firstName,
+        lastName: selectedUser.lastName,
+        email: selectedUser.email,
+        phone: selectedUser.phone || "",
+        dateOfBirth: selectedUser.dateOfBirth || "",
+        nationality: selectedUser.nationality || "",
+      });
+      
+      // Update academic information - always reset to ensure clean state
+      setAcademicInfo({
+        gpa: selectedUser.academicInfo?.gpa?.toString() || "",
+        school: selectedUser.academicInfo?.highSchoolName || "",
+        graduationYear: selectedUser.academicInfo?.graduationYear?.toString() || "",
+        major: selectedUser.academicInfo?.intendedMajors?.[0] || "",
+      });
+      
+      // Update interests
+      setInterests(selectedUser.areasOfInterest || []);
+      
+      // Update user context with selected profile
+      updateUser(selectedUser);
+      
+      // Save to localStorage
+      try {
+        const profileData = {
+          personalInfo: {
+            firstName: selectedUser.firstName,
+            lastName: selectedUser.lastName,
+            email: selectedUser.email,
+            phone: selectedUser.phone || "",
+            dateOfBirth: selectedUser.dateOfBirth || "",
+            nationality: selectedUser.nationality || "",
+          },
+          academicInfo: {
+            gpa: selectedUser.academicInfo?.gpa?.toString() || "0",
+            school: selectedUser.academicInfo?.highSchoolName || "",
+            graduationYear: selectedUser.academicInfo?.graduationYear?.toString() || "",
+            major: selectedUser.academicInfo?.intendedMajors?.[0] || "",
+          },
+          interests: selectedUser.areasOfInterest || [],
+          profilePicture: null,
+        };
+        localStorage.setItem("userProfile", JSON.stringify(profileData));
+      } catch (error) {
+        console.error("Error saving profile data:", error);
+      }
+    } catch (error) {
+      console.error("Error loading user from backend:", error);
+      // Fallback to hardcoded profile data if backend fails
+      const selectedProfile = profiles.find(p => p.id === profileId);
+      if (selectedProfile) {
+        setPersonalInfo(selectedProfile.personalInfo);
+        setAcademicInfo({
+          gpa: selectedProfile.academicInfo.gpa.toString(),
+          school: selectedProfile.academicInfo.highSchoolName,
+          graduationYear: selectedProfile.academicInfo.graduationYear.toString(),
+          major: selectedProfile.academicInfo.major,
+        });
+        setInterests(selectedProfile.interests);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            My Profile
+            {personalInfo.firstName} {personalInfo.lastName}'s Profile
           </h1>
           <p className="text-muted-foreground">
             Manage your personal information and academic details
@@ -276,10 +460,12 @@ export const UserProfile = () => {
                 <h2 className="text-2xl font-bold mb-2">
                   {personalInfo.firstName} {personalInfo.lastName}
                 </h2>
-                <p className="text-muted-foreground mb-4">
+                <p className="text-muted-foreground mb-2">
                   {personalInfo.email}
                 </p>
-                <Badge variant="secondary">Student</Badge>
+                <Badge variant="secondary">
+                  Student
+                </Badge>
               </CardContent>
             </Card>
 
@@ -294,21 +480,54 @@ export const UserProfile = () => {
               <CardContent className="space-y-4">
                 <div>
                   <Label className="text-sm font-medium">Current GPA</Label>
-                  <p className="text-2xl font-bold text-primary">
-                    {academicInfo.gpa}
-                  </p>
+                  {isEditing ? (
+                    <Input
+                      value={academicInfo.gpa}
+                      onChange={e => setAcademicInfo(prev => ({ ...prev, gpa: e.target.value }))}
+                      placeholder="e.g., 3.8/4.0"
+                      className="text-2xl font-bold text-primary"
+                    />
+                  ) : (
+                    <p className="text-2xl font-bold text-primary">
+                      {academicInfo.gpa}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label className="text-sm font-medium">School</Label>
-                  <p className="text-sm">{academicInfo.school}</p>
+                  {isEditing ? (
+                    <Input
+                      value={academicInfo.school}
+                      onChange={e => setAcademicInfo(prev => ({ ...prev, school: e.target.value }))}
+                      placeholder="Enter school name"
+                    />
+                  ) : (
+                    <p className="text-sm">{academicInfo.school}</p>
+                  )}
                 </div>
                 <div>
                   <Label className="text-sm font-medium">Graduation Year</Label>
-                  <p className="text-sm">{academicInfo.graduationYear}</p>
+                  {isEditing ? (
+                    <Input
+                      value={academicInfo.graduationYear}
+                      onChange={e => setAcademicInfo(prev => ({ ...prev, graduationYear: e.target.value }))}
+                      placeholder="e.g., 2024"
+                    />
+                  ) : (
+                    <p className="text-sm">{academicInfo.graduationYear}</p>
+                  )}
                 </div>
                 <div>
                   <Label className="text-sm font-medium">Intended Major</Label>
-                  <p className="text-sm">{academicInfo.major}</p>
+                  {isEditing ? (
+                    <Input
+                      value={academicInfo.major}
+                      onChange={e => setAcademicInfo(prev => ({ ...prev, major: e.target.value }))}
+                      placeholder="e.g., Computer Science"
+                    />
+                  ) : (
+                    <p className="text-sm">{academicInfo.major}</p>
+                  )}
                 </div>
 
                 {/* AI University Suggestions */}
@@ -424,103 +643,9 @@ export const UserProfile = () => {
                     disabled={!isEditing}
                   />
                 </div>
-                <div>
-                  <Label htmlFor="address">Address</Label>
-                  <Input
-                    id="address"
-                    value={personalInfo.address}
-                    onChange={e =>
-                      handlePersonalInfoChange("address", e.target.value)
-                    }
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    value={personalInfo.bio}
-                    onChange={e =>
-                      handlePersonalInfoChange("bio", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    rows={3}
-                  />
-                </div>
               </CardContent>
             </Card>
 
-            {/* Test Scores */}
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Test Scores</CardTitle>
-                  <Button variant="outline" size="sm" onClick={addTestScore}>
-                    <Award className="h-4 w-4 mr-2" />
-                    Add Score
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4">
-                  {testScores.map(score => (
-                    <div
-                      key={score.id}
-                      className="flex justify-between items-center p-3 rounded-lg bg-muted/50"
-                    >
-                      <div className="flex-1 grid grid-cols-3 gap-2">
-                        <Input
-                          value={score.test}
-                          onChange={e =>
-                            handleTestScoreChange(
-                              score.id,
-                              "test",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Test Name"
-                          disabled={!isEditing}
-                        />
-                        <Input
-                          value={score.score}
-                          onChange={e =>
-                            handleTestScoreChange(
-                              score.id,
-                              "score",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Score"
-                          disabled={!isEditing}
-                        />
-                        <Input
-                          value={score.date}
-                          onChange={e =>
-                            handleTestScoreChange(
-                              score.id,
-                              "date",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Date"
-                          disabled={!isEditing}
-                        />
-                      </div>
-                      {isEditing && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeTestScore(score.id)}
-                          className="ml-2 text-red-600 hover:text-red-700"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Interests */}
             <Card>
@@ -586,6 +711,18 @@ export const UserProfile = () => {
                 </Button>
               </div>
             )}
+
+            {/* Switch Profile Button */}
+            <div className="flex justify-center mt-8">
+              <Button
+                variant="outline"
+                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                onClick={() => setIsProfileSwitchOpen(true)}
+              >
+                <Users className="h-4 w-4 mr-2" />
+                Switch Profile
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -596,7 +733,6 @@ export const UserProfile = () => {
           userProfile={{
             personalInfo,
             academicInfo,
-            testScores,
             interests,
           }}
         />
@@ -607,9 +743,17 @@ export const UserProfile = () => {
           userProfile={{
             personalInfo,
             academicInfo,
-            testScores,
             interests,
           }}
+        />
+
+        {/* Profile Switch Modal */}
+        <ProfileSwitchModal
+          isOpen={isProfileSwitchOpen}
+          onClose={() => setIsProfileSwitchOpen(false)}
+          onSwitchProfile={handleSwitchProfile}
+          profiles={profiles}
+          currentProfileId={currentProfileId}
         />
       </div>
     </div>
