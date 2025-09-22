@@ -1,175 +1,377 @@
 import { Request, Response } from "express";
+import Document, { IDocument } from "../models/Document";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import crypto from "crypto";
 
-// Mock data for now - in production this would come from database
-let documents = [
-  {
-    id: "1",
-    name: "High School Transcript",
-    type: "Transcript",
-    university: "MIT",
-    status: "Uploaded",
-    uploadDate: "2024-11-15",
-    size: "2.3 MB",
-    format: "PDF",
-    filePath: "/uploads/transcript.pdf",
-    userId: "user1",
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = "uploads/documents";
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
   },
-  {
-    id: "2",
-    name: "Personal Statement",
-    type: "Essay",
-    university: "Stanford",
-    status: "Draft",
-    uploadDate: "2024-11-20",
-    size: "0.5 MB",
-    format: "DOCX",
-    filePath: "/uploads/personal_statement.docx",
-    userId: "user1",
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `${uniqueSuffix}-${file.originalname}`);
   },
-  {
-    id: "3",
-    name: "Portfolio - CS Projects",
-    type: "Portfolio",
-    university: "All",
-    status: "Uploaded",
-    uploadDate: "2024-11-18",
-    size: "15.2 MB",
-    format: "ZIP",
-    filePath: "/uploads/portfolio.zip",
-    userId: "user1",
-  },
-];
+});
 
-export const documentController = {
-  // Get all documents for a user
-  getAllDocuments: async (
-    req: Request,
-    res: Response
-  ): Promise<Response | void> => {
-    try {
-      // In production, filter by authenticated user ID
-      const userId = (req.headers["user-id"] as string) || "user1";
-      const userDocuments = documents.filter((doc) => doc.userId === userId);
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /pdf|doc|docx|jpg|jpeg|png|gif|zip/;
+    const extname = allowedTypes.test(
+      path.extname(file.originalname).toLowerCase()
+    );
+    const mimetype = allowedTypes.test(file.mimetype);
 
-      res.status(200).json({
-        success: true,
-        data: userDocuments,
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: "Failed to fetch documents",
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(
+        new Error(
+          "Invalid file type. Only PDF, DOC, DOCX, JPG, PNG, GIF, ZIP files are allowed."
+        )
+      );
     }
   },
+});
 
-  // Create a new document
-  createDocument: async (
-    req: Request,
-    res: Response
-  ): Promise<Response | void> => {
-    try {
-      const { name, type, university, status, format, filePath } = req.body;
+// Get all documents for a user
+export const getAllDocuments = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const documents = await Document.find({
+      uploadedBy: userId,
+      isLatestVersion: true,
+    }).sort({ createdAt: -1 });
 
-      // Validate required fields
-      if (!name || !type) {
-        return res.status(400).json({
-          success: false,
-          message: "Document name and type are required",
-        });
-      }
-
-      const newDocument = {
-        id: Date.now().toString(),
-        name,
-        type,
-        university: university || "All",
-        status: status || "Uploaded",
-        uploadDate: new Date().toISOString().split("T")[0],
-        size: "0 MB", // Would be calculated from actual file
-        format: format || "PDF",
-        filePath: filePath || "",
-        userId: (req.headers["user-id"] as string) || "user1",
-      };
-
-      documents.push(newDocument);
-
-      res.status(201).json({
-        success: true,
-        data: newDocument,
-        message: "Document created successfully",
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: "Failed to create document",
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  },
-
-  // Update a document
-  updateDocument: async (
-    req: Request,
-    res: Response
-  ): Promise<Response | void> => {
-    try {
-      const { id } = req.params;
-      const updates = req.body;
-
-      const docIndex = documents.findIndex((doc) => doc.id === id);
-      if (docIndex === -1) {
-        return res.status(404).json({
-          success: false,
-          message: "Document not found",
-        });
-      }
-
-      documents[docIndex] = { ...documents[docIndex], ...updates };
-
-      res.status(200).json({
-        success: true,
-        data: documents[docIndex],
-        message: "Document updated successfully",
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: "Failed to update document",
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  },
-
-  // Delete a document
-  deleteDocument: async (
-    req: Request,
-    res: Response
-  ): Promise<Response | void> => {
-    try {
-      const { id } = req.params;
-
-      const docIndex = documents.findIndex((doc) => doc.id === id);
-      if (docIndex === -1) {
-        return res.status(404).json({
-          success: false,
-          message: "Document not found",
-        });
-      }
-
-      documents.splice(docIndex, 1);
-
-      res.status(200).json({
-        success: true,
-        message: "Document deleted successfully",
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: "Failed to delete document",
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  },
+    res.json({
+      success: true,
+      data: documents,
+    });
+  } catch (error) {
+    console.error("Error fetching documents:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching documents",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 };
+
+// Get document by ID
+export const getDocumentById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const document = await Document.findById(id);
+
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: document,
+    });
+  } catch (error) {
+    console.error("Error fetching document:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching document",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+// Get document versions
+export const getDocumentVersions = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const document = await Document.findById(id);
+
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+    }
+
+    const parentId = document.parentDocumentId || document._id;
+    const versions = await Document.find({
+      $or: [{ _id: parentId }, { parentDocumentId: parentId }],
+    }).sort({ version: -1 });
+
+    return res.json({
+      success: true,
+      data: versions,
+    });
+  } catch (error) {
+    console.error("Error fetching document versions:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching document versions",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+// Upload new document
+export const uploadDocument = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const { name, type, university = "All", description } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No file uploaded",
+      });
+    }
+
+    // Calculate file checksum
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const checksum = crypto.createHash("md5").update(fileBuffer).digest("hex");
+
+    // Get file size in MB
+    const fileSizeInMB = (req.file.size / (1024 * 1024)).toFixed(2);
+
+    const documentData: Partial<IDocument> = {
+      name,
+      type,
+      university,
+      status: "Uploaded",
+      uploadDate: new Date(),
+      size: `${fileSizeInMB} MB`,
+      format: path.extname(req.file.originalname).toUpperCase().slice(1),
+      filePath: `/uploads/documents/${req.file.filename}`,
+      uploadedBy: userId,
+      metadata: {
+        originalFileName: req.file.originalname,
+        mimeType: req.file.mimetype,
+        checksum,
+        description,
+      },
+    };
+
+    const document = new Document(documentData);
+    await document.save();
+
+    return res.json({
+      success: true,
+      data: document,
+      message: "Document uploaded successfully",
+    });
+  } catch (error) {
+    console.error("Error uploading document:", error);
+
+    // Clean up uploaded file if document creation failed
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Error uploading document",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+// Update document
+export const updateDocument = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { name, type, status, description } = req.body;
+
+    const document = await Document.findById(id);
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+    }
+
+    const updateData: Partial<IDocument> = {};
+    if (name) updateData.name = name;
+    if (type) updateData.type = type;
+    if (status) updateData.status = status;
+    if (description)
+      updateData.metadata = { ...document.metadata, description };
+
+    const updatedDocument = await Document.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    return res.json({
+      success: true,
+      data: updatedDocument,
+      message: "Document updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating document:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error updating document",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+// Upload new version of existing document
+export const uploadNewVersion = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No file uploaded",
+      });
+    }
+
+    const originalDocument = await Document.findById(id);
+    if (!originalDocument) {
+      return res.status(404).json({
+        success: false,
+        message: "Original document not found",
+      });
+    }
+
+    // Calculate file checksum
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const checksum = crypto.createHash("md5").update(fileBuffer).digest("hex");
+
+    // Get file size in MB
+    const fileSizeInMB = (req.file.size / (1024 * 1024)).toFixed(2);
+
+    const newVersionData: Partial<IDocument> = {
+      name: originalDocument.name,
+      type: originalDocument.type,
+      university: originalDocument.university,
+      status: "Uploaded",
+      uploadDate: new Date(),
+      size: `${fileSizeInMB} MB`,
+      format: path.extname(req.file.originalname).toUpperCase().slice(1),
+      filePath: `/uploads/documents/${req.file.filename}`,
+      uploadedBy: userId,
+      parentDocumentId: (
+        originalDocument.parentDocumentId || (originalDocument._id as any)
+      ).toString(),
+      metadata: {
+        originalFileName: req.file.originalname,
+        mimeType: req.file.mimetype,
+        checksum,
+        description: originalDocument.metadata?.description,
+      },
+    };
+
+    const newVersion = new Document(newVersionData);
+    await newVersion.save();
+
+    return res.json({
+      success: true,
+      data: newVersion,
+      message: "New version uploaded successfully",
+    });
+  } catch (error) {
+    console.error("Error uploading new version:", error);
+
+    // Clean up uploaded file if document creation failed
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Error uploading new version",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+// Delete document
+export const deleteDocument = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { deleteAllVersions = false } = req.body;
+
+    const document = await Document.findById(id);
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+    }
+
+    if (deleteAllVersions) {
+      // Delete all versions
+      const parentId = document.parentDocumentId || document._id;
+      const allVersions = await Document.find({
+        $or: [{ _id: parentId }, { parentDocumentId: parentId }],
+      });
+
+      // Delete files from filesystem
+      for (const doc of allVersions) {
+        if (doc.filePath && fs.existsSync(doc.filePath)) {
+          fs.unlinkSync(doc.filePath);
+        }
+      }
+
+      await Document.deleteMany({
+        $or: [{ _id: parentId }, { parentDocumentId: parentId }],
+      });
+    } else {
+      // Delete only this version
+      if (document.filePath && fs.existsSync(document.filePath)) {
+        fs.unlinkSync(document.filePath);
+      }
+
+      await Document.findByIdAndDelete(id);
+
+      // If this was the latest version, update the latest version
+      if (document.isLatestVersion) {
+        const parentId = document.parentDocumentId || document._id;
+        const remainingVersions = await Document.find({
+          $or: [{ _id: parentId }, { parentDocumentId: parentId }],
+          _id: { $ne: id },
+        }).sort({ version: -1 });
+
+        if (remainingVersions.length > 0) {
+          await Document.findByIdAndUpdate(remainingVersions[0]._id, {
+            isLatestVersion: true,
+          });
+        }
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: deleteAllVersions
+        ? "All versions deleted successfully"
+        : "Document deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting document:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error deleting document",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+// Middleware for file upload
+export const uploadMiddleware = upload.single("file");

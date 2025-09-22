@@ -30,9 +30,14 @@ export interface Country {
     workRights: string;
     avgTuition: string;
     livingCost: string;
-    currency?: string;
-    language?: string[];
-    climate?: string;
+    currency: string;
+    language: string[];
+    climate: string;
+    isEnglishSpeaking?: boolean;
+    isLowCost?: boolean;
+    hasWorkRights?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 export interface Exam {
     id: string;
@@ -80,17 +85,53 @@ export interface Application {
     submittedAt?: Date;
     deadline?: Date;
 }
+export interface Visa {
+    id: string;
+    type: string;
+    country: string;
+    duration?: string;
+    requirements: string[];
+    processingTime: string;
+    cost: string;
+    description?: string;
+    isWorkPermit?: boolean;
+    isStudentVisa?: boolean;
+    validityPeriod?: string;
+    applicationProcess?: string;
+    documents: string[];
+    eligibility?: string;
+    restrictions?: string[];
+    benefits?: string[];
+    validity: string;
+    officialWebsite: string;
+    workRights: string;
+    studyRights: string;
+    familyRights: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
 export interface Scholarship {
     id: string;
-    name: string;
+    title: string;
+    description: string;
+    amount: string;
     university: string;
     country: string;
-    amount: string;
-    type: "merit" | "need" | "athletic" | "academic";
-    requirements: string[];
     deadline: string;
-    description: string;
-    applicationUrl?: string;
+    type: string;
+    requirements: string[];
+    coverage: string;
+    duration: string;
+    applicationProcess: string;
+    eligibility: string;
+    benefits: string[];
+    image: string;
+    donor?: string;
+    contactEmail?: string;
+    website?: string;
+    isActive?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 export interface ApiResponse<T> {
     success: boolean;

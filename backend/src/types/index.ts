@@ -95,6 +95,33 @@ export interface Application {
   deadline?: Date;
 }
 
+// Visa types
+export interface Visa {
+  id: string;
+  type: string;
+  country: string;
+  duration?: string;
+  requirements: string[];
+  processingTime: string;
+  cost: string;
+  description?: string;
+  isWorkPermit?: boolean;
+  isStudentVisa?: boolean;
+  validityPeriod?: string;
+  applicationProcess?: string;
+  documents: string[];
+  eligibility?: string;
+  restrictions?: string[];
+  benefits?: string[];
+  validity: string;
+  officialWebsite: string;
+  workRights: string;
+  studyRights: string;
+  familyRights: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 // Scholarship types
 export interface Scholarship {
   id: string;
