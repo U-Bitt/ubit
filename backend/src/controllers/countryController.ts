@@ -9,23 +9,18 @@ export const getAllCountries = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { page = 1, limit = 10, sort = "name", order = "asc" } = req.query;
+    const { sort = "name", order = "asc" } = req.query;
 
     // Build sort object for MongoDB
     const sortObj: any = {};
     sortObj[sort] = order === "asc" ? 1 : -1;
 
-    // Calculate pagination
-    const skip = (page - 1) * limit;
-
-    // Get countries from MongoDB
+    // Get all countries from MongoDB without pagination
     const countries = await CountryModel.find()
       .sort(sortObj)
-      .skip(skip)
-      .limit(limit)
       .lean();
 
-    // Get total count for pagination
+    // Get total count
     const total = await CountryModel.countDocuments();
 
     // Convert MongoDB documents to Country interface
@@ -55,10 +50,10 @@ export const getAllCountries = async (
       data: countryData,
       message: "Countries retrieved successfully",
       pagination: {
-        page: Number(page),
-        limit: Number(limit),
+        page: 1,
+        limit: total,
         total,
-        pages: Math.ceil(total / Number(limit)),
+        pages: 1,
       },
     });
   } catch (error) {
@@ -202,6 +197,97 @@ export const searchCountries = async (
     res.status(500).json({
       success: false,
       data: [] as Country[],
+      message: "Internal server error",
+    });
+  }
+};
+
+// Create country (admin only)
+export const createCountry = async (
+  req: Request<{}, ApiResponse<Country>, Country>,
+  res: Response<ApiResponse<Country>>,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    // Create new country in MongoDB
+    const newCountry = new CountryModel(req.body);
+    const savedCountry = await newCountry.save();
+
+    // Convert to Country interface
+    const countryData: Country = {
+      id: (savedCountry._id as any).toString(),
+      name: savedCountry.name,
+      flag: savedCountry.flag,
+      popularCities: savedCountry.popularCities,
+      rating: savedCountry.rating,
+      description: savedCountry.description,
+      visaType: savedCountry.visaType,
+      workRights: savedCountry.workRights,
+      avgTuition: savedCountry.avgTuition,
+      livingCost: savedCountry.livingCost,
+      currency: savedCountry.currency,
+      language: savedCountry.language,
+      climate: savedCountry.climate,
+      isEnglishSpeaking: savedCountry.isEnglishSpeaking,
+      isLowCost: savedCountry.isLowCost,
+      hasWorkRights: savedCountry.hasWorkRights,
+      createdAt: savedCountry.createdAt,
+      updatedAt: savedCountry.updatedAt,
+    };
+
+    const response: ApiResponse<Country> = {
+      success: true,
+      data: countryData,
+      message: "Country created successfully",
+    };
+
+    res.status(201).json(response);
+  } catch (error) {
+    next(error);
+  }
+}; 
+// Delete country (admin only)
+export const deleteCountry = async (
+  req: Request<{ id: string }>,
+  res: Response<ApiResponse<{}>>,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    // Validate ObjectId format
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      res.status(400).json({
+        success: false,
+        data: {},
+        message: "Invalid country ID format",
+      });
+      return;
+    }
+
+    const deletedCountry = await CountryModel.findByIdAndDelete(id);
+
+    if (!deletedCountry) {
+      res.status(404).json({
+        success: false,
+        data: {},
+        message: "Country not found",
+      });
+      return;
+    }
+
+    const response: ApiResponse<{}> = {
+      success: true,
+      data: {},
+      message: "Country deleted successfully",
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error deleting country:", error);
+    res.status(500).json({
+      success: false,
+      data: {},
       message: "Internal server error",
     });
   }
