@@ -1,5 +1,10 @@
-import { Request, Response } from "express";
-export declare const getAllScholarships: (req: Request, res: Response) => Promise<void>;
-export declare const getScholarshipById: (req: Request, res: Response) => Promise<Response>;
-export declare const searchScholarships: (req: Request, res: Response) => Promise<Response>;
+import { Request, Response, NextFunction } from "express";
+import { Scholarship, ApiResponse, SearchQuery } from "../types";
+export declare const getAllScholarships: (req: Request<{}, ApiResponse<Scholarship[]>, {}, SearchQuery>, res: Response<ApiResponse<Scholarship[]>>, next: NextFunction) => Promise<void>;
+export declare const getScholarshipById: (req: Request<{
+    id: string;
+}>, res: Response<ApiResponse<Scholarship>>, next: NextFunction) => Promise<void>;
+export declare const searchScholarships: (req: Request<{}, ApiResponse<Scholarship[]>, {}, {
+    q: string;
+}>, res: Response<ApiResponse<Scholarship[]>>, next: NextFunction) => Promise<void>;
 //# sourceMappingURL=scholarshipController.d.ts.map

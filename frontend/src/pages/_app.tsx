@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../../styles/globals.css";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
+import { UserProvider } from "@/contexts/UserContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,14 +17,16 @@ const geistMono = Geist_Mono({
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <div
-      className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-black min-h-screen`}
-    >
-      <Navbar />
-      <main>
-        <Component {...pageProps} />
-      </main>
-      <Footer />
-    </div>
+    <UserProvider>
+      <div
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-black min-h-screen`}
+      >
+        <Navbar />
+        <main>
+          <Component {...pageProps} />
+        </main>
+        <Footer />
+      </div>
+    </UserProvider>
   );
 }

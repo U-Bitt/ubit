@@ -21,7 +21,7 @@ interface SuggestUniversitiesModalProps {
   userProfile: {
     personalInfo: Record<string, unknown>;
     academicInfo: Record<string, unknown>;
-    testScores: Record<string, unknown>[];
+    testScores?: Record<string, unknown>[];
     interests: string[];
   };
 }
@@ -146,7 +146,7 @@ export const SuggestUniversitiesModal = ({
         let score = 70; // Base score
 
         // Check test scores match
-        const userTestScores = userProfile.testScores;
+        const userTestScores = userProfile.testScores || [];
         const hasGoodSAT = userTestScores.some(
           score =>
             score.test === "SAT" && parseInt(score.score as string) >= 1400

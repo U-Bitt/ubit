@@ -225,7 +225,7 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
                 <Button 
                   variant={isSaved(university.id) ? "default" : "outline"} 
                   size="sm"
-                  onClick={() => toggleSave(university.id)}
+                  onClick={() => toggleSave(university.id, university.name)}
                   className={isSaved(university.id) 
                     ? "bg-red-500 hover:bg-red-600 text-white" 
                     : "hover:bg-red-50"

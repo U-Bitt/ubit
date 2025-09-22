@@ -18,7 +18,7 @@ interface ImproveCVModalProps {
   userProfile: {
     personalInfo: Record<string, unknown>;
     academicInfo: Record<string, unknown>;
-    testScores: Record<string, unknown>[];
+    testScores?: Record<string, unknown>[];
     interests: string[];
   };
 }
@@ -69,12 +69,16 @@ export const ImproveCVModal = ({
         },
         {
           title: "Test Scores",
-          content: userProfile.testScores
-            .map(score => `${score.test}: ${score.score}`)
-            .join(", "),
-          improved: userProfile.testScores
-            .map(score => `${score.test}: ${score.score} (${score.date})`)
-            .join("\n"),
+          content: userProfile.testScores && userProfile.testScores.length > 0
+            ? userProfile.testScores
+                .map(score => `${score.test}: ${score.score}`)
+                .join(", ")
+            : "No test scores provided",
+          improved: userProfile.testScores && userProfile.testScores.length > 0
+            ? userProfile.testScores
+                .map(score => `${score.test}: ${score.score} (${score.date})`)
+                .join("\n")
+            : "No test scores provided",
           suggestions: [
             "Include test dates",
             "Format consistently",
