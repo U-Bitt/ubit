@@ -52,6 +52,7 @@ const navigationMenus = [
     name: "Prepare",
     items: [
       { name: "Exams", href: "/prepare/exams", icon: BookOpen },
+      { name: "Test Scores", href: "/test-scores", icon: BarChart3 },
       {
         name: "Recommendations",
         href: "/prepare/recommendations",

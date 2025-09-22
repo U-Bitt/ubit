@@ -1,7 +1,7 @@
 // API utility functions for the Ubit education platform
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
 
 console.log("Environment variables:", {
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
@@ -97,6 +97,12 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
     return data;
   } catch (error) {
     console.error("API call error:", error);
+    console.error("Error details:", {
+      name: (error as Error)?.name,
+      message: (error as Error)?.message,
+      stack: (error as Error)?.stack,
+    });
+
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new Error(
         "Network error: Unable to connect to the server. Please check if the backend is running."
@@ -205,13 +211,71 @@ export const testScoreApi = {
 
 // Documents API functions
 export const documentApi = {
-  getAll: (): Promise<Record<string, unknown>[]> =>
-    apiCall<Record<string, unknown>[]>("/documents"),
-  create: (data: Record<string, unknown>): Promise<Record<string, unknown>> =>
-    apiCall<Record<string, unknown>>("/documents", {
+  getAll: (userId: string): Promise<Record<string, unknown>[]> =>
+    apiCall<Record<string, unknown>[]>(`/documents/user/${userId}`),
+  getById: (id: string): Promise<Record<string, unknown>> =>
+    apiCall<Record<string, unknown>>(`/documents/${id}`),
+  getVersions: (
+    id: string
+  ): Promise<{ success: boolean; data: Record<string, unknown>[] }> =>
+    apiCall<{ success: boolean; data: Record<string, unknown>[] }>(
+      `/documents/${id}/versions`
+    ),
+  upload: async (
+    userId: string,
+    file: File,
+    documentData: {
+      name: string;
+      type: string;
+      university?: string;
+      description?: string;
+    }
+  ): Promise<Record<string, unknown>> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("name", documentData.name);
+    formData.append("type", documentData.type);
+    formData.append("university", documentData.university || "All");
+    if (documentData.description) {
+      formData.append("description", documentData.description);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/documents/upload/${userId}`, {
       method: "POST",
-      body: JSON.stringify(data),
-    }),
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Upload failed");
+    }
+
+    return response.json();
+  },
+  uploadNewVersion: async (
+    documentId: string,
+    userId: string,
+    file: File
+  ): Promise<Record<string, unknown>> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("userId", userId);
+
+    const response = await fetch(
+      `${API_BASE_URL}/documents/${documentId}/version`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Version upload failed");
+    }
+
+    return response.json();
+  },
   update: (
     id: string,
     data: Record<string, unknown>
@@ -220,9 +284,13 @@ export const documentApi = {
       method: "PUT",
       body: JSON.stringify(data),
     }),
-  delete: (id: string): Promise<Record<string, unknown>> =>
+  delete: (
+    id: string,
+    deleteAllVersions = false
+  ): Promise<Record<string, unknown>> =>
     apiCall<Record<string, unknown>>(`/documents/${id}`, {
       method: "DELETE",
+      body: JSON.stringify({ deleteAllVersions }),
     }),
 };
 
@@ -349,4 +417,61 @@ export const handleApiError = (error: unknown): never => {
     500,
     "Internal Server Error"
   );
+};
+
+// Test Scores API
+export const testScoresApi = {
+  getAll: (): Promise<{ success: boolean; data: Record<string, unknown>[] }> =>
+    apiCall("/test-scores", {
+      method: "GET",
+      headers: {
+        "user-id": "user-123", // In real app, get from auth context
+      },
+    }),
+
+  getById: (id: string): Promise<Record<string, unknown>> =>
+    apiCall(`/test-scores/${id}`, {
+      method: "GET",
+      headers: {
+        "user-id": "user-123",
+      },
+    }),
+
+  create: (data: {
+    examType: string;
+    score: string;
+    maxScore: string;
+    certified: boolean;
+    testDate: string;
+    validityDate: string;
+  }): Promise<Record<string, unknown>> =>
+    apiCall("/test-scores", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "user-id": "user-123",
+      },
+      body: JSON.stringify(data),
+    }),
+
+  update: (
+    id: string,
+    data: Record<string, unknown>
+  ): Promise<Record<string, unknown>> =>
+    apiCall(`/test-scores/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "user-id": "user-123",
+      },
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string): Promise<Record<string, unknown>> =>
+    apiCall(`/test-scores/${id}`, {
+      method: "DELETE",
+      headers: {
+        "user-id": "user-123",
+      },
+    }),
 };
