@@ -16,6 +16,7 @@ const users_1 = __importDefault(require("./routes/users"));
 const testScores_1 = __importDefault(require("./routes/testScores"));
 const documents_1 = __importDefault(require("./routes/documents"));
 const scholarships_1 = __importDefault(require("./routes/scholarships"));
+const ai_1 = __importDefault(require("./routes/ai"));
 const errorHandler_1 = require("./middleware/errorHandler");
 const notFound_1 = require("./middleware/notFound");
 const database_1 = __importDefault(require("./config/database"));
@@ -56,6 +57,7 @@ app.use("/api/user", users_1.default);
 app.use("/api/test-scores", testScores_1.default);
 app.use("/api/documents", documents_1.default);
 app.use("/api/scholarships", scholarships_1.default);
+app.use("/api/ai", ai_1.default);
 app.use(notFound_1.notFound);
 app.use(errorHandler_1.errorHandler);
 app.listen(PORT, () => {

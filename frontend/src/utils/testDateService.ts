@@ -305,7 +305,7 @@ function getWeeklyDate(schedule: ExamSchedule, now: Date): TestDateInfo {
   ];
   const targetDays = schedule.typicalSchedule;
 
-  let nextDate = new Date(now);
+  const nextDate = new Date(now);
   let found = false;
 
   // Look for next available date in the next 2 weeks

@@ -128,7 +128,7 @@ export function CombinedSection({ testimonials }: CombinedSectionProps) {
 
                       {/* Testimonial Content */}
                       <blockquote className="text-sm text-gray-700 mb-3 leading-relaxed flex-1">
-                        "{testimonial.message}"
+                        &quot;{testimonial.message}&quot;
                       </blockquote>
 
                       {/* Author Info */}
@@ -171,7 +171,7 @@ export function CombinedSection({ testimonials }: CombinedSectionProps) {
 
                       {/* Testimonial Content */}
                       <blockquote className="text-sm text-gray-700 mb-3 leading-relaxed flex-1">
-                        "{testimonial.message}"
+                        &quot;{testimonial.message}&quot;
                       </blockquote>
 
                       {/* Author Info */}

@@ -13,6 +13,7 @@ import userRoutes from "./routes/users";
 import testScoreRoutes from "./routes/testScores";
 import documentRoutes from "./routes/documents";
 import scholarshipRoutes from "./routes/scholarships";
+import aiRoutes from "./routes/ai";
 
 // Import middleware
 import { errorHandler } from "./middleware/errorHandler";
@@ -77,6 +78,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/test-scores", testScoreRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/scholarships", scholarshipRoutes);
+app.use("/api/ai", aiRoutes);
 
 // 404 handler
 app.use(notFound);

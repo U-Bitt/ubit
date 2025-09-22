@@ -5,27 +5,35 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { GraduationCap, Award, Edit, Save, Camera, Search, FileCheck, X } from "lucide-react";
+import {
+  GraduationCap,
+  Award,
+  Edit,
+  Save,
+  Camera,
+  Search,
+  FileCheck,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/router";
-import { SuggestUniversitiesModal } from "../SuggestUniversitiesModal";
-import { ImproveCVModal } from "../ImproveCVModal";
+import { SuggestUniversitiesModal } from "@/components/SuggestUniversitiesModal";
+import { ImproveCVModal } from "@/components/ImproveCVModal";
 
 export const UserProfile = () => {
   const router = useRouter();
-  
+
   // State for Personal Information
   const [personalInfo, setPersonalInfo] = useState({
-    firstName: "Alex",
-    lastName: "Smith",
-    email: "alex.smith@email.com",
+    firstName: "John",
+    lastName: "Doe",
+    email: "john.doe@example.com",
     phone: "+1 (555) 123-4567",
-    dateOfBirth: "2005-03-15",
+    dateOfBirth: "2005-06-15",
     nationality: "American",
-    address: "123 Main St, New York, NY 10001",
-    bio: "Passionate computer science student with a love for innovation and technology."
+    address: "123 Main St, Anytown, USA",
+    bio: "Passionate student with a love for technology and innovation.",
   });
 
-  // State for Academic Information
   const [academicInfo, setAcademicInfo] = useState({
     gpa: "3.8/4.0",
     school: "International High School",
@@ -33,7 +41,6 @@ export const UserProfile = () => {
     major: "Computer Science",
   });
 
-  // State for Test Scores
   const [testScores, setTestScores] = useState([
     { id: 1, test: "SAT", score: "1450", date: "Dec 2023" },
     { id: 2, test: "TOEFL", score: "108", date: "Nov 2023" },
@@ -56,16 +63,19 @@ export const UserProfile = () => {
 
   // State for profile picture
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
-  const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
+  const [profilePictureFile, setProfilePictureFile] = useState<File | null>(
+    null
+  );
 
   // State for AI modals
-  const [isSuggestUniversitiesOpen, setIsSuggestUniversitiesOpen] = useState(false);
+  const [isSuggestUniversitiesOpen, setIsSuggestUniversitiesOpen] =
+    useState(false);
   const [isImproveCVOpen, setIsImproveCVOpen] = useState(false);
 
   // Load data from localStorage on component mount
   useEffect(() => {
     try {
-      const savedProfile = localStorage.getItem('userProfile');
+      const savedProfile = localStorage.getItem("userProfile");
       if (savedProfile) {
         const profileData = JSON.parse(savedProfile);
         setPersonalInfo(profileData.personalInfo || personalInfo);
@@ -75,7 +85,7 @@ export const UserProfile = () => {
         setProfilePicture(profileData.profilePicture || null);
       }
     } catch (error) {
-      console.error('Error loading profile data:', error);
+      console.error("Error loading profile data:", error);
     }
   }, []);
 
@@ -87,11 +97,11 @@ export const UserProfile = () => {
         academicInfo,
         testScores,
         interests,
-        profilePicture
+        profilePicture,
       };
-      localStorage.setItem('userProfile', JSON.stringify(profileData));
+      localStorage.setItem("userProfile", JSON.stringify(profileData));
     } catch (error) {
-      console.error('Error saving user data:', error);
+      console.error("Error saving user data:", error);
     }
   }, [personalInfo, academicInfo, testScores, interests, profilePicture]);
 
@@ -99,14 +109,14 @@ export const UserProfile = () => {
   const handlePersonalInfoChange = (field: string, value: string) => {
     setPersonalInfo(prev => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleAcademicInfoChange = (field: string, value: string) => {
     setAcademicInfo(prev => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -123,7 +133,7 @@ export const UserProfile = () => {
       id: Date.now(),
       test: "",
       score: "",
-      date: ""
+      date: "",
     };
     setTestScores(prev => [...prev, newScore]);
   };
@@ -140,29 +150,33 @@ export const UserProfile = () => {
   };
 
   const removeInterest = (interestToRemove: string) => {
-    setInterests(prev => prev.filter(interest => interest !== interestToRemove));
+    setInterests(prev =>
+      prev.filter(interest => interest !== interestToRemove)
+    );
   };
 
-  const handleProfilePictureChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfilePictureChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       // Validate file type
-      if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
+      if (!file.type.startsWith("image/")) {
+        alert("Please select an image file");
         return;
       }
-      
+
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert('Image size should be less than 5MB');
+        alert("Image size should be less than 5MB");
         return;
       }
-      
+
       setProfilePictureFile(file);
-      
+
       // Create preview URL
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = e => {
         const result = e.target?.result as string;
         setProfilePicture(result);
       };
@@ -173,24 +187,24 @@ export const UserProfile = () => {
   const removeProfilePicture = () => {
     setProfilePicture(null);
     setProfilePictureFile(null);
-    localStorage.removeItem('userProfilePicture');
+    localStorage.removeItem("userProfilePicture");
   };
 
   const handleSave = () => {
     try {
       // Save all data to localStorage
-      localStorage.setItem('userPersonalInfo', JSON.stringify(personalInfo));
-      localStorage.setItem('userAcademicInfo', JSON.stringify(academicInfo));
-      localStorage.setItem('userTestScores', JSON.stringify(testScores));
-      localStorage.setItem('userInterests', JSON.stringify(interests));
+      localStorage.setItem("userPersonalInfo", JSON.stringify(personalInfo));
+      localStorage.setItem("userAcademicInfo", JSON.stringify(academicInfo));
+      localStorage.setItem("userTestScores", JSON.stringify(testScores));
+      localStorage.setItem("userInterests", JSON.stringify(interests));
       if (profilePicture) {
-        localStorage.setItem('userProfilePicture', profilePicture);
+        localStorage.setItem("userProfilePicture", profilePicture);
       }
-      
+
       setIsEditing(false);
       alert("Profile updated successfully!");
     } catch (error) {
-      console.error('Error saving profile:', error);
+      console.error("Error saving profile:", error);
       alert("Error saving profile. Please try again.");
     }
   };
@@ -222,7 +236,8 @@ export const UserProfile = () => {
                     />
                   ) : (
                     <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center text-white font-bold text-2xl">
-                      {personalInfo.firstName.charAt(0)}{personalInfo.lastName.charAt(0)}
+                      {personalInfo.firstName.charAt(0)}
+                      {personalInfo.lastName.charAt(0)}
                     </div>
                   )}
                   {isEditing && (
@@ -230,7 +245,11 @@ export const UserProfile = () => {
                       <Button
                         size="sm"
                         className="rounded-full w-8 h-8 p-0"
-                        onClick={() => document.getElementById('profilePictureInput')?.click()}
+                        onClick={() =>
+                          document
+                            .getElementById("profilePictureInput")
+                            ?.click()
+                        }
                       >
                         <Camera className="h-4 w-4" />
                       </Button>
@@ -254,7 +273,9 @@ export const UserProfile = () => {
                     className="hidden"
                   />
                 </div>
-                <h2 className="text-2xl font-bold mb-2">{personalInfo.firstName} {personalInfo.lastName}</h2>
+                <h2 className="text-2xl font-bold mb-2">
+                  {personalInfo.firstName} {personalInfo.lastName}
+                </h2>
                 <p className="text-muted-foreground mb-4">
                   {personalInfo.email}
                 </p>
@@ -289,22 +310,22 @@ export const UserProfile = () => {
                   <Label className="text-sm font-medium">Intended Major</Label>
                   <p className="text-sm">{academicInfo.major}</p>
                 </div>
-                
-                {/* AI Assistant Buttons */}
+
+                {/* AI University Suggestions */}
                 <div className="pt-4 border-t border-gray-200">
                   <div className="space-y-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="w-full justify-start"
-                      onClick={() => setIsSuggestUniversitiesOpen(true)}
+                      onClick={() => router.push("/ai/suggest-universities")}
                     >
                       <Search className="h-4 w-4 mr-2" />
                       Suggest Universities
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="w-full justify-start"
-                      onClick={() => setIsImproveCVOpen(true)}
+                      onClick={() => router.push("/ai/improve-cv")}
                     >
                       <FileCheck className="h-4 w-4 mr-2" />
                       Improve CV
@@ -322,8 +343,8 @@ export const UserProfile = () => {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Personal Information</CardTitle>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => setIsEditing(!isEditing)}
                   >
@@ -336,19 +357,23 @@ export const UserProfile = () => {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="firstName">First Name</Label>
-                    <Input 
-                      id="firstName" 
+                    <Input
+                      id="firstName"
                       value={personalInfo.firstName}
-                      onChange={(e) => handlePersonalInfoChange("firstName", e.target.value)}
+                      onChange={e =>
+                        handlePersonalInfoChange("firstName", e.target.value)
+                      }
                       disabled={!isEditing}
                     />
                   </div>
                   <div>
                     <Label htmlFor="lastName">Last Name</Label>
-                    <Input 
-                      id="lastName" 
+                    <Input
+                      id="lastName"
                       value={personalInfo.lastName}
-                      onChange={(e) => handlePersonalInfoChange("lastName", e.target.value)}
+                      onChange={e =>
+                        handlePersonalInfoChange("lastName", e.target.value)
+                      }
                       disabled={!isEditing}
                     />
                   </div>
@@ -359,44 +384,54 @@ export const UserProfile = () => {
                     id="email"
                     type="email"
                     value={personalInfo.email}
-                    onChange={(e) => handlePersonalInfoChange("email", e.target.value)}
+                    onChange={e =>
+                      handlePersonalInfoChange("email", e.target.value)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
                 <div>
                   <Label htmlFor="phone">Phone</Label>
-                  <Input 
-                    id="phone" 
+                  <Input
+                    id="phone"
                     value={personalInfo.phone}
-                    onChange={(e) => handlePersonalInfoChange("phone", e.target.value)}
+                    onChange={e =>
+                      handlePersonalInfoChange("phone", e.target.value)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
                 <div>
                   <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                  <Input 
-                    id="dateOfBirth" 
+                  <Input
+                    id="dateOfBirth"
                     type="date"
                     value={personalInfo.dateOfBirth}
-                    onChange={(e) => handlePersonalInfoChange("dateOfBirth", e.target.value)}
+                    onChange={e =>
+                      handlePersonalInfoChange("dateOfBirth", e.target.value)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
                 <div>
                   <Label htmlFor="nationality">Nationality</Label>
-                  <Input 
-                    id="nationality" 
+                  <Input
+                    id="nationality"
                     value={personalInfo.nationality}
-                    onChange={(e) => handlePersonalInfoChange("nationality", e.target.value)}
+                    onChange={e =>
+                      handlePersonalInfoChange("nationality", e.target.value)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
                 <div>
                   <Label htmlFor="address">Address</Label>
-                  <Input 
-                    id="address" 
+                  <Input
+                    id="address"
                     value={personalInfo.address}
-                    onChange={(e) => handlePersonalInfoChange("address", e.target.value)}
+                    onChange={e =>
+                      handlePersonalInfoChange("address", e.target.value)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -405,7 +440,9 @@ export const UserProfile = () => {
                   <Textarea
                     id="bio"
                     value={personalInfo.bio}
-                    onChange={(e) => handlePersonalInfoChange("bio", e.target.value)}
+                    onChange={e =>
+                      handlePersonalInfoChange("bio", e.target.value)
+                    }
                     disabled={!isEditing}
                     rows={3}
                   />
@@ -418,11 +455,7 @@ export const UserProfile = () => {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Test Scores</CardTitle>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={addTestScore}
-                  >
+                  <Button variant="outline" size="sm" onClick={addTestScore}>
                     <Award className="h-4 w-4 mr-2" />
                     Add Score
                   </Button>
@@ -430,7 +463,7 @@ export const UserProfile = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4">
-                  {testScores.map((score) => (
+                  {testScores.map(score => (
                     <div
                       key={score.id}
                       className="flex justify-between items-center p-3 rounded-lg bg-muted/50"
@@ -438,19 +471,37 @@ export const UserProfile = () => {
                       <div className="flex-1 grid grid-cols-3 gap-2">
                         <Input
                           value={score.test}
-                          onChange={(e) => handleTestScoreChange(score.id, "test", e.target.value)}
+                          onChange={e =>
+                            handleTestScoreChange(
+                              score.id,
+                              "test",
+                              e.target.value
+                            )
+                          }
                           placeholder="Test Name"
                           disabled={!isEditing}
                         />
                         <Input
                           value={score.score}
-                          onChange={(e) => handleTestScoreChange(score.id, "score", e.target.value)}
+                          onChange={e =>
+                            handleTestScoreChange(
+                              score.id,
+                              "score",
+                              e.target.value
+                            )
+                          }
                           placeholder="Score"
                           disabled={!isEditing}
                         />
                         <Input
                           value={score.date}
-                          onChange={(e) => handleTestScoreChange(score.id, "date", e.target.value)}
+                          onChange={e =>
+                            handleTestScoreChange(
+                              score.id,
+                              "date",
+                              e.target.value
+                            )
+                          }
                           placeholder="Date"
                           disabled={!isEditing}
                         />
@@ -483,7 +534,11 @@ export const UserProfile = () => {
                   </Label>
                   <div className="flex flex-wrap gap-2">
                     {interests.map((interest, index) => (
-                      <Badge key={index} variant="outline" className="flex items-center gap-1">
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="flex items-center gap-1"
+                      >
                         {interest}
                         {isEditing && (
                           <Button
@@ -503,14 +558,16 @@ export const UserProfile = () => {
                   <div>
                     <Label htmlFor="newInterest">Add Interest</Label>
                     <div className="flex gap-2 mt-2">
-                      <Input 
-                        id="newInterest" 
-                        placeholder="Enter new interest" 
+                      <Input
+                        id="newInterest"
+                        placeholder="Enter new interest"
                         value={newInterest}
-                        onChange={(e) => setNewInterest(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && addInterest()}
+                        onChange={e => setNewInterest(e.target.value)}
+                        onKeyPress={e => e.key === "Enter" && addInterest()}
                       />
-                      <Button size="sm" onClick={addInterest}>Add</Button>
+                      <Button size="sm" onClick={addInterest}>
+                        Add
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -520,7 +577,7 @@ export const UserProfile = () => {
             {/* Save Button */}
             {isEditing && (
               <div className="flex justify-end">
-                <Button 
+                <Button
                   className="bg-primary hover:bg-primary/90"
                   onClick={handleSave}
                 >
@@ -540,7 +597,7 @@ export const UserProfile = () => {
             personalInfo,
             academicInfo,
             testScores,
-            interests
+            interests,
           }}
         />
 
@@ -551,7 +608,7 @@ export const UserProfile = () => {
             personalInfo,
             academicInfo,
             testScores,
-            interests
+            interests,
           }}
         />
       </div>

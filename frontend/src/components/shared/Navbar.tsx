@@ -39,7 +39,11 @@ const navigationMenus = [
   {
     name: "Discover",
     items: [
-      { name: "Universities", href: "/discover/universities", icon: GraduationCap },
+      {
+        name: "Universities",
+        href: "/discover/universities",
+        icon: GraduationCap,
+      },
       { name: "Countries", href: "/discover/countries", icon: MapPin },
       { name: "Scholarships", href: "/discover/scholarships", icon: Award },
     ],
@@ -48,7 +52,11 @@ const navigationMenus = [
     name: "Prepare",
     items: [
       { name: "Exams", href: "/prepare/exams", icon: BookOpen },
-      { name: "Recommendations", href: "/prepare/recommendations", icon: Lightbulb },
+      {
+        name: "Recommendations",
+        href: "/prepare/recommendations",
+        icon: Lightbulb,
+      },
       { name: "Documents", href: "/prepare/documents", icon: FileText },
       { name: "Trainings", href: "/prepare/trainings", icon: Users },
       { name: "Visa", href: "/prepare/visa", icon: Plane },
@@ -57,7 +65,7 @@ const navigationMenus = [
   {
     name: "AI Assistant",
     items: [
-      { name: "Suggest Universities", href: "/ai/suggest-universities", icon: Search },
+      { name: "Suggest Universities", href: "/ai-suggestions", icon: Search },
       { name: "Improve CV", href: "/ai/improve-cv", icon: FileCheck },
     ],
   },
@@ -133,15 +141,15 @@ export default function Navbar() {
 
           {/* Right side buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
               onClick={() => setIsNotificationsOpen(true)}
             >
               <Bell className="h-4 w-4" />
             </Button>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
               onClick={() => setIsSettingsOpen(true)}
             >
@@ -232,23 +240,27 @@ export default function Navbar() {
                 </div>
               </div>
               <div className="mt-3 space-y-1">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="w-full justify-start"
                   onClick={() => setIsNotificationsOpen(true)}
                 >
                   <Bell className="h-4 w-4 mr-2" />
                   Notifications
                 </Button>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="w-full justify-start"
                   onClick={() => setIsSettingsOpen(true)}
                 >
                   <Settings className="h-4 w-4 mr-2" />
                   Settings
                 </Button>
-                <Button variant="ghost" className="w-full justify-start" asChild>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  asChild
+                >
                   <Link href="/user/profile">
                     <User className="h-4 w-4 mr-2" />
                     Your Profile
@@ -265,14 +277,14 @@ export default function Navbar() {
       </div>
 
       {/* Settings Sidebar */}
-      <SettingsSidebar 
-        isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
+      <SettingsSidebar
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
       />
 
       {/* Notification Cube */}
-      <NotificationCube 
-        isOpen={isNotificationsOpen} 
+      <NotificationCube
+        isOpen={isNotificationsOpen}
         onClose={() => setIsNotificationsOpen(false)}
         onOpenSettings={() => setIsSettingsOpen(true)}
       />

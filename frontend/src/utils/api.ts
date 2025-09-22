@@ -6,7 +6,7 @@ const API_BASE_URL =
 console.log("Environment variables:", {
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   NODE_ENV: process.env.NODE_ENV,
-  API_BASE_URL: API_BASE_URL
+  API_BASE_URL: API_BASE_URL,
 });
 
 export interface University {
@@ -30,6 +30,8 @@ export interface University {
   createdAt?: Date;
   updatedAt?: Date;
 }
+// Note: Application, Exam, University, and other types are now defined in the Dashboard components
+// to avoid conflicts. Import them from @/components/Dashboard/types when needed.
 
 export interface Country {
   id: string;
@@ -65,7 +67,7 @@ export interface Exam {
 // Generic API call function
 async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  
+
   console.log("Making API call to:", url);
   console.log("API_BASE_URL:", API_BASE_URL);
 
@@ -79,10 +81,15 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
     });
 
     console.log("API response status:", response.status);
-    console.log("API response headers:", Object.fromEntries(response.headers.entries()));
+    console.log(
+      "API response headers:",
+      Object.fromEntries(response.headers.entries())
+    );
 
     if (!response.ok) {
-      throw new Error(`API call failed: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `API call failed: ${response.status} ${response.statusText}`
+      );
     }
 
     const data = await response.json();
@@ -90,8 +97,10 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
     return data;
   } catch (error) {
     console.error("API call error:", error);
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error('Network error: Unable to connect to the server. Please check if the backend is running.');
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      throw new Error(
+        "Network error: Unable to connect to the server. Please check if the backend is running."
+      );
     }
     throw error;
   }
@@ -122,15 +131,21 @@ export const universityApi = {
 // Country API functions
 export const countryApi = {
   getAll: async (): Promise<Country[]> => {
-    const response = await apiCall<{ success: boolean; data: Country[] }>("/countries");
+    const response = await apiCall<{ success: boolean; data: Country[] }>(
+      "/countries"
+    );
     return response.data;
   },
   getById: async (id: string): Promise<Country> => {
-    const response = await apiCall<{ success: boolean; data: Country }>(`/countries/${id}`);
+    const response = await apiCall<{ success: boolean; data: Country }>(
+      `/countries/${id}`
+    );
     return response.data;
   },
   search: async (query: string): Promise<Country[]> => {
-    const response = await apiCall<{ success: boolean; data: Country[] }>(`/countries/search?q=${encodeURIComponent(query)}`);
+    const response = await apiCall<{ success: boolean; data: Country[] }>(
+      `/countries/search?q=${encodeURIComponent(query)}`
+    );
     return response.data;
   },
 };
@@ -214,47 +229,78 @@ export const documentApi = {
 // Scholarship API functions
 export const scholarshipApi = {
   getAll: async (): Promise<Record<string, unknown>[]> => {
-    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>("/scholarships");
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>[];
+    }>("/scholarships");
     return response.data;
   },
   getById: async (id: string): Promise<Record<string, unknown>> => {
-    const response = await apiCall<{ success: boolean; data: Record<string, unknown> }>(`/scholarships/${id}`);
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>;
+    }>(`/scholarships/${id}`);
     return response.data;
   },
   search: async (query: string): Promise<Record<string, unknown>[]> => {
-    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>(`/scholarships/search?q=${encodeURIComponent(query)}`);
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>[];
+    }>(`/scholarships/search?q=${encodeURIComponent(query)}`);
     return response.data;
   },
 };
 
 // Recommendation API functions
 export const recommendationApi = {
-  getUniversityRecommendations: async (): Promise<Record<string, unknown>[]> => {
-    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>("/recommendations/universities");
+  getUniversityRecommendations: async (): Promise<
+    Record<string, unknown>[]
+  > => {
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>[];
+    }>("/recommendations/universities");
     return response.data;
   },
   getProgramRecommendations: async (): Promise<Record<string, unknown>[]> => {
-    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>("/recommendations/programs");
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>[];
+    }>("/recommendations/programs");
     return response.data;
   },
-  getScholarshipRecommendations: async (): Promise<Record<string, unknown>[]> => {
-    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>("/recommendations/scholarships");
+  getScholarshipRecommendations: async (): Promise<
+    Record<string, unknown>[]
+  > => {
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>[];
+    }>("/recommendations/scholarships");
     return response.data;
   },
 };
 
 // Visa API functions
 export const visaApi = {
-  getAll: async (): Promise<any[]> => {
-    const response = await apiCall<{ success: boolean; data: any[] }>("/visas");
+  getAll: async (): Promise<Record<string, unknown>[]> => {
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>[];
+    }>("/visas");
     return response.data;
   },
-  getById: async (id: string): Promise<any> => {
-    const response = await apiCall<{ success: boolean; data: any }>(`/visas/${id}`);
+  getById: async (id: string): Promise<Record<string, unknown>> => {
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>;
+    }>(`/visas/${id}`);
     return response.data;
   },
-  search: async (query: string): Promise<any[]> => {
-    const response = await apiCall<{ success: boolean; data: any[] }>(`/visas/search?q=${encodeURIComponent(query)}`);
+  search: async (query: string): Promise<Record<string, unknown>[]> => {
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>[];
+    }>(`/visas/search?q=${encodeURIComponent(query)}`);
     return response.data;
   },
 };
