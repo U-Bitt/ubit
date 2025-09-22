@@ -1,7 +1,13 @@
 // API utility functions for the Ubit education platform
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://u-bit-backend.vercel.app/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002/api";
+
+console.log("Environment variables:", {
+  NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+  NODE_ENV: process.env.NODE_ENV,
+  API_BASE_URL: API_BASE_URL,
+});
 
 export interface University {
   id: string;
@@ -16,6 +22,13 @@ export interface University {
   programs: string[];
   highlights: string[];
   deadline: string;
+  description?: string;
+  website?: string;
+  founded?: number;
+  type?: "public" | "private";
+  size?: "small" | "medium" | "large";
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 // Note: Application, Exam, University, and other types are now defined in the Dashboard components
 // to avoid conflicts. Import them from @/components/Dashboard/types when needed.
@@ -31,6 +44,14 @@ export interface Country {
   workRights: string;
   avgTuition: string;
   livingCost: string;
+  currency: string;
+  language: string[];
+  climate: string;
+  isEnglishSpeaking?: boolean;
+  isLowCost?: boolean;
+  hasWorkRights?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Exam {
@@ -47,6 +68,9 @@ export interface Exam {
 async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
 
+  console.log("Making API call to:", url);
+  console.log("API_BASE_URL:", API_BASE_URL);
+
   try {
     const response = await fetch(url, {
       headers: {
@@ -56,14 +80,23 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
       ...options,
     });
 
+    console.log("API response status:", response.status);
+    console.log(
+      "API response headers:",
+      Object.fromEntries(response.headers.entries())
+    );
+
     if (!response.ok) {
       throw new Error(
         `API call failed: ${response.status} ${response.statusText}`
       );
     }
 
-    return response.json();
+    const data = await response.json();
+    console.log("API response data:", data);
+    return data;
   } catch (error) {
+    console.error("API call error:", error);
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new Error(
         "Network error: Unable to connect to the server. Please check if the backend is running."
@@ -97,11 +130,24 @@ export const universityApi = {
 
 // Country API functions
 export const countryApi = {
-  getAll: (): Promise<Country[]> => apiCall<Country[]>("/countries"),
-  getById: (id: string): Promise<Country> =>
-    apiCall<Country>(`/countries/${id}`),
-  search: (query: string): Promise<Country[]> =>
-    apiCall<Country[]>(`/countries/search?q=${encodeURIComponent(query)}`),
+  getAll: async (): Promise<Country[]> => {
+    const response = await apiCall<{ success: boolean; data: Country[] }>(
+      "/countries"
+    );
+    return response.data;
+  },
+  getById: async (id: string): Promise<Country> => {
+    const response = await apiCall<{ success: boolean; data: Country }>(
+      `/countries/${id}`
+    );
+    return response.data;
+  },
+  search: async (query: string): Promise<Country[]> => {
+    const response = await apiCall<{ success: boolean; data: Country[] }>(
+      `/countries/search?q=${encodeURIComponent(query)}`
+    );
+    return response.data;
+  },
 };
 
 // Exam API functions
@@ -230,6 +276,26 @@ export const recommendationApi = {
       success: boolean;
       data: Record<string, unknown>[];
     }>("/recommendations/scholarships");
+    return response.data;
+  },
+};
+
+// Visa API functions
+export const visaApi = {
+  getAll: async (): Promise<any[]> => {
+    const response = await apiCall<{ success: boolean; data: any[] }>("/visas");
+    return response.data;
+  },
+  getById: async (id: string): Promise<any> => {
+    const response = await apiCall<{ success: boolean; data: any }>(
+      `/visas/${id}`
+    );
+    return response.data;
+  },
+  search: async (query: string): Promise<any[]> => {
+    const response = await apiCall<{ success: boolean; data: any[] }>(
+      `/visas/search?q=${encodeURIComponent(query)}`
+    );
     return response.data;
   },
 };

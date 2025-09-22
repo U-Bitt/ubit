@@ -4,7 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, CheckCircle, ArrowRight, Star, Users, Calendar, DollarSign } from "lucide-react";
+import {
+  MapPin,
+  CheckCircle,
+  ArrowRight,
+  Star,
+  Users,
+  Calendar,
+  DollarSign,
+} from "lucide-react";
 import { useRouter } from "next/router";
 import { universities } from "@/mockData/universities";
 import { scholarships } from "@/mockData/scholarships";
@@ -21,22 +29,22 @@ export const Recommendations = () => {
     students: "15,000+",
     tuition: uni.tuition,
     image: uni.image,
-    matchScore: 85 + (index * 3), // Generate match scores
+    matchScore: 85 + index * 3, // Generate match scores
     reason: `Strong match for your academic profile and interests in ${uni.programs[0]}`,
     highlights: uni.programs.slice(0, 3),
     programs: uni.programs,
-    deadline: uni.deadline
+    deadline: uni.deadline,
   }));
 
   // Transform scholarship mock data to match recommendations format
   const scholarshipRecommendations = scholarships.map((scholarship, index) => ({
-    name: scholarship.title,
+    name: scholarship.name,
     university: scholarship.university,
     amount: scholarship.amount + "/year",
     requirements: scholarship.requirements,
     deadline: scholarship.deadline,
-    match: 80 + (index * 2), // Generate match scores
-    description: scholarship.description
+    match: 80 + index * 2, // Generate match scores
+    description: scholarship.description,
   }));
 
   const programRecommendations = [
@@ -92,8 +100,6 @@ export const Recommendations = () => {
     },
   ];
 
-
-
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -103,7 +109,9 @@ export const Recommendations = () => {
             Personalized Recommendations
           </h1>
           <p className="text-muted-foreground">
-            AI-powered suggestions based on your profile and preferences. We show a diverse mix of universities that match your scores, including both top-tier and more accessible options.
+            AI-powered suggestions based on your profile and preferences. We
+            show a diverse mix of universities that match your scores, including
+            both top-tier and more accessible options.
           </p>
         </div>
 
@@ -144,9 +152,7 @@ export const Recommendations = () => {
                           </h3>
                           <div className="flex items-center gap-2 text-white/90 mb-2">
                             <MapPin className="h-4 w-4" />
-                            <span>
-                              {university.location}
-                            </span>
+                            <span>{university.location}</span>
                           </div>
                           <div className="flex items-center gap-4 text-sm text-white/80">
                             <div className="flex items-center gap-1">
@@ -182,13 +188,15 @@ export const Recommendations = () => {
                           <CheckCircle className="h-4 w-4 text-white inline mr-2" />
                           {university.reason}
                         </div>
-                        {university.highlights && university.highlights.length > 0 && (
-                          <div className="mt-2">
-                            <div className="text-xs text-white/80">
-                              Highlights: {university.highlights.slice(0, 2).join(", ")}
+                        {university.highlights &&
+                          university.highlights.length > 0 && (
+                            <div className="mt-2">
+                              <div className="text-xs text-white/80">
+                                Highlights:{" "}
+                                {university.highlights.slice(0, 2).join(", ")}
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
                       </div>
 
                       {/* University Info */}
@@ -198,7 +206,9 @@ export const Recommendations = () => {
                             Programs:
                           </h5>
                           <div className="text-xs text-white/80">
-                            {university.programs ? university.programs.slice(0, 2).join(", ") : "Various programs available"}
+                            {university.programs
+                              ? university.programs.slice(0, 2).join(", ")
+                              : "Various programs available"}
                           </div>
                         </div>
                         <div>
@@ -233,7 +243,9 @@ export const Recommendations = () => {
                         <Button
                           size="sm"
                           className="bg-white text-black hover:bg-white/90"
-                          onClick={() => router.push(`/universityDetail/${university.id}`)}
+                          onClick={() =>
+                            router.push(`/universityDetail/${university.id}`)
+                          }
                         >
                           View Details
                           <ArrowRight className="ml-2 h-4 w-4" />

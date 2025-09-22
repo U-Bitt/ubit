@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Search, ArrowRight, DollarSign, Calendar } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/router";
-import { scholarships as mockScholarships } from "@/mockData/scholarships";
 import { scholarshipApi } from "@/utils/api";
 
 interface Scholarship {
@@ -16,14 +15,7 @@ interface Scholarship {
   university: string;
   country: string;
   deadline: string;
-  requirements: string[];
   type: string;
-  coverage: string;
-  duration: string;
-  applicationProcess: string;
-  eligibility: string;
-  benefits: string[];
-  image: string;
 }
 
 export const Scholarships = () => {
@@ -35,7 +27,6 @@ export const Scholarships = () => {
   // State management
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("All");
   const [selectedCountry, setSelectedCountry] = useState("All");
@@ -44,16 +35,16 @@ export const Scholarships = () => {
   useEffect(() => {
     const loadScholarships = async () => {
       setLoading(true);
-      setError(null);
       
       try {
         const response = await scholarshipApi.getAll();
-        setScholarships(response as unknown as Scholarship[]);
+        // Ensure response is an array and cast properly
+        const scholarshipData = Array.isArray(response) ? response as unknown as Scholarship[] : [];
+        setScholarships(scholarshipData);
       } catch (err) {
         console.error("Error loading scholarships:", err);
-        setError("Failed to load scholarships");
-        // Fallback to mock data
-        setScholarships(mockScholarships as unknown as Scholarship[]);
+        // Set empty array on error
+        setScholarships([]);
       } finally {
         setLoading(false);
       }
@@ -64,6 +55,11 @@ export const Scholarships = () => {
 
   // Filter and search logic
   const filteredScholarships = useMemo(() => {
+    // Safety check to ensure scholarships is an array
+    if (!Array.isArray(scholarships)) {
+      return [];
+    }
+    
     return scholarships.filter((scholarship) => {
       // Search filter
       const matchesSearch = searchQuery === "" || 
@@ -146,7 +142,6 @@ export const Scholarships = () => {
             <p>Please wait while we fetch the latest scholarship opportunities</p>
           </div>
         )}
-
 
         {/* Results Counter */}
         {!loading && (

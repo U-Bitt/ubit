@@ -6,83 +6,22 @@ import {
   FileText,
   CheckCircle,
   AlertCircle,
-  Download,
   ExternalLink,
   Globe,
   MapPin,
+  Loader2,
 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { visaApi } from "@/utils/api";
+import type { Visa } from "@/types/visa";
 
-export const Visa = () => {
-  const visaTypes = [
-    {
-      country: "United States",
-      type: "F-1 Student Visa",
-      processingTime: "2-4 weeks",
-      cost: "$160",
-      validity: "Duration of study",
-      requirements: [
-        "Form I-20 from university",
-        "Valid passport",
-        "SEVIS fee payment",
-        "Financial documentation",
-        "Academic transcripts",
-        "English proficiency test",
-      ],
-      documents: [
-        "DS-160 form",
-        "Passport photos",
-        "Bank statements",
-        "University acceptance letter",
-        "Medical examination",
-      ],
-    },
-    {
-      country: "United Kingdom",
-      type: "Student Visa",
-      processingTime: "3-8 weeks",
-      cost: "£363",
-      validity: "Duration of study + 4 months",
-      requirements: [
-        "CAS (Confirmation of Acceptance for Studies)",
-        "Valid passport",
-        "Financial evidence",
-        "English proficiency test",
-        "Tuberculosis test",
-        "Academic qualifications",
-      ],
-      documents: [
-        "Online application form",
-        "Passport photos",
-        "Bank statements",
-        "University offer letter",
-        "Biometric information",
-      ],
-    },
-    {
-      country: "Canada",
-      type: "Study Permit",
-      processingTime: "4-6 weeks",
-      cost: "C$150",
-      validity: "Duration of study + 90 days",
-      requirements: [
-        "Letter of Acceptance",
-        "Valid passport",
-        "Proof of financial support",
-        "English/French proficiency test",
-        "Medical examination",
-        "Police clearance certificate",
-      ],
-      documents: [
-        "Application form",
-        "Passport photos",
-        "Bank statements",
-        "University acceptance letter",
-        "Biometric information",
-      ],
-    },
-  ];
-
-  const visaSteps = [
+export const VisaComponent = () => {
+  const router = useRouter();
+  const [visaTypes, setVisaTypes] = useState<Visa[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [processSteps, setProcessSteps] = useState([
     {
       step: 1,
       title: "Receive University Acceptance",
@@ -125,7 +64,39 @@ export const Visa = () => {
       duration: "1-2 weeks",
       status: "pending",
     },
-  ];
+  ]);
+
+  useEffect(() => {
+    const fetchVisas = async () => {
+      try {
+        setLoading(true);
+        console.log("Fetching visas from API...");
+        const data = await visaApi.getAll();
+        console.log("Visa data received:", data);
+        setVisaTypes(data);
+      } catch (err) {
+        console.error("Error fetching visas:", err);
+        setError("Failed to load visa information");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVisas();
+  }, []);
+
+  const handleViewDetails = (visaId: string) => {
+    router.push(`/prepare/visa/${visaId}`);
+  };
+
+  const handleStatusChange = (stepIndex: number, newStatus: string) => {
+    setProcessSteps(prevSteps => 
+      prevSteps.map((step, index) => 
+        index === stepIndex ? { ...step, status: newStatus } : step
+      )
+    );
+  };
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -139,6 +110,33 @@ export const Visa = () => {
         return "outline";
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading visa information...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-foreground mb-4">
+            {error}
+          </h1>
+          <Button onClick={() => window.location.reload()}>
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -160,14 +158,13 @@ export const Visa = () => {
             <TabsTrigger value="requirements">Requirements</TabsTrigger>
             <TabsTrigger value="process">Application Process</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
-            <TabsTrigger value="timeline">My Timeline</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid md:grid-cols-3 gap-6">
-              {visaTypes.map((visa, index) => (
+              {visaTypes.map((visa) => (
                 <Card
-                  key={index}
+                  key={visa.id}
                   className="hover:shadow-lg transition-all duration-300"
                 >
                   <CardHeader>
@@ -204,7 +201,10 @@ export const Visa = () => {
                         </span>
                       </div>
                     </div>
-                    <Button className="w-full bg-primary hover:bg-primary/90">
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90"
+                      onClick={() => handleViewDetails(visa.id)}
+                    >
                       View Details
                     </Button>
                   </CardContent>
@@ -215,8 +215,8 @@ export const Visa = () => {
 
           <TabsContent value="requirements" className="space-y-6">
             <div className="grid gap-6">
-              {visaTypes.map((visa, index) => (
-                <Card key={index}>
+              {visaTypes.map((visa) => (
+                <Card key={visa.id}>
                   <CardHeader>
                     <div className="flex items-center gap-3">
                       <MapPin className="h-6 w-6 text-primary" />
@@ -260,11 +260,11 @@ export const Visa = () => {
                       </ul>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Download className="h-4 w-4 mr-2" />
-                        Download Checklist
-                      </Button>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => window.open(visa.officialWebsite, '_blank')}
+                      >
                         <ExternalLink className="h-4 w-4 mr-2" />
                         Official Website
                       </Button>
@@ -279,10 +279,13 @@ export const Visa = () => {
             <Card>
               <CardHeader>
                 <CardTitle>General Application Process</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Click on the status badges to change the progress of each step
+                </p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {visaSteps.map((step, index) => (
+                  {processSteps.map((step, index) => (
                     <div key={index} className="flex gap-4">
                       <div className="flex-shrink-0">
                         <div
@@ -304,9 +307,29 @@ export const Visa = () => {
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <h4 className="font-semibold">{step.title}</h4>
-                          <Badge variant={getStatusColor(step.status)}>
-                            {step.status}
-                          </Badge>
+                          <div className="flex gap-1">
+                            <Badge 
+                              variant={step.status === "completed" ? "default" : "outline"}
+                              className="cursor-pointer hover:opacity-80"
+                              onClick={() => handleStatusChange(index, "completed")}
+                            >
+                              Completed
+                            </Badge>
+                            <Badge 
+                              variant={step.status === "in-progress" ? "secondary" : "outline"}
+                              className="cursor-pointer hover:opacity-80"
+                              onClick={() => handleStatusChange(index, "in-progress")}
+                            >
+                              In Progress
+                            </Badge>
+                            <Badge 
+                              variant={step.status === "pending" ? "outline" : "outline"}
+                              className="cursor-pointer hover:opacity-80"
+                              onClick={() => handleStatusChange(index, "pending")}
+                            >
+                              Pending
+                            </Badge>
+                          </div>
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">
                           {step.description}
@@ -385,8 +408,7 @@ export const Visa = () => {
                   </div>
                   <div className="pt-4 border-t">
                     <Button className="bg-primary hover:bg-primary/90">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download Complete Checklist
+                      Complete Checklist
                     </Button>
                   </div>
                 </div>
@@ -394,52 +416,6 @@ export const Visa = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="timeline" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>My Visa Application Timeline</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {visaSteps.map((step, index) => (
-                    <div key={index} className="flex gap-4">
-                      <div className="flex-shrink-0">
-                        <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            step.status === "completed"
-                              ? "bg-green-500 text-white"
-                              : step.status === "in-progress"
-                                ? "bg-yellow-500 text-white"
-                                : "bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          {step.status === "completed" ? (
-                            <CheckCircle className="h-5 w-5" />
-                          ) : (
-                            <span className="font-bold">{step.step}</span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold">{step.title}</h4>
-                          <Badge variant={getStatusColor(step.status)}>
-                            {step.status}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {step.description}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Duration: {step.duration}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
       </div>
     </div>

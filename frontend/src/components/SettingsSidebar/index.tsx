@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +43,52 @@ export const SettingsSidebar = ({ isOpen, onClose }: SettingsSidebarProps) => {
     applicationDeadlines: true
   });
 
+  // Load settings from localStorage on component mount
+  useEffect(() => {
+    try {
+      const savedSettings = localStorage.getItem('userSettings');
+      if (savedSettings) {
+        const parsedSettings = JSON.parse(savedSettings);
+        setSettings(prev => ({
+          ...prev,
+          ...parsedSettings,
+          // Don't load passwords for security
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: ""
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+      // Clear corrupted data
+      localStorage.removeItem('userSettings');
+    }
+  }, []);
+
+  // Save settings to localStorage whenever settings change (except passwords)
+  useEffect(() => {
+    const settingsToSave = {
+      email: settings.email,
+      emailNotifications: settings.emailNotifications,
+      pushNotifications: settings.pushNotifications,
+      smsNotifications: settings.smsNotifications,
+      universityUpdates: settings.universityUpdates,
+      scholarshipAlerts: settings.scholarshipAlerts,
+      examReminders: settings.examReminders,
+      applicationDeadlines: settings.applicationDeadlines
+    };
+    localStorage.setItem('userSettings', JSON.stringify(settingsToSave));
+  }, [
+    settings.email,
+    settings.emailNotifications,
+    settings.pushNotifications,
+    settings.smsNotifications,
+    settings.universityUpdates,
+    settings.scholarshipAlerts,
+    settings.examReminders,
+    settings.applicationDeadlines
+  ]);
+
   const handleInputChange = (field: string, value: string | boolean) => {
     setSettings(prev => ({
       ...prev,
@@ -51,8 +97,46 @@ export const SettingsSidebar = ({ isOpen, onClose }: SettingsSidebarProps) => {
   };
 
   const handleSave = () => {
-    console.log("Saving settings:", settings);
-    alert("Settings saved successfully!");
+    try {
+      // Validate password change if new password is provided
+      if (settings.newPassword && settings.newPassword !== settings.confirmPassword) {
+        alert("New password and confirm password do not match!");
+        return;
+      }
+
+      if (settings.newPassword && settings.newPassword.length < 6) {
+        alert("New password must be at least 6 characters long!");
+        return;
+      }
+
+      // Save to localStorage
+      const settingsToSave = {
+        email: settings.email,
+        emailNotifications: settings.emailNotifications,
+        pushNotifications: settings.pushNotifications,
+        smsNotifications: settings.smsNotifications,
+        universityUpdates: settings.universityUpdates,
+        scholarshipAlerts: settings.scholarshipAlerts,
+        examReminders: settings.examReminders,
+        applicationDeadlines: settings.applicationDeadlines
+      };
+      
+      localStorage.setItem('userSettings', JSON.stringify(settingsToSave));
+      
+      // Clear password fields after successful save
+      setSettings(prev => ({
+        ...prev,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      }));
+
+      console.log("Settings saved successfully:", settingsToSave);
+      alert("Settings saved successfully!");
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      alert("Error saving settings. Please try again.");
+    }
   };
 
   if (!isOpen) return null;

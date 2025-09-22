@@ -1,32 +1,183 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { GraduationCap, Award, Edit, Save, Camera } from "lucide-react";
-import SuggestUniversities from "@/components/SuggestUniversities";
+import { GraduationCap, Award, Edit, Save, Camera, Search, FileCheck } from "lucide-react";
+import { useRouter } from "next/router";
 
 export const UserProfile = () => {
+  const router = useRouter();
+  
   const academicInfo = {
-    gpa: "3.0/4.0",
+    gpa: "3.8/4.0",
     school: "International High School",
     graduationYear: "2024",
     major: "Computer Science",
-  };
+  });
 
   const testScores = [
-    { test: "SAT", score: "1250", date: "Dec 2023" },
-    { test: "TOEFL", score: "90", date: "Nov 2023" },
-    { test: "AP Computer Science", score: "3", date: "May 2023" },
+    { test: "SAT", score: "1450", date: "Dec 2023" },
+    { test: "TOEFL", score: "108", date: "Nov 2023" },
+    { test: "AP Computer Science", score: "5", date: "May 2023" },
   ];
 
-  const interests = [
+  // State for Areas of Interest
+  const [interests, setInterests] = useState([
     "Computer Science",
     "Engineering",
     "Research",
     "Innovation",
-  ];
+  ]);
+
+  // State for new interest input
+  const [newInterest, setNewInterest] = useState("");
+
+  // State for editing
+  const [isEditing, setIsEditing] = useState(false);
+
+  // State for profile picture
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
+
+  // State for AI modals
+  const [isSuggestUniversitiesOpen, setIsSuggestUniversitiesOpen] = useState(false);
+  const [isImproveCVOpen, setIsImproveCVOpen] = useState(false);
+
+  // Load data from localStorage on component mount
+  useEffect(() => {
+    try {
+      const savedProfile = localStorage.getItem('userProfile');
+      if (savedProfile) {
+        const profileData = JSON.parse(savedProfile);
+        setPersonalInfo(profileData.personalInfo || personalInfo);
+        setAcademicInfo(profileData.academicInfo || academicInfo);
+        setTestScores(profileData.testScores || testScores);
+        setInterests(profileData.interests || interests);
+        setProfilePicture(profileData.profilePicture || null);
+      }
+    } catch (error) {
+      console.error('Error loading profile data:', error);
+    }
+  }, []);
+
+  // Save data to localStorage whenever data changes
+  useEffect(() => {
+    try {
+      const profileData = {
+        personalInfo,
+        academicInfo,
+        testScores,
+        interests,
+        profilePicture
+      };
+      localStorage.setItem('userProfile', JSON.stringify(profileData));
+    } catch (error) {
+      console.error('Error saving user data:', error);
+    }
+  }, [personalInfo, academicInfo, testScores, interests, profilePicture]);
+
+  // Handler functions
+  const handlePersonalInfoChange = (field: string, value: string) => {
+    setPersonalInfo(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleAcademicInfoChange = (field: string, value: string) => {
+    setAcademicInfo(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleTestScoreChange = (id: number, field: string, value: string) => {
+    setTestScores(prev =>
+      prev.map(score =>
+        score.id === id ? { ...score, [field]: value } : score
+      )
+    );
+  };
+
+  const addTestScore = () => {
+    const newScore = {
+      id: Date.now(),
+      test: "",
+      score: "",
+      date: ""
+    };
+    setTestScores(prev => [...prev, newScore]);
+  };
+
+  const removeTestScore = (id: number) => {
+    setTestScores(prev => prev.filter(score => score.id !== id));
+  };
+
+  const addInterest = () => {
+    if (newInterest.trim() && !interests.includes(newInterest.trim())) {
+      setInterests(prev => [...prev, newInterest.trim()]);
+      setNewInterest("");
+    }
+  };
+
+  const removeInterest = (interestToRemove: string) => {
+    setInterests(prev => prev.filter(interest => interest !== interestToRemove));
+  };
+
+  const handleProfilePictureChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB');
+        return;
+      }
+      
+      setProfilePictureFile(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setProfilePicture(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeProfilePicture = () => {
+    setProfilePicture(null);
+    setProfilePictureFile(null);
+    localStorage.removeItem('userProfilePicture');
+  };
+
+  const handleSave = () => {
+    try {
+      // Save all data to localStorage
+      localStorage.setItem('userPersonalInfo', JSON.stringify(personalInfo));
+      localStorage.setItem('userAcademicInfo', JSON.stringify(academicInfo));
+      localStorage.setItem('userTestScores', JSON.stringify(testScores));
+      localStorage.setItem('userInterests', JSON.stringify(interests));
+      if (profilePicture) {
+        localStorage.setItem('userProfilePicture', profilePicture);
+      }
+      
+      setIsEditing(false);
+      alert("Profile updated successfully!");
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert("Error saving profile. Please try again.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -47,19 +198,49 @@ export const UserProfile = () => {
             <Card>
               <CardContent className="p-6 text-center">
                 <div className="relative inline-block mb-4">
-                  <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center text-white font-bold text-2xl">
-                    AS
-                  </div>
-                  <Button
-                    size="sm"
-                    className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0"
-                  >
-                    <Camera className="h-4 w-4" />
-                  </Button>
+                  {profilePicture ? (
+                    <img
+                      src={profilePicture}
+                      alt="Profile"
+                      className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center text-white font-bold text-2xl">
+                      {personalInfo.firstName.charAt(0)}{personalInfo.lastName.charAt(0)}
+                    </div>
+                  )}
+                  {isEditing && (
+                    <div className="absolute -bottom-2 -right-2 flex gap-1">
+                      <Button
+                        size="sm"
+                        className="rounded-full w-8 h-8 p-0"
+                        onClick={() => document.getElementById('profilePictureInput')?.click()}
+                      >
+                        <Camera className="h-4 w-4" />
+                      </Button>
+                      {profilePicture && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="rounded-full w-8 h-8 p-0"
+                          onClick={removeProfilePicture}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                  <input
+                    id="profilePictureInput"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfilePictureChange}
+                    className="hidden"
+                  />
                 </div>
-                <h2 className="text-2xl font-bold mb-2">Alex Smith</h2>
+                <h2 className="text-2xl font-bold mb-2">{personalInfo.firstName} {personalInfo.lastName}</h2>
                 <p className="text-muted-foreground mb-4">
-                  alex.smith@email.com
+                  {personalInfo.email}
                 </p>
                 <Badge variant="secondary">Student</Badge>
               </CardContent>
@@ -95,18 +276,24 @@ export const UserProfile = () => {
 
                 {/* AI University Suggestions */}
                 <div className="pt-4 border-t border-gray-200">
-                  <SuggestUniversities
-                    gpa={academicInfo.gpa}
-                    sat={
-                      testScores.find(score => score.test === "SAT")?.score ||
-                      "0"
-                    }
-                    toefl={
-                      testScores.find(score => score.test === "TOEFL")?.score ||
-                      "0"
-                    }
-                    major={academicInfo.major}
-                  />
+                  <div className="space-y-2">
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => router.push('/ai/suggest-universities')}
+                    >
+                      <Search className="h-4 w-4 mr-2" />
+                      Suggest Universities
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => router.push('/ai/improve-cv')}
+                    >
+                      <FileCheck className="h-4 w-4 mr-2" />
+                      Improve CV
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -119,9 +306,13 @@ export const UserProfile = () => {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Personal Information</CardTitle>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setIsEditing(!isEditing)}
+                  >
                     <Edit className="h-4 w-4 mr-2" />
-                    Edit
+                    {isEditing ? "Cancel" : "Edit"}
                   </Button>
                 </div>
               </CardHeader>
@@ -129,11 +320,21 @@ export const UserProfile = () => {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="firstName">First Name</Label>
-                    <Input id="firstName" defaultValue="Alex" />
+                    <Input 
+                      id="firstName" 
+                      value={personalInfo.firstName}
+                      onChange={(e) => handlePersonalInfoChange("firstName", e.target.value)}
+                      disabled={!isEditing}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="lastName">Last Name</Label>
-                    <Input id="lastName" defaultValue="Smith" />
+                    <Input 
+                      id="lastName" 
+                      value={personalInfo.lastName}
+                      onChange={(e) => handlePersonalInfoChange("lastName", e.target.value)}
+                      disabled={!isEditing}
+                    />
                   </div>
                 </div>
                 <div>
@@ -141,22 +342,55 @@ export const UserProfile = () => {
                   <Input
                     id="email"
                     type="email"
-                    defaultValue="alex.smith@email.com"
+                    value={personalInfo.email}
+                    onChange={(e) => handlePersonalInfoChange("email", e.target.value)}
+                    disabled={!isEditing}
                   />
                 </div>
                 <div>
                   <Label htmlFor="phone">Phone</Label>
-                  <Input id="phone" defaultValue="+1 (555) 123-4567" />
+                  <Input 
+                    id="phone" 
+                    value={personalInfo.phone}
+                    onChange={(e) => handlePersonalInfoChange("phone", e.target.value)}
+                    disabled={!isEditing}
+                  />
                 </div>
                 <div>
-                  <Label htmlFor="location">Location</Label>
-                  <Input id="location" defaultValue="New York, NY" />
+                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                  <Input 
+                    id="dateOfBirth" 
+                    type="date"
+                    value={personalInfo.dateOfBirth}
+                    onChange={(e) => handlePersonalInfoChange("dateOfBirth", e.target.value)}
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="nationality">Nationality</Label>
+                  <Input 
+                    id="nationality" 
+                    value={personalInfo.nationality}
+                    onChange={(e) => handlePersonalInfoChange("nationality", e.target.value)}
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="address">Address</Label>
+                  <Input 
+                    id="address" 
+                    value={personalInfo.address}
+                    onChange={(e) => handlePersonalInfoChange("address", e.target.value)}
+                    disabled={!isEditing}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="bio">Bio</Label>
                   <Textarea
                     id="bio"
-                    defaultValue="Passionate computer science student with interests in AI and machine learning. Looking to pursue higher education in the US."
+                    value={personalInfo.bio}
+                    onChange={(e) => handlePersonalInfoChange("bio", e.target.value)}
+                    disabled={!isEditing}
                     rows={3}
                   />
                 </div>
@@ -168,7 +402,11 @@ export const UserProfile = () => {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Test Scores</CardTitle>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={addTestScore}
+                  >
                     <Award className="h-4 w-4 mr-2" />
                     Add Score
                   </Button>
@@ -176,32 +414,44 @@ export const UserProfile = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4">
-                  {testScores.map((score, index) => (
+                  {testScores.map((score) => (
                     <div
-                      key={index}
+                      key={score.id}
                       className="flex justify-between items-center p-3 rounded-lg bg-muted/50"
                     >
-                      <div>
-                        <h4 className="font-medium">{score.test}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {score.date}
-                        </p>
+                      <div className="flex-1 grid grid-cols-3 gap-2">
+                        <Input
+                          value={score.test}
+                          onChange={(e) => handleTestScoreChange(score.id, "test", e.target.value)}
+                          placeholder="Test Name"
+                          disabled={!isEditing}
+                        />
+                        <Input
+                          value={score.score}
+                          onChange={(e) => handleTestScoreChange(score.id, "score", e.target.value)}
+                          placeholder="Score"
+                          disabled={!isEditing}
+                        />
+                        <Input
+                          value={score.date}
+                          onChange={(e) => handleTestScoreChange(score.id, "date", e.target.value)}
+                          placeholder="Date"
+                          disabled={!isEditing}
+                        />
                       </div>
-                      <Badge
-                        variant="secondary"
-                        className="text-lg font-semibold"
-                      >
-                        {score.score}
-                      </Badge>
+                      {isEditing && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeTestScore(score.id)}
+                          className="ml-2 text-red-600 hover:text-red-700"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   ))}
                 </div>
-                <Button
-                  variant="outline"
-                  className="w-full mt-4 bg-transparent"
-                >
-                  Add New Score
-                </Button>
               </CardContent>
             </Card>
 
@@ -217,31 +467,77 @@ export const UserProfile = () => {
                   </Label>
                   <div className="flex flex-wrap gap-2">
                     {interests.map((interest, index) => (
-                      <Badge key={index} variant="outline">
+                      <Badge key={index} variant="outline" className="flex items-center gap-1">
                         {interest}
+                        {isEditing && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeInterest(interest)}
+                            className="h-4 w-4 p-0 text-red-600 hover:text-red-700"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        )}
                       </Badge>
                     ))}
                   </div>
                 </div>
-                <div>
-                  <Label htmlFor="newInterest">Add Interest</Label>
-                  <div className="flex gap-2 mt-2">
-                    <Input id="newInterest" placeholder="Enter new interest" />
-                    <Button size="sm">Add</Button>
+                {isEditing && (
+                  <div>
+                    <Label htmlFor="newInterest">Add Interest</Label>
+                    <div className="flex gap-2 mt-2">
+                      <Input 
+                        id="newInterest" 
+                        placeholder="Enter new interest" 
+                        value={newInterest}
+                        onChange={(e) => setNewInterest(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && addInterest()}
+                      />
+                      <Button size="sm" onClick={addInterest}>Add</Button>
+                    </div>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
             {/* Save Button */}
-            <div className="flex justify-end">
-              <Button className="bg-primary hover:bg-primary/90">
-                <Save className="h-4 w-4 mr-2" />
-                Save Changes
-              </Button>
-            </div>
+            {isEditing && (
+              <div className="flex justify-end">
+                <Button 
+                  className="bg-primary hover:bg-primary/90"
+                  onClick={handleSave}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </Button>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* AI Modals */}
+        <SuggestUniversitiesModal
+          isOpen={isSuggestUniversitiesOpen}
+          onClose={() => setIsSuggestUniversitiesOpen(false)}
+          userProfile={{
+            personalInfo,
+            academicInfo,
+            testScores,
+            interests
+          }}
+        />
+
+        <ImproveCVModal
+          isOpen={isImproveCVOpen}
+          onClose={() => setIsImproveCVOpen(false)}
+          userProfile={{
+            personalInfo,
+            academicInfo,
+            testScores,
+            interests
+          }}
+        />
       </div>
     </div>
   );
