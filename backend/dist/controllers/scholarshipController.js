@@ -1,77 +1,185 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.searchScholarships = exports.getScholarshipById = exports.getAllScholarships = void 0;
-const seedData_1 = require("../utils/seedData");
-const getAllScholarships = async (req, res) => {
+const Scholarship_1 = __importDefault(require("../models/Scholarship"));
+const getAllScholarships = async (req, res, next) => {
     try {
+        const { page = 1, limit = 10, sort = "deadline", order = "asc" } = req.query;
+        const sortObj = {};
+        sortObj[sort] = order === "asc" ? 1 : -1;
+        const skip = (page - 1) * limit;
+        const scholarships = await Scholarship_1.default.find({ isActive: true })
+            .sort(sortObj)
+            .skip(skip)
+            .limit(limit)
+            .lean();
+        const total = await Scholarship_1.default.countDocuments({ isActive: true });
+        const scholarshipData = scholarships.map((scholarship) => ({
+            id: scholarship._id.toString(),
+            title: scholarship.title,
+            description: scholarship.description,
+            amount: scholarship.amount,
+            university: scholarship.university,
+            country: scholarship.country,
+            deadline: scholarship.deadline,
+            type: scholarship.type,
+            requirements: scholarship.requirements,
+            coverage: scholarship.coverage,
+            duration: scholarship.duration,
+            applicationProcess: scholarship.applicationProcess,
+            eligibility: scholarship.eligibility,
+            benefits: scholarship.benefits,
+            image: scholarship.image,
+            donor: scholarship.donor,
+            contactEmail: scholarship.contactEmail,
+            website: scholarship.website,
+            isActive: scholarship.isActive,
+            createdAt: scholarship.createdAt,
+            updatedAt: scholarship.updatedAt,
+        }));
         res.status(200).json({
             success: true,
-            data: seedData_1.scholarshipData,
+            data: scholarshipData,
             message: "Scholarships retrieved successfully",
+            pagination: {
+                page: Number(page),
+                limit: Number(limit),
+                total,
+                pages: Math.ceil(total / Number(limit)),
+            },
         });
     }
     catch (error) {
         console.error("Error fetching scholarships:", error);
         res.status(500).json({
             success: false,
+            data: [],
             message: "Internal server error",
-            error: error instanceof Error ? error.message : "Unknown error",
         });
     }
 };
 exports.getAllScholarships = getAllScholarships;
-const getScholarshipById = async (req, res) => {
+const getScholarshipById = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const scholarship = seedData_1.scholarshipData.find(s => s.id === id);
-        if (!scholarship) {
-            return res.status(404).json({
+        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            res.status(400).json({
                 success: false,
+                data: {},
+                message: "Invalid scholarship ID format",
+            });
+            return;
+        }
+        const scholarship = await Scholarship_1.default.findById(id).lean();
+        if (!scholarship) {
+            res.status(404).json({
+                success: false,
+                data: {},
                 message: "Scholarship not found",
             });
+            return;
         }
-        return res.status(200).json({
+        const scholarshipData = {
+            id: scholarship._id.toString(),
+            title: scholarship.title,
+            description: scholarship.description,
+            amount: scholarship.amount,
+            university: scholarship.university,
+            country: scholarship.country,
+            deadline: scholarship.deadline,
+            type: scholarship.type,
+            requirements: scholarship.requirements,
+            coverage: scholarship.coverage,
+            duration: scholarship.duration,
+            applicationProcess: scholarship.applicationProcess,
+            eligibility: scholarship.eligibility,
+            benefits: scholarship.benefits,
+            image: scholarship.image,
+            donor: scholarship.donor,
+            contactEmail: scholarship.contactEmail,
+            website: scholarship.website,
+            isActive: scholarship.isActive,
+            createdAt: scholarship.createdAt,
+            updatedAt: scholarship.updatedAt,
+        };
+        res.status(200).json({
             success: true,
-            data: scholarship,
+            data: scholarshipData,
             message: "Scholarship retrieved successfully",
         });
     }
     catch (error) {
         console.error("Error fetching scholarship by ID:", error);
-        return res.status(500).json({
+        res.status(500).json({
             success: false,
+            data: {},
             message: "Internal server error",
-            error: error instanceof Error ? error.message : "Unknown error",
         });
     }
 };
 exports.getScholarshipById = getScholarshipById;
-const searchScholarships = async (req, res) => {
+const searchScholarships = async (req, res, next) => {
     try {
         const { q } = req.query;
-        if (!q || typeof q !== 'string') {
-            return res.status(400).json({
+        if (!q || typeof q !== "string") {
+            res.status(400).json({
                 success: false,
+                data: [],
                 message: "Search query is required",
             });
+            return;
         }
-        const searchTerm = q.toLowerCase();
-        const filteredScholarships = seedData_1.scholarshipData.filter(scholarship => scholarship.title.toLowerCase().includes(searchTerm) ||
-            scholarship.description.toLowerCase().includes(searchTerm) ||
-            scholarship.university.toLowerCase().includes(searchTerm) ||
-            scholarship.country.toLowerCase().includes(searchTerm));
-        return res.status(200).json({
+        const searchRegex = new RegExp(q, "i");
+        const scholarships = await Scholarship_1.default.find({
+            isActive: true,
+            $or: [
+                { title: searchRegex },
+                { description: searchRegex },
+                { university: searchRegex },
+                { country: searchRegex },
+                { type: searchRegex },
+            ],
+        })
+            .sort({ deadline: 1 })
+            .lean();
+        const scholarshipData = scholarships.map((scholarship) => ({
+            id: scholarship._id.toString(),
+            title: scholarship.title,
+            description: scholarship.description,
+            amount: scholarship.amount,
+            university: scholarship.university,
+            country: scholarship.country,
+            deadline: scholarship.deadline,
+            type: scholarship.type,
+            requirements: scholarship.requirements,
+            coverage: scholarship.coverage,
+            duration: scholarship.duration,
+            applicationProcess: scholarship.applicationProcess,
+            eligibility: scholarship.eligibility,
+            benefits: scholarship.benefits,
+            image: scholarship.image,
+            donor: scholarship.donor,
+            contactEmail: scholarship.contactEmail,
+            website: scholarship.website,
+            isActive: scholarship.isActive,
+            createdAt: scholarship.createdAt,
+            updatedAt: scholarship.updatedAt,
+        }));
+        res.status(200).json({
             success: true,
-            data: filteredScholarships,
-            message: `Found ${filteredScholarships.length} scholarships matching "${q}"`,
+            data: scholarshipData,
+            message: `Found ${scholarshipData.length} scholarships matching "${q}"`,
         });
     }
     catch (error) {
         console.error("Error searching scholarships:", error);
-        return res.status(500).json({
+        res.status(500).json({
             success: false,
+            data: [],
             message: "Internal server error",
-            error: error instanceof Error ? error.message : "Unknown error",
         });
     }
 };

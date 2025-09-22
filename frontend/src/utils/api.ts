@@ -195,7 +195,102 @@ export const examApi = {
 };
 
 // User API functions
+export interface User {
+  id?: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  dateOfBirth?: string;
+  nationality?: string;
+  avatar?: string;
+  personalInfo?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    dateOfBirth?: string;
+    nationality?: string;
+  };
+  academicInfo?: {
+    gpa?: number;
+    highSchoolName?: string;
+    graduationYear?: number;
+    intendedMajors?: string[];
+  };
+  areasOfInterest?: string[];
+  savedUniversities?: Array<{
+    id: string;
+    universityId: string;
+    universityName: string;
+    savedAt: string;
+    notes?: string;
+  }>;
+}
+
 export const userApi = {
+  getAll: async (): Promise<User[]> => {
+    const response = await apiCall<{ success: boolean; data: User[] }>("/users");
+    return response.data;
+  },
+  getById: async (id: string): Promise<User> => {
+    const response = await apiCall<{ success: boolean; data: User }>(`/users/${id}`);
+    return response.data;
+  },
+  update: async (id: string, userData: Partial<User>): Promise<User> => {
+    console.log("API update call - ID:", id, "Data:", userData);
+    const response = await apiCall<{ success: boolean; data: User }>(`/users/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    });
+    return response.data;
+  },
+  create: async (userData: Partial<User>): Promise<User> => {
+    const response = await apiCall<{ success: boolean; data: User }>("/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    });
+    return response.data;
+  },
+  // Saved Universities
+  getSavedUniversities: async (userId: string): Promise<any[]> => {
+    const response = await apiCall<{ success: boolean; data: any[] }>("/users/saved-universities/me", {
+      headers: {
+        "x-user-id": userId,
+      },
+    });
+    return response.data;
+  },
+  saveUniversity: async (userId: string, universityId: string, universityName: string, notes?: string): Promise<any> => {
+    const response = await apiCall<{ success: boolean; data: any }>("/users/saved-universities", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": userId,
+      },
+      body: JSON.stringify({
+        universityId,
+        universityName,
+        notes,
+      }),
+    });
+    return response.data;
+  },
+  unsaveUniversity: async (userId: string, savedId: string): Promise<void> => {
+    await apiCall<{ success: boolean; data: any }>(`/users/saved-universities/${savedId}`, {
+      method: "DELETE",
+      headers: {
+        "x-user-id": userId,
+      },
+    });
+  },
+  // Legacy functions for backward compatibility
   getProfile: (): Promise<Record<string, unknown>> =>
     apiCall<Record<string, unknown>>("/user/profile"),
   updateProfile: (
@@ -386,3 +481,4 @@ export const handleApiError = (error: unknown): never => {
     "Internal Server Error"
   );
 };
+

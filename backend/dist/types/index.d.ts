@@ -30,9 +30,14 @@ export interface Country {
     workRights: string;
     avgTuition: string;
     livingCost: string;
-    currency?: string;
-    language?: string[];
-    climate?: string;
+    currency: string;
+    language: string[];
+    climate: string;
+    isEnglishSpeaking?: boolean;
+    isLowCost?: boolean;
+    hasWorkRights?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 export interface Exam {
     id: string;
@@ -52,10 +57,48 @@ export interface User {
     email: string;
     firstName: string;
     lastName: string;
+    phone?: string;
     dateOfBirth?: string;
     nationality?: string;
-    phone?: string;
     avatar?: string;
+    personalInfo?: {
+        firstName: string;
+        lastName: string;
+        email: string;
+        phone?: string;
+        dateOfBirth?: string;
+        nationality?: string;
+    };
+    academicInfo?: {
+        gpa: number;
+        highSchoolName: string;
+        graduationYear: number;
+        intendedMajors: string[];
+    };
+    areasOfInterest?: string[];
+    testScores?: Array<{
+        id: string;
+        testName: string;
+        score: string;
+        date: string;
+        maxScore?: string;
+        percentile?: number;
+    }>;
+    documents?: Array<{
+        id: string;
+        name: string;
+        type: string;
+        url?: string;
+        uploadedAt: string;
+        status: "draft" | "uploaded" | "verified" | "rejected";
+    }>;
+    savedUniversities?: Array<{
+        id: string;
+        universityId: string;
+        universityName: string;
+        savedAt: string;
+        notes?: string;
+    }>;
     preferences?: UserPreferences;
     applications?: Application[];
     createdAt: Date;
@@ -82,15 +125,26 @@ export interface Application {
 }
 export interface Scholarship {
     id: string;
-    name: string;
+    title: string;
+    description: string;
+    amount: string;
     university: string;
     country: string;
-    amount: string;
-    type: "merit" | "need" | "athletic" | "academic";
-    requirements: string[];
     deadline: string;
-    description: string;
-    applicationUrl?: string;
+    type: string;
+    requirements: string[];
+    coverage: string;
+    duration: string;
+    applicationProcess: string;
+    eligibility: string;
+    benefits: string[];
+    image: string;
+    donor?: string;
+    contactEmail?: string;
+    website?: string;
+    isActive?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 export interface ApiResponse<T> {
     success: boolean;
@@ -121,5 +175,23 @@ export interface SearchQuery extends PaginationQuery {
     program?: string;
     minRating?: number;
     maxTuition?: number;
+}
+export interface Visa {
+    id: string;
+    country: string;
+    type: string;
+    processingTime: string;
+    cost: string;
+    validity: string;
+    requirements: string[];
+    documents: string[];
+    officialWebsite: string;
+    description?: string;
+    eligibility?: string[];
+    restrictions?: string[];
+    benefits?: string[];
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
 }
 //# sourceMappingURL=index.d.ts.map

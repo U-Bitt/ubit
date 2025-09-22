@@ -1,48 +1,101 @@
 import { useState, useEffect } from 'react';
+import { userApi } from '@/utils/api';
+import { useUser } from '@/contexts/UserContext';
+
+interface SavedUniversity {
+  id: string;
+  universityId: string;
+  universityName: string;
+  savedAt: string;
+  notes?: string;
+}
 
 export const useSavedUniversities = () => {
-  const [savedUniversities, setSavedUniversities] = useState<string[]>([]);
+  const { user } = useUser();
+  const [savedUniversities, setSavedUniversities] = useState<SavedUniversity[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load saved universities from localStorage on mount
+  // Load saved universities from backend on mount
   useEffect(() => {
-    const saved = localStorage.getItem('savedUniversities');
-    if (saved) {
-      try {
-        setSavedUniversities(JSON.parse(saved));
-      } catch (error) {
-        console.error('Error loading saved universities:', error);
-        setSavedUniversities([]);
-      }
+    if (user?.id) {
+      loadSavedUniversities();
     }
-  }, []);
+  }, [user?.id]);
 
-  // Save to localStorage whenever savedUniversities changes
-  useEffect(() => {
-    localStorage.setItem('savedUniversities', JSON.stringify(savedUniversities));
-  }, [savedUniversities]);
+  const loadSavedUniversities = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setLoading(true);
+      setError(null);
+      const saved = await userApi.getSavedUniversities(user.id);
+      setSavedUniversities(saved || []);
+    } catch (err) {
+      console.error('Error loading saved universities:', err);
+      setError('Failed to load saved universities');
+      setSavedUniversities([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const toggleSave = (universityId: string) => {
-    setSavedUniversities(prev => {
-      if (prev.includes(universityId)) {
-        return prev.filter(id => id !== universityId);
+  const toggleSave = async (universityId: string, universityName: string, notes?: string) => {
+    if (!user?.id) return;
+    
+    try {
+      setError(null);
+      
+      // Check if already saved
+      const existingSaved = savedUniversities.find(su => su.universityId === universityId);
+      
+      if (existingSaved) {
+        // Unsave the university
+        await userApi.unsaveUniversity(user.id, existingSaved.id);
+        setSavedUniversities(prev => prev.filter(su => su.universityId !== universityId));
       } else {
-        return [...prev, universityId];
+        // Save the university
+        const newSaved = await userApi.saveUniversity(user.id, universityId, universityName, notes);
+        setSavedUniversities(prev => [...prev, newSaved]);
       }
-    });
+    } catch (err) {
+      console.error('Error toggling saved university:', err);
+      setError('Failed to update saved universities');
+    }
   };
 
   const isSaved = (universityId: string) => {
-    return savedUniversities.includes(universityId);
+    return savedUniversities.some(su => su.universityId === universityId);
   };
 
-  const clearAll = () => {
-    setSavedUniversities([]);
+  const getSavedUniversity = (universityId: string) => {
+    return savedUniversities.find(su => su.universityId === universityId);
+  };
+
+  const clearAll = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setError(null);
+      // Remove all saved universities one by one
+      for (const saved of savedUniversities) {
+        await userApi.unsaveUniversity(user.id, saved.id);
+      }
+      setSavedUniversities([]);
+    } catch (err) {
+      console.error('Error clearing saved universities:', err);
+      setError('Failed to clear saved universities');
+    }
   };
 
   return {
     savedUniversities,
+    loading,
+    error,
     toggleSave,
     isSaved,
-    clearAll
+    getSavedUniversity,
+    clearAll,
+    refresh: loadSavedUniversities
   };
 };

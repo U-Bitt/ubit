@@ -303,7 +303,7 @@ export const Universities = () => {
                         ? "bg-red-500 hover:bg-red-600 text-white"
                         : "hover:bg-red-50"
                     }`}
-                    onClick={() => toggleSave(university.id)}
+                    onClick={() => toggleSave(university.id, university.name)}
                   >
                     <Heart
                       className={`h-4 w-4 ${isSaved(university.id) ? "fill-current" : ""}`}

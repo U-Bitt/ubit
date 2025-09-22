@@ -9,7 +9,10 @@
     "start": "node dist/server.js",
     "test": "jest",
     "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix"
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "seed:users": "node seed-users.js",
+    "seed:visas": "node seed-visas.js",
+    "seed:all": "node seed-all.js"
   },
   "keywords": [
     "education",

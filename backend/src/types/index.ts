@@ -64,10 +64,62 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  phone?: string;
   dateOfBirth?: string;
   nationality?: string;
-  phone?: string;
   avatar?: string;
+  
+  // Personal Information
+  personalInfo?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    dateOfBirth?: string;
+    nationality?: string;
+  };
+  
+  // Academic Information
+  academicInfo?: {
+    gpa: number; // GPA out of 4
+    highSchoolName: string;
+    graduationYear: number;
+    intendedMajors: string[];
+  };
+  
+  // Areas of Interest
+  areasOfInterest?: string[];
+  
+  // Test Scores
+  testScores?: Array<{
+    id: string;
+    testName: string;
+    score: string;
+    date: string;
+    maxScore?: string;
+    percentile?: number;
+  }>;
+  
+  // Documents
+  documents?: Array<{
+    id: string;
+    name: string;
+    type: string;
+    url?: string;
+    uploadedAt: string;
+    status: "draft" | "uploaded" | "verified" | "rejected";
+  }>;
+  
+  // Saved Universities
+  savedUniversities?: Array<{
+    id: string;
+    universityId: string;
+    universityName: string;
+    savedAt: string;
+    notes?: string;
+  }>;
+  
+  // Legacy fields for backward compatibility
   preferences?: UserPreferences;
   applications?: Application[];
   createdAt: Date;
@@ -154,4 +206,24 @@ export interface SearchQuery extends PaginationQuery {
   program?: string;
   minRating?: number;
   maxTuition?: number;
+}
+
+// Visa types
+export interface Visa {
+  id: string;
+  country: string;
+  type: string;
+  processingTime: string;
+  cost: string;
+  validity: string;
+  requirements: string[];
+  documents: string[];
+  officialWebsite: string;
+  description?: string;
+  eligibility?: string[];
+  restrictions?: string[];
+  benefits?: string[];
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
