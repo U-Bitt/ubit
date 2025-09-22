@@ -73,7 +73,7 @@ export const VisaComponent = () => {
         console.log("Fetching visas from API...");
         const data = await visaApi.getAll();
         console.log("Visa data received:", data);
-        setVisaTypes(data);
+        setVisaTypes(data as unknown as Visa[]);
       } catch (err) {
         console.error("Error fetching visas:", err);
         setError("Failed to load visa information");
@@ -90,13 +90,12 @@ export const VisaComponent = () => {
   };
 
   const handleStatusChange = (stepIndex: number, newStatus: string) => {
-    setProcessSteps(prevSteps => 
-      prevSteps.map((step, index) => 
+    setProcessSteps(prevSteps =>
+      prevSteps.map((step, index) =>
         index === stepIndex ? { ...step, status: newStatus } : step
       )
     );
   };
-
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -127,12 +126,8 @@ export const VisaComponent = () => {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-foreground mb-4">
-            {error}
-          </h1>
-          <Button onClick={() => window.location.reload()}>
-            Try Again
-          </Button>
+          <h1 className="text-2xl font-bold text-foreground mb-4">{error}</h1>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </div>
     );
@@ -162,7 +157,7 @@ export const VisaComponent = () => {
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid md:grid-cols-3 gap-6">
-              {visaTypes.map((visa) => (
+              {visaTypes.map(visa => (
                 <Card
                   key={visa.id}
                   className="hover:shadow-lg transition-all duration-300"
@@ -201,7 +196,7 @@ export const VisaComponent = () => {
                         </span>
                       </div>
                     </div>
-                    <Button 
+                    <Button
                       className="w-full bg-primary hover:bg-primary/90"
                       onClick={() => handleViewDetails(visa.id)}
                     >
@@ -215,7 +210,7 @@ export const VisaComponent = () => {
 
           <TabsContent value="requirements" className="space-y-6">
             <div className="grid gap-6">
-              {visaTypes.map((visa) => (
+              {visaTypes.map(visa => (
                 <Card key={visa.id}>
                   <CardHeader>
                     <div className="flex items-center gap-3">
@@ -260,10 +255,12 @@ export const VisaComponent = () => {
                       </ul>
                     </div>
                     <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
-                        onClick={() => window.open(visa.officialWebsite, '_blank')}
+                        onClick={() =>
+                          window.open(visa.officialWebsite, "_blank")
+                        }
                       >
                         <ExternalLink className="h-4 w-4 mr-2" />
                         Official Website
@@ -308,24 +305,42 @@ export const VisaComponent = () => {
                         <div className="flex items-center gap-2 mb-1">
                           <h4 className="font-semibold">{step.title}</h4>
                           <div className="flex gap-1">
-                            <Badge 
-                              variant={step.status === "completed" ? "default" : "outline"}
+                            <Badge
+                              variant={
+                                step.status === "completed"
+                                  ? "default"
+                                  : "outline"
+                              }
                               className="cursor-pointer hover:opacity-80"
-                              onClick={() => handleStatusChange(index, "completed")}
+                              onClick={() =>
+                                handleStatusChange(index, "completed")
+                              }
                             >
                               Completed
                             </Badge>
-                            <Badge 
-                              variant={step.status === "in-progress" ? "secondary" : "outline"}
+                            <Badge
+                              variant={
+                                step.status === "in-progress"
+                                  ? "secondary"
+                                  : "outline"
+                              }
                               className="cursor-pointer hover:opacity-80"
-                              onClick={() => handleStatusChange(index, "in-progress")}
+                              onClick={() =>
+                                handleStatusChange(index, "in-progress")
+                              }
                             >
                               In Progress
                             </Badge>
-                            <Badge 
-                              variant={step.status === "pending" ? "outline" : "outline"}
+                            <Badge
+                              variant={
+                                step.status === "pending"
+                                  ? "outline"
+                                  : "outline"
+                              }
                               className="cursor-pointer hover:opacity-80"
-                              onClick={() => handleStatusChange(index, "pending")}
+                              onClick={() =>
+                                handleStatusChange(index, "pending")
+                              }
                             >
                               Pending
                             </Badge>
@@ -415,7 +430,6 @@ export const VisaComponent = () => {
               </CardContent>
             </Card>
           </TabsContent>
-
         </Tabs>
       </div>
     </div>

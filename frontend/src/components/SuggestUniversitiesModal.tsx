@@ -5,15 +5,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { X, Search, MapPin, Star, Users, DollarSign, Globe } from "lucide-react";
+import {
+  X,
+  Search,
+  MapPin,
+  Star,
+  Users,
+  DollarSign,
+  Globe,
+} from "lucide-react";
 
 interface SuggestUniversitiesModalProps {
   isOpen: boolean;
   onClose: () => void;
   userProfile: {
-    personalInfo: any;
-    academicInfo: any;
-    testScores: any[];
+    personalInfo: Record<string, unknown>;
+    academicInfo: Record<string, unknown>;
+    testScores: Record<string, unknown>[];
     interests: string[];
   };
 }
@@ -30,12 +38,16 @@ interface University {
   matchScore: number;
 }
 
-export const SuggestUniversitiesModal = ({ isOpen, onClose, userProfile }: SuggestUniversitiesModalProps) => {
+export const SuggestUniversitiesModal = ({
+  isOpen,
+  onClose,
+  userProfile,
+}: SuggestUniversitiesModalProps) => {
   const [searchCriteria, setSearchCriteria] = useState({
     country: "",
     program: "",
     budget: "",
-    ranking: ""
+    ranking: "",
   });
 
   const [suggestions, setSuggestions] = useState<University[]>([]);
@@ -52,7 +64,7 @@ export const SuggestUniversitiesModal = ({ isOpen, onClose, userProfile }: Sugge
       tuition: "$57,986",
       programs: ["Computer Science", "Engineering", "Mathematics"],
       requirements: ["SAT: 1500+", "TOEFL: 100+", "Strong Math Background"],
-      matchScore: 95
+      matchScore: 95,
     },
     {
       id: 2,
@@ -63,7 +75,7 @@ export const SuggestUniversitiesModal = ({ isOpen, onClose, userProfile }: Sugge
       tuition: "$61,731",
       programs: ["Computer Science", "Engineering", "Business"],
       requirements: ["SAT: 1480+", "TOEFL: 100+", "Leadership Experience"],
-      matchScore: 92
+      matchScore: 92,
     },
     {
       id: 3,
@@ -74,7 +86,7 @@ export const SuggestUniversitiesModal = ({ isOpen, onClose, userProfile }: Sugge
       tuition: "£33,825",
       programs: ["Computer Science", "Mathematics", "Natural Sciences"],
       requirements: ["A-Levels: A*A*A", "IELTS: 7.5+", "Interview Required"],
-      matchScore: 88
+      matchScore: 88,
     },
     {
       id: 4,
@@ -84,8 +96,12 @@ export const SuggestUniversitiesModal = ({ isOpen, onClose, userProfile }: Sugge
       acceptanceRate: "43%",
       tuition: "CAD $58,160",
       programs: ["Computer Science", "Engineering", "Mathematics"],
-      requirements: ["High School: 85%+", "IELTS: 6.5+", "Strong Academic Record"],
-      matchScore: 85
+      requirements: [
+        "High School: 85%+",
+        "IELTS: 6.5+",
+        "Strong Academic Record",
+      ],
+      matchScore: 85,
     },
     {
       id: 5,
@@ -96,68 +112,72 @@ export const SuggestUniversitiesModal = ({ isOpen, onClose, userProfile }: Sugge
       tuition: "€0 (Free)",
       programs: ["Computer Science", "Engineering", "Mathematics"],
       requirements: ["High School Diploma", "German B2", "Math/Physics Strong"],
-      matchScore: 82
-    }
+      matchScore: 82,
+    },
   ];
 
   const handleSearch = () => {
     setIsLoading(true);
-    
+
     // Simulate AI analysis based on user profile
     setTimeout(() => {
       let filtered = universities;
-      
+
       // Filter by country
       if (searchCriteria.country) {
-        filtered = filtered.filter(uni => 
-          uni.country.toLowerCase().includes(searchCriteria.country.toLowerCase())
+        filtered = filtered.filter(uni =>
+          uni.country
+            .toLowerCase()
+            .includes(searchCriteria.country.toLowerCase())
         );
       }
-      
+
       // Filter by program
       if (searchCriteria.program) {
-        filtered = filtered.filter(uni => 
-          uni.programs.some(program => 
+        filtered = filtered.filter(uni =>
+          uni.programs.some(program =>
             program.toLowerCase().includes(searchCriteria.program.toLowerCase())
           )
         );
       }
-      
+
       // Calculate match scores based on user profile
       const scored = filtered.map(uni => {
         let score = 70; // Base score
-        
+
         // Check test scores match
         const userTestScores = userProfile.testScores;
-        const hasGoodSAT = userTestScores.some(score => 
-          score.test === "SAT" && parseInt(score.score) >= 1400
+        const hasGoodSAT = userTestScores.some(
+          score =>
+            score.test === "SAT" && parseInt(score.score as string) >= 1400
         );
-        const hasGoodTOEFL = userTestScores.some(score => 
-          score.test === "TOEFL" && parseInt(score.score) >= 100
+        const hasGoodTOEFL = userTestScores.some(
+          score =>
+            score.test === "TOEFL" && parseInt(score.score as string) >= 100
         );
-        
+
         if (hasGoodSAT) score += 10;
         if (hasGoodTOEFL) score += 10;
-        
+
         // Check interests match
         const interestMatch = userProfile.interests.some(interest =>
-          uni.programs.some(program => 
+          uni.programs.some(program =>
             program.toLowerCase().includes(interest.toLowerCase())
           )
         );
         if (interestMatch) score += 15;
-        
+
         // Check GPA
-        const gpa = parseFloat(userProfile.academicInfo.gpa);
+        const gpa = parseFloat(userProfile.academicInfo.gpa as string);
         if (gpa >= 3.7) score += 10;
         else if (gpa >= 3.5) score += 5;
-        
+
         return { ...uni, matchScore: Math.min(score, 100) };
       });
-      
+
       // Sort by match score
       scored.sort((a, b) => b.matchScore - a.matchScore);
-      
+
       setSuggestions(scored.slice(0, 5));
       setIsLoading(false);
     }, 2000);
@@ -189,7 +209,12 @@ export const SuggestUniversitiesModal = ({ isOpen, onClose, userProfile }: Sugge
                   id="country"
                   placeholder="e.g., USA, UK, Canada"
                   value={searchCriteria.country}
-                  onChange={(e) => setSearchCriteria(prev => ({ ...prev, country: e.target.value }))}
+                  onChange={e =>
+                    setSearchCriteria(prev => ({
+                      ...prev,
+                      country: e.target.value,
+                    }))
+                  }
                 />
               </div>
               <div>
@@ -198,7 +223,12 @@ export const SuggestUniversitiesModal = ({ isOpen, onClose, userProfile }: Sugge
                   id="program"
                   placeholder="e.g., Computer Science"
                   value={searchCriteria.program}
-                  onChange={(e) => setSearchCriteria(prev => ({ ...prev, program: e.target.value }))}
+                  onChange={e =>
+                    setSearchCriteria(prev => ({
+                      ...prev,
+                      program: e.target.value,
+                    }))
+                  }
                 />
               </div>
               <div>
@@ -207,7 +237,12 @@ export const SuggestUniversitiesModal = ({ isOpen, onClose, userProfile }: Sugge
                   id="budget"
                   placeholder="e.g., $50,000"
                   value={searchCriteria.budget}
-                  onChange={(e) => setSearchCriteria(prev => ({ ...prev, budget: e.target.value }))}
+                  onChange={e =>
+                    setSearchCriteria(prev => ({
+                      ...prev,
+                      budget: e.target.value,
+                    }))
+                  }
                 />
               </div>
               <div>
@@ -216,20 +251,31 @@ export const SuggestUniversitiesModal = ({ isOpen, onClose, userProfile }: Sugge
                   id="ranking"
                   placeholder="e.g., Top 50"
                   value={searchCriteria.ranking}
-                  onChange={(e) => setSearchCriteria(prev => ({ ...prev, ranking: e.target.value }))}
+                  onChange={e =>
+                    setSearchCriteria(prev => ({
+                      ...prev,
+                      ranking: e.target.value,
+                    }))
+                  }
                 />
               </div>
             </div>
 
-            <Button onClick={handleSearch} className="w-full" disabled={isLoading}>
+            <Button
+              onClick={handleSearch}
+              className="w-full"
+              disabled={isLoading}
+            >
               {isLoading ? "Analyzing..." : "Get AI Suggestions"}
             </Button>
 
             {/* Results */}
             {suggestions.length > 0 && (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Recommended Universities</h3>
-                {suggestions.map((uni) => (
+                <h3 className="text-lg font-semibold">
+                  Recommended Universities
+                </h3>
+                {suggestions.map(uni => (
                   <Card key={uni.id} className="border-l-4 border-l-primary">
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start mb-2">
@@ -238,35 +284,47 @@ export const SuggestUniversitiesModal = ({ isOpen, onClose, userProfile }: Sugge
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <MapPin className="h-4 w-4" />
                             {uni.country}
-                            <Star className="h-4 w-4" />
-                            #{uni.ranking} World Ranking
+                            <Star className="h-4 w-4" />#{uni.ranking} World
+                            Ranking
                           </div>
                         </div>
                         <Badge variant="secondary" className="text-sm">
                           {uni.matchScore}% Match
                         </Badge>
                       </div>
-                      
+
                       <div className="grid md:grid-cols-3 gap-4 mt-4">
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">Acceptance: {uni.acceptanceRate}</span>
+                          <span className="text-sm">
+                            Acceptance: {uni.acceptanceRate}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <DollarSign className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">Tuition: {uni.tuition}</span>
+                          <span className="text-sm">
+                            Tuition: {uni.tuition}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Globe className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">Programs: {uni.programs.length}</span>
+                          <span className="text-sm">
+                            Programs: {uni.programs.length}
+                          </span>
                         </div>
                       </div>
 
                       <div className="mt-4">
-                        <h5 className="font-medium mb-2">Available Programs:</h5>
+                        <h5 className="font-medium mb-2">
+                          Available Programs:
+                        </h5>
                         <div className="flex flex-wrap gap-1">
                           {uni.programs.map((program, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
+                            <Badge
+                              key={index}
+                              variant="outline"
+                              className="text-xs"
+                            >
                               {program}
                             </Badge>
                           ))}

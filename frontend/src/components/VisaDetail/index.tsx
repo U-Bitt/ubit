@@ -36,7 +36,7 @@ export const VisaDetail = ({ visaId }: VisaDetailProps) => {
       try {
         setLoading(true);
         const data = await visaApi.getById(visaId);
-        setVisaData(data as Visa);
+        setVisaData(data as unknown as Visa);
       } catch (err) {
         console.error("Error fetching visa:", err);
         setError("Failed to load visa information");
@@ -83,8 +83,8 @@ export const VisaDetail = ({ visaId }: VisaDetailProps) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             onClick={() => router.back()}
             className="mb-4"
           >
@@ -93,7 +93,9 @@ export const VisaDetail = ({ visaId }: VisaDetailProps) => {
           </Button>
           <div className="flex items-center gap-3 mb-2">
             <Globe className="h-8 w-8 text-primary" />
-            <h1 className="text-4xl font-bold text-foreground">{visaData.country}</h1>
+            <h1 className="text-4xl font-bold text-foreground">
+              {visaData.country}
+            </h1>
           </div>
           <Badge variant="outline" className="text-lg px-3 py-1">
             {visaData.type}
@@ -119,13 +121,17 @@ export const VisaDetail = ({ visaId }: VisaDetailProps) => {
                     {visaData.description}
                   </p>
                 )}
-                
+
                 <div className="grid md:grid-cols-3 gap-6">
                   <div className="flex items-center gap-3">
                     <Clock className="h-6 w-6 text-primary" />
                     <div>
-                      <p className="text-sm text-muted-foreground">Processing Time</p>
-                      <p className="text-lg font-semibold">{visaData.processingTime}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Processing Time
+                      </p>
+                      <p className="text-lg font-semibold">
+                        {visaData.processingTime}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -139,14 +145,18 @@ export const VisaDetail = ({ visaId }: VisaDetailProps) => {
                     <Calendar className="h-6 w-6 text-primary" />
                     <div>
                       <p className="text-sm text-muted-foreground">Validity</p>
-                      <p className="text-lg font-semibold">{visaData.validity}</p>
+                      <p className="text-lg font-semibold">
+                        {visaData.validity}
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 <div className="pt-4 border-t">
-                  <Button 
-                    onClick={() => window.open(visaData.officialWebsite, '_blank')}
+                  <Button
+                    onClick={() =>
+                      window.open(visaData.officialWebsite, "_blank")
+                    }
                     className="bg-primary hover:bg-primary/90"
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
@@ -166,12 +176,14 @@ export const VisaDetail = ({ visaId }: VisaDetailProps) => {
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3">
-                      {visaData.eligibility.map((req: string, index: number) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm">{req}</span>
-                        </li>
-                      ))}
+                      {visaData.eligibility.map(
+                        (req: string, index: number) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                            <span className="text-sm">{req}</span>
+                          </li>
+                        )
+                      )}
                     </ul>
                   </CardContent>
                 </Card>
@@ -202,12 +214,14 @@ export const VisaDetail = ({ visaId }: VisaDetailProps) => {
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3">
-                      {visaData.benefits.map((benefit: string, index: number) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm">{benefit}</span>
-                        </li>
-                      ))}
+                      {visaData.benefits.map(
+                        (benefit: string, index: number) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                            <span className="text-sm">{benefit}</span>
+                          </li>
+                        )
+                      )}
                     </ul>
                   </CardContent>
                 </Card>
@@ -220,12 +234,14 @@ export const VisaDetail = ({ visaId }: VisaDetailProps) => {
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3">
-                      {visaData.restrictions.map((restriction: string, index: number) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm">{restriction}</span>
-                        </li>
-                      ))}
+                      {visaData.restrictions.map(
+                        (restriction: string, index: number) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                            <span className="text-sm">{restriction}</span>
+                          </li>
+                        )
+                      )}
                     </ul>
                   </CardContent>
                 </Card>
@@ -260,27 +276,39 @@ export const VisaDetail = ({ visaId }: VisaDetailProps) => {
                 <div className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                      <h4 className="font-semibold mb-3">Step 1: Prepare Documents</h4>
+                      <h4 className="font-semibold mb-3">
+                        Step 1: Prepare Documents
+                      </h4>
                       <p className="text-sm text-muted-foreground mb-3">
-                        Gather all required documents including passport, academic transcripts, and financial proof.
+                        Gather all required documents including passport,
+                        academic transcripts, and financial proof.
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-3">Step 2: Complete Application</h4>
+                      <h4 className="font-semibold mb-3">
+                        Step 2: Complete Application
+                      </h4>
                       <p className="text-sm text-muted-foreground mb-3">
-                        Fill out the online application form and pay the required fees.
+                        Fill out the online application form and pay the
+                        required fees.
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-3">Step 3: Schedule Interview</h4>
+                      <h4 className="font-semibold mb-3">
+                        Step 3: Schedule Interview
+                      </h4>
                       <p className="text-sm text-muted-foreground mb-3">
-                        Book an appointment at the embassy or consulate for your visa interview.
+                        Book an appointment at the embassy or consulate for your
+                        visa interview.
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-3">Step 4: Attend Interview</h4>
+                      <h4 className="font-semibold mb-3">
+                        Step 4: Attend Interview
+                      </h4>
                       <p className="text-sm text-muted-foreground mb-3">
-                        Go to your scheduled interview with all required documents.
+                        Go to your scheduled interview with all required
+                        documents.
                       </p>
                     </div>
                   </div>

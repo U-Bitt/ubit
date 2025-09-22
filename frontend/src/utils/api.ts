@@ -282,20 +282,25 @@ export const recommendationApi = {
 
 // Visa API functions
 export const visaApi = {
-  getAll: async (): Promise<any[]> => {
-    const response = await apiCall<{ success: boolean; data: any[] }>("/visas");
+  getAll: async (): Promise<Record<string, unknown>[]> => {
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>[];
+    }>("/visas");
     return response.data;
   },
-  getById: async (id: string): Promise<any> => {
-    const response = await apiCall<{ success: boolean; data: any }>(
-      `/visas/${id}`
-    );
+  getById: async (id: string): Promise<Record<string, unknown>> => {
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>;
+    }>(`/visas/${id}`);
     return response.data;
   },
-  search: async (query: string): Promise<any[]> => {
-    const response = await apiCall<{ success: boolean; data: any[] }>(
-      `/visas/search?q=${encodeURIComponent(query)}`
-    );
+  search: async (query: string): Promise<Record<string, unknown>[]> => {
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>[];
+    }>(`/visas/search?q=${encodeURIComponent(query)}`);
     return response.data;
   },
 };
