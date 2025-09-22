@@ -68,7 +68,7 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <h3 className="text-lg font-semibold mb-2 text-red-600">University not found</h3>
-          <p className="text-gray-600 mb-4">The university you're looking for doesn't exist or has been removed.</p>
+          <p className="text-gray-600 mb-4">The university you&apos;re looking for doesn&apos;t exist or has been removed.</p>
           <Button onClick={() => router.push('/discover/universities')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Universities
