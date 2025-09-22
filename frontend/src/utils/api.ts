@@ -17,6 +17,8 @@ export interface University {
   highlights: string[];
   deadline: string;
 }
+// Note: Application, Exam, University, and other types are now defined in the Dashboard components
+// to avoid conflicts. Import them from @/components/Dashboard/types when needed.
 
 export interface Country {
   id: string;
@@ -55,13 +57,17 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
     });
 
     if (!response.ok) {
-      throw new Error(`API call failed: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `API call failed: ${response.status} ${response.statusText}`
+      );
     }
 
     return response.json();
   } catch (error) {
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error('Network error: Unable to connect to the server. Please check if the backend is running.');
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      throw new Error(
+        "Network error: Unable to connect to the server. Please check if the backend is running."
+      );
     }
     throw error;
   }
@@ -177,31 +183,53 @@ export const documentApi = {
 // Scholarship API functions
 export const scholarshipApi = {
   getAll: async (): Promise<Record<string, unknown>[]> => {
-    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>("/scholarships");
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>[];
+    }>("/scholarships");
     return response.data;
   },
   getById: async (id: string): Promise<Record<string, unknown>> => {
-    const response = await apiCall<{ success: boolean; data: Record<string, unknown> }>(`/scholarships/${id}`);
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>;
+    }>(`/scholarships/${id}`);
     return response.data;
   },
   search: async (query: string): Promise<Record<string, unknown>[]> => {
-    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>(`/scholarships/search?q=${encodeURIComponent(query)}`);
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>[];
+    }>(`/scholarships/search?q=${encodeURIComponent(query)}`);
     return response.data;
   },
 };
 
 // Recommendation API functions
 export const recommendationApi = {
-  getUniversityRecommendations: async (): Promise<Record<string, unknown>[]> => {
-    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>("/recommendations/universities");
+  getUniversityRecommendations: async (): Promise<
+    Record<string, unknown>[]
+  > => {
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>[];
+    }>("/recommendations/universities");
     return response.data;
   },
   getProgramRecommendations: async (): Promise<Record<string, unknown>[]> => {
-    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>("/recommendations/programs");
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>[];
+    }>("/recommendations/programs");
     return response.data;
   },
-  getScholarshipRecommendations: async (): Promise<Record<string, unknown>[]> => {
-    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>("/recommendations/scholarships");
+  getScholarshipRecommendations: async (): Promise<
+    Record<string, unknown>[]
+  > => {
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>[];
+    }>("/recommendations/scholarships");
     return response.data;
   },
 };

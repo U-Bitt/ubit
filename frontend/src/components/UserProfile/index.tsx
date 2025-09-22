@@ -4,23 +4,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { GraduationCap, Award, Edit, Save, Camera, Search, FileCheck } from "lucide-react";
-import { useRouter } from "next/router";
+import { GraduationCap, Award, Edit, Save, Camera } from "lucide-react";
+import SuggestUniversities from "@/components/SuggestUniversities";
 
 export const UserProfile = () => {
-  const router = useRouter();
-  
   const academicInfo = {
-    gpa: "3.8/4.0",
+    gpa: "3.0/4.0",
     school: "International High School",
     graduationYear: "2024",
     major: "Computer Science",
   };
 
   const testScores = [
-    { test: "SAT", score: "1450", date: "Dec 2023" },
-    { test: "TOEFL", score: "108", date: "Nov 2023" },
-    { test: "AP Computer Science", score: "5", date: "May 2023" },
+    { test: "SAT", score: "1250", date: "Dec 2023" },
+    { test: "TOEFL", score: "90", date: "Nov 2023" },
+    { test: "AP Computer Science", score: "3", date: "May 2023" },
   ];
 
   const interests = [
@@ -94,27 +92,21 @@ export const UserProfile = () => {
                   <Label className="text-sm font-medium">Intended Major</Label>
                   <p className="text-sm">{academicInfo.major}</p>
                 </div>
-                
-                {/* AI Assistant Buttons */}
+
+                {/* AI University Suggestions */}
                 <div className="pt-4 border-t border-gray-200">
-                  <div className="space-y-2">
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start"
-                      onClick={() => router.push('/ai/suggest-universities')}
-                    >
-                      <Search className="h-4 w-4 mr-2" />
-                      Suggest Universities
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start"
-                      onClick={() => router.push('/ai/improve-cv')}
-                    >
-                      <FileCheck className="h-4 w-4 mr-2" />
-                      Improve CV
-                    </Button>
-                  </div>
+                  <SuggestUniversities
+                    gpa={academicInfo.gpa}
+                    sat={
+                      testScores.find(score => score.test === "SAT")?.score ||
+                      "0"
+                    }
+                    toefl={
+                      testScores.find(score => score.test === "TOEFL")?.score ||
+                      "0"
+                    }
+                    major={academicInfo.major}
+                  />
                 </div>
               </CardContent>
             </Card>
