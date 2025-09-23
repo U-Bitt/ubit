@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -91,29 +91,31 @@ export const EnhancedMilestoneTracker = ({
     setExpandedMilestones(newExpanded);
   };
 
-  const toggleStepComplete = (milestoneId: string, stepId: string) => {
+  const toggleStepComplete = useCallback((milestoneId: string, stepId: string) => {
     const stepKey = `${milestoneId}-${stepId}`;
     const newCompleted = new Set(completedSteps);
     
     if (newCompleted.has(stepKey)) {
       newCompleted.delete(stepKey);
       onStepUncomplete?.(milestoneId, stepId);
+      console.log(`❌ Uncompleted step: ${stepKey}`);
     } else {
       newCompleted.add(stepKey);
       onStepComplete?.(milestoneId, stepId);
+      console.log(`✅ Completed step: ${stepKey}`);
     }
     
     setCompletedSteps(newCompleted);
-    
-    // Update milestone progress
-    updateMilestoneProgress(milestoneId);
-  };
+  }, [completedSteps, onStepComplete, onStepUncomplete]);
 
-  const toggleMilestoneComplete = (milestoneId: string) => {
+  const toggleMilestoneComplete = useCallback((milestoneId: string) => {
+    console.log(`🎯 Toggle milestone complete clicked: ${milestoneId}`);
     setLocalMilestones(prev => 
       prev.map(milestone => {
         if (milestone.id === milestoneId) {
           const newStatus = milestone.status === 'completed' ? 'current' : 'completed';
+          console.log(`🔄 Changing milestone ${milestoneId} from ${milestone.status} to ${newStatus}`);
+          
           if (newStatus === 'completed') {
             onMilestoneComplete?.(milestoneId);
           } else {
@@ -129,9 +131,9 @@ export const EnhancedMilestoneTracker = ({
         return milestone;
       })
     );
-  };
+  }, [onMilestoneComplete, onMilestoneUncomplete]);
 
-  const updateMilestoneProgress = (milestoneId: string) => {
+  const updateMilestoneProgress = useCallback((milestoneId: string) => {
     setLocalMilestones(prev => 
       prev.map(milestone => {
         if (milestone.id === milestoneId) {
@@ -140,6 +142,8 @@ export const EnhancedMilestoneTracker = ({
             completedSteps.has(`${milestoneId}-${step.id}`)
           ).length;
           const progress = (completedCount / totalSteps) * 100; // Keep decimal precision
+          
+          console.log(`📊 Updating milestone ${milestoneId}: ${completedCount}/${totalSteps} = ${Math.round(progress)}%`);
           
           return {
             ...milestone,
@@ -151,7 +155,15 @@ export const EnhancedMilestoneTracker = ({
         return milestone;
       })
     );
-  };
+  }, [completedSteps]);
+
+  // Update all milestone progress when completedSteps changes
+  useEffect(() => {
+    console.log('🔄 Completed steps changed, updating all milestone progress...');
+    localMilestones.forEach(milestone => {
+      updateMilestoneProgress(milestone.id);
+    });
+  }, [completedSteps, localMilestones, updateMilestoneProgress]);
 
   const toggleTips = (milestoneId: string) => {
     const newShowTips = new Set(showTips);
@@ -348,7 +360,10 @@ export const EnhancedMilestoneTracker = ({
                       variant="outline"
                       size="sm"
                       className="gap-2"
-                      onClick={() => toggleMilestoneComplete(milestone.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleMilestoneComplete(milestone.id);
+                      }}
                     >
                       {milestone.status === 'completed' ? (
                         <>
@@ -366,7 +381,10 @@ export const EnhancedMilestoneTracker = ({
                       variant="ghost"
                       size="sm"
                       className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      onClick={() => toggleExpanded(milestone.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleExpanded(milestone.id);
+                      }}
                     >
                       {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                     </Button>
@@ -440,7 +458,10 @@ export const EnhancedMilestoneTracker = ({
                                     variant="ghost"
                                     size="sm"
                                     className="h-6 px-2 text-xs"
-                                    onClick={() => toggleStepComplete(milestone.id, step.id)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleStepComplete(milestone.id, step.id);
+                                    }}
                                   >
                                     {completedSteps.has(`${milestone.id}-${step.id}`) ? (
                                       <>
@@ -485,7 +506,7 @@ export const EnhancedMilestoneTracker = ({
                               {/* Requirements */}
                               {step.requirements.length > 0 && (
                                 <div className="mb-3">
-                                  <h7 className="text-xs font-medium text-slate-700 mb-2 block">Requirements:</h7>
+                                  <p className="text-xs font-medium text-slate-700 mb-2 block">Requirements:</p>
                                   <ul className="text-xs text-slate-600 space-y-1">
                                     {step.requirements.map((req, reqIndex) => (
                                       <li key={reqIndex} className="flex items-center gap-2">
@@ -500,7 +521,7 @@ export const EnhancedMilestoneTracker = ({
                               {/* Resources */}
                               {step.resources.length > 0 && (
                                 <div className="mb-3">
-                                  <h7 className="text-xs font-medium text-slate-700 mb-2 block">Resources:</h7>
+                                  <p className="text-xs font-medium text-slate-700 mb-2 block">Resources:</p>
                                   <div className="flex flex-wrap gap-2">
                                     {step.resources.map((resource, resIndex) => (
                                       <Button
@@ -521,7 +542,7 @@ export const EnhancedMilestoneTracker = ({
                               {/* Notes */}
                               {step.notes && (
                                 <div className="p-3 bg-slate-50 rounded-lg">
-                                  <h7 className="text-xs font-medium text-slate-700 mb-1 block">Notes:</h7>
+                                  <p className="text-xs font-medium text-slate-700 mb-1 block">Notes:</p>
                                   <p className="text-xs text-slate-600">{step.notes}</p>
                                 </div>
                               )}
@@ -543,7 +564,10 @@ export const EnhancedMilestoneTracker = ({
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => toggleTips(milestone.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleTips(milestone.id);
+                          }}
                           className="text-yellow-600 hover:text-yellow-700"
                         >
                           {showTips.has(milestone.id) ? 'Hide Tips' : 'Show Tips'}

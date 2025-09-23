@@ -120,16 +120,16 @@ export const EnhancedApplicationProgress = ({
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-slate-700">Progress</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-slate-900">{app.progress}%</span>
+                    <span className="text-sm font-bold text-slate-900">{Math.round(app.progress)}%</span>
                     <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500"
-                        style={{ width: `${app.progress}%` }}
+                        style={{ width: `${Math.round(app.progress)}%` }}
                       ></div>
                     </div>
                   </div>
                 </div>
-                <Progress value={app.progress} className="h-2" />
+                <Progress value={Math.round(app.progress)} className="h-2" />
               </div>
 
               {/* Stats Grid */}

@@ -670,6 +670,13 @@ export const DashboardRefactored = () => {
           onHideSuggestions={() => setShowSuggestions(false)}
           filteredUniversities={filteredUniversities}
           onApplyToUniversity={handleApplyToUniversity}
+          selectedCountry="all"
+          onCountryFilter={() => {}}
+          selectedProgram="all"
+          onProgramFilter={() => {}}
+          countries={[]}
+          programs={[]}
+          isLoadingExternal={false}
         />
       </div>
     </div>
