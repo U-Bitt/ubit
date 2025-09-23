@@ -16,6 +16,16 @@ export interface IUniversity extends Document {
     founded?: number;
     type?: "public" | "private";
     size?: "small" | "medium" | "large";
+    requirements?: string[];
+    scholarships?: {
+        name: string;
+        amount: string;
+        requirements: string[];
+        deadline: string;
+        description?: string;
+    }[];
+    campusSize?: string;
+    studentFacultyRatio?: string;
     createdAt: Date;
     updatedAt: Date;
 }

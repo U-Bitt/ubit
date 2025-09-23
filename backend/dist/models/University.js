@@ -125,6 +125,49 @@ const UniversitySchema = new mongoose_1.Schema({
         enum: ["small", "medium", "large"],
         default: "medium",
     },
+    requirements: [
+        {
+            type: String,
+            trim: true,
+        },
+    ],
+    scholarships: [
+        {
+            name: {
+                type: String,
+                required: true,
+                trim: true,
+            },
+            amount: {
+                type: String,
+                required: true,
+                trim: true,
+            },
+            requirements: [
+                {
+                    type: String,
+                    trim: true,
+                },
+            ],
+            deadline: {
+                type: String,
+                required: true,
+                trim: true,
+            },
+            description: {
+                type: String,
+                trim: true,
+            },
+        },
+    ],
+    campusSize: {
+        type: String,
+        trim: true,
+    },
+    studentFacultyRatio: {
+        type: String,
+        trim: true,
+    },
 }, {
     timestamps: true,
     collection: "universities",

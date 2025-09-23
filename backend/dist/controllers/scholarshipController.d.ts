@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { Scholarship, ApiResponse, SearchQuery } from "../types";
 export declare const getAllScholarships: (req: Request<{}, ApiResponse<Scholarship[]>, {}, SearchQuery>, res: Response<ApiResponse<Scholarship[]>>, next: NextFunction) => Promise<void>;
+export declare const getScholarshipsByUniversity: (req: Request<{
+    universityName: string;
+}, ApiResponse<Scholarship[]>, {}, {}>, res: Response<ApiResponse<Scholarship[]>>, next: NextFunction) => Promise<void>;
 export declare const getScholarshipById: (req: Request<{
     id: string;
 }>, res: Response<ApiResponse<Scholarship>>, next: NextFunction) => Promise<void>;

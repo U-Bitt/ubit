@@ -598,12 +598,14 @@ const addTestScore = async (req, res, next) => {
         const testScoreData = req.body;
         const newTestScore = {
             id: `test_${Date.now()}`,
-            testName: testScoreData.testName,
+            examType: testScoreData.examType,
             score: testScoreData.score,
-            date: new Date(testScoreData.date),
             maxScore: testScoreData.maxScore,
-            percentile: testScoreData.percentile,
+            certified: testScoreData.certified,
+            testDate: testScoreData.testDate,
+            validityDate: testScoreData.validityDate,
         };
+        console.log("Creating new test score:", JSON.stringify(newTestScore, null, 2));
         const user = await User_1.default.findByIdAndUpdate(userId, {
             $push: { testScores: newTestScore },
             updatedAt: new Date()
@@ -616,6 +618,7 @@ const addTestScore = async (req, res, next) => {
             });
             return;
         }
+        console.log("Returning response with data:", JSON.stringify(newTestScore, null, 2));
         res.status(201).json({
             success: true,
             data: newTestScore,
@@ -635,19 +638,21 @@ exports.addTestScore = addTestScore;
 const updateTestScore = async (req, res, next) => {
     try {
         const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
-        const { testId } = req.params;
+        const { id: testId } = req.params;
         const updates = req.body;
         const updateData = {};
-        if (updates.testName)
-            updateData["testScores.$.testName"] = updates.testName;
+        if (updates.examType)
+            updateData["testScores.$.examType"] = updates.examType;
         if (updates.score)
             updateData["testScores.$.score"] = updates.score;
-        if (updates.date)
-            updateData["testScores.$.date"] = new Date(updates.date);
         if (updates.maxScore)
             updateData["testScores.$.maxScore"] = updates.maxScore;
-        if (updates.percentile !== undefined)
-            updateData["testScores.$.percentile"] = updates.percentile;
+        if (updates.certified !== undefined)
+            updateData["testScores.$.certified"] = updates.certified;
+        if (updates.testDate)
+            updateData["testScores.$.testDate"] = updates.testDate;
+        if (updates.validityDate)
+            updateData["testScores.$.validityDate"] = updates.validityDate;
         const user = await User_1.default.findOneAndUpdate({
             _id: userId,
             "testScores.id": testId
@@ -685,7 +690,7 @@ exports.updateTestScore = updateTestScore;
 const deleteTestScore = async (req, res, next) => {
     try {
         const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
-        const { testId } = req.params;
+        const { id: testId } = req.params;
         const user = await User_1.default.findByIdAndUpdate(userId, {
             $pull: { testScores: { id: testId } },
             updatedAt: new Date()
@@ -852,9 +857,7 @@ const deleteDocument = async (req, res, next) => {
 exports.deleteDocument = deleteDocument;
 const getSavedUniversities = async (req, res, next) => {
     try {
-
         const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
-
         const user = await User_1.default.findById(userId).lean();
         if (!user) {
             console.log("User not found:", userId);

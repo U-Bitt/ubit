@@ -42,6 +42,10 @@ export const getAllUniversities = async (
       founded: uni.founded,
       type: uni.type,
       size: uni.size,
+      requirements: uni.requirements,
+      scholarships: uni.scholarships,
+      campusSize: uni.campusSize,
+      studentFacultyRatio: uni.studentFacultyRatio,
       createdAt: uni.createdAt,
       updatedAt: uni.updatedAt,
     }));
@@ -100,6 +104,10 @@ export const getUniversityById = async (
       founded: university.founded,
       type: university.type,
       size: university.size,
+      requirements: university.requirements,
+      scholarships: university.scholarships,
+      campusSize: university.campusSize,
+      studentFacultyRatio: university.studentFacultyRatio,
       createdAt: university.createdAt,
       updatedAt: university.updatedAt,
     };
