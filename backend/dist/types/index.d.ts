@@ -57,10 +57,48 @@ export interface User {
     email: string;
     firstName: string;
     lastName: string;
+    phone?: string;
     dateOfBirth?: string;
     nationality?: string;
-    phone?: string;
     avatar?: string;
+    personalInfo?: {
+        firstName: string;
+        lastName: string;
+        email: string;
+        phone?: string;
+        dateOfBirth?: string;
+        nationality?: string;
+    };
+    academicInfo?: {
+        gpa: number;
+        highSchoolName: string;
+        graduationYear: number;
+        intendedMajors: string[];
+    };
+    areasOfInterest?: string[];
+    testScores?: Array<{
+        id: string;
+        testName: string;
+        score: string;
+        date: string;
+        maxScore?: string;
+        percentile?: number;
+    }>;
+    documents?: Array<{
+        id: string;
+        name: string;
+        type: string;
+        url?: string;
+        uploadedAt: string;
+        status: "draft" | "uploaded" | "verified" | "rejected";
+    }>;
+    savedUniversities?: Array<{
+        id: string;
+        universityId: string;
+        universityName: string;
+        savedAt: string;
+        notes?: string;
+    }>;
     preferences?: UserPreferences;
     applications?: Application[];
     createdAt: Date;
@@ -162,5 +200,23 @@ export interface SearchQuery extends PaginationQuery {
     program?: string;
     minRating?: number;
     maxTuition?: number;
+}
+export interface Visa {
+    id: string;
+    country: string;
+    type: string;
+    processingTime: string;
+    cost: string;
+    validity: string;
+    requirements: string[];
+    documents: string[];
+    officialWebsite: string;
+    description?: string;
+    eligibility?: string[];
+    restrictions?: string[];
+    benefits?: string[];
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
 }
 //# sourceMappingURL=index.d.ts.map

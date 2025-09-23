@@ -35,9 +35,11 @@ export const Universities = () => {
       setLoading(true);
       
       try {
+        // Now getAll() returns all universities without pagination
         const response = await universityApi.getAll();
         // Ensure response is an array
         setUniversities(Array.isArray(response) ? response : []);
+        console.log(`Loaded ${response.length} universities`);
       } catch (err) {
         console.error("Error loading universities:", err);
         // Set empty array on error
@@ -301,7 +303,7 @@ export const Universities = () => {
                         ? "bg-red-500 hover:bg-red-600 text-white"
                         : "hover:bg-red-50"
                     }`}
-                    onClick={() => toggleSave(university.id)}
+                    onClick={() => toggleSave(university.id, university.name)}
                   >
                     <Heart
                       className={`h-4 w-4 ${isSaved(university.id) ? "fill-current" : ""}`}

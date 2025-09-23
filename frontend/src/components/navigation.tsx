@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useUser } from "@/contexts/UserContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +38,7 @@ const navigation = [
 export const Navigation = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { user, isLoading } = useUser();
 
   return (
     <nav className="bg-card border-b border-border sticky top-0 z-50">
@@ -87,7 +89,7 @@ export const Navigation = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm">
                   <User className="w-4 h-4 mr-2" />
-                  Alex Smith
+                  {isLoading ? "Loading..." : user?.firstName || "Profile"}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">

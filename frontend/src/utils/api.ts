@@ -64,6 +64,33 @@ export interface Exam {
   difficulty: string;
 }
 
+export interface Document {
+  id: string;
+  name: string;
+  type: string;
+  university?: string;
+  description?: string;
+  filePath: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  uploadedBy: string;
+  versions?: DocumentVersion[];
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DocumentVersion {
+  id: string;
+  version: number;
+  filePath: string;
+  fileName: string;
+  fileSize: number;
+  uploadedAt: Date;
+  uploadedBy: string;
+}
+
 // Generic API call function
 async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
@@ -120,6 +147,42 @@ export const universityApi = {
     );
     return response.data;
   },
+  getAllPaginated: async (): Promise<University[]> => {
+    const allUniversities: University[] = [];
+    let page = 1;
+    let hasMore = true;
+    const limit = 50; // Increased limit per page
+
+    while (hasMore) {
+      try {
+        const response = await apiCall<{ 
+          success: boolean; 
+          data: University[];
+          pagination: {
+            page: number;
+            limit: number;
+            total: number;
+            pages: number;
+          };
+        }>(`/universities?page=${page}&limit=${limit}`);
+        
+        if (response.success && response.data) {
+          allUniversities.push(...response.data);
+          
+          // Check if there are more pages
+          hasMore = page < response.pagination.pages;
+          page++;
+        } else {
+          hasMore = false;
+        }
+      } catch (error) {
+        console.error(`Error fetching page ${page}:`, error);
+        hasMore = false;
+      }
+    }
+
+    return allUniversities;
+  },
   getById: async (id: string): Promise<University> => {
     const response = await apiCall<{ success: boolean; data: University }>(
       `/universities/${id}`
@@ -165,7 +228,102 @@ export const examApi = {
 };
 
 // User API functions
+export interface User {
+  id?: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  dateOfBirth?: string;
+  nationality?: string;
+  avatar?: string;
+  personalInfo?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    dateOfBirth?: string;
+    nationality?: string;
+  };
+  academicInfo?: {
+    gpa?: number;
+    highSchoolName?: string;
+    graduationYear?: number;
+    intendedMajors?: string[];
+  };
+  areasOfInterest?: string[];
+  savedUniversities?: Array<{
+    id: string;
+    universityId: string;
+    universityName: string;
+    savedAt: string;
+    notes?: string;
+  }>;
+}
+
 export const userApi = {
+  getAll: async (): Promise<User[]> => {
+    const response = await apiCall<{ success: boolean; data: User[] }>("/users");
+    return response.data;
+  },
+  getById: async (id: string): Promise<User> => {
+    const response = await apiCall<{ success: boolean; data: User }>(`/users/${id}`);
+    return response.data;
+  },
+  update: async (id: string, userData: Partial<User>): Promise<User> => {
+    console.log("API update call - ID:", id, "Data:", userData);
+    const response = await apiCall<{ success: boolean; data: User }>(`/users/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    });
+    return response.data;
+  },
+  create: async (userData: Partial<User>): Promise<User> => {
+    const response = await apiCall<{ success: boolean; data: User }>("/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    });
+    return response.data;
+  },
+  // Saved Universities
+  getSavedUniversities: async (userId: string): Promise<any[]> => {
+    const response = await apiCall<{ success: boolean; data: any[] }>("/users/saved-universities/me", {
+      headers: {
+        "x-user-id": userId,
+      },
+    });
+    return response.data;
+  },
+  saveUniversity: async (userId: string, universityId: string, universityName: string, notes?: string): Promise<any> => {
+    const response = await apiCall<{ success: boolean; data: any }>("/users/saved-universities", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": userId,
+      },
+      body: JSON.stringify({
+        universityId,
+        universityName,
+        notes,
+      }),
+    });
+    return response.data;
+  },
+  unsaveUniversity: async (userId: string, savedId: string): Promise<void> => {
+    await apiCall<{ success: boolean; data: any }>(`/users/saved-universities/${savedId}`, {
+      method: "DELETE",
+      headers: {
+        "x-user-id": userId,
+      },
+    });
+  },
+  // Legacy functions for backward compatibility
   getProfile: (): Promise<Record<string, unknown>> =>
     apiCall<Record<string, unknown>>("/user/profile"),
   updateProfile: (

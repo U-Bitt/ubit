@@ -13,6 +13,7 @@ import userRoutes from "./routes/users";
 import testScoreRoutes from "./routes/testScores";
 import documentRoutes from "./routes/documents";
 import scholarshipRoutes from "./routes/scholarships";
+import visaRoutes from "./routes/visas";
 import aiRoutes from "./routes/ai";
 
 // Import middleware
@@ -102,6 +103,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/test-scores", testScoreRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/scholarships", scholarshipRoutes);
+app.use("/api/visas", visaRoutes);
 app.use("/api/ai", aiRoutes);
 
 // 404 handler
