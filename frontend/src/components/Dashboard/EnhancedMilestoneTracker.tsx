@@ -13,7 +13,7 @@ import {
   AlertTriangle,
   Target,
   FileText,
-  GraduationCap,
+  
   Award,
   Users,
   BookOpen,

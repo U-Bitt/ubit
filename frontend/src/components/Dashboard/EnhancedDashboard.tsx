@@ -36,17 +36,21 @@ import {
 
 export const EnhancedDashboard = () => {
   // Modal states
-  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const [selectedApplication, setSelectedApplication] =
+    useState<Application | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
   const [isExamModalOpen, setIsExamModalOpen] = useState(false);
   const [isScholarshipModalOpen, setIsScholarshipModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-  const [isAddApplicationModalOpen, setIsAddApplicationModalOpen] = useState(false);
+  const [isAddApplicationModalOpen, setIsAddApplicationModalOpen] =
+    useState(false);
 
   // Search states
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredUniversities, setFilteredUniversities] = useState<University[]>([]);
+  const [filteredUniversities, setFilteredUniversities] = useState<
+    University[]
+  >([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState("all");
   const [selectedProgram, setSelectedProgram] = useState("all");
@@ -59,12 +63,12 @@ export const EnhancedDashboard = () => {
         const filtersToSave = {
           searchQuery,
           selectedCountry,
-          selectedProgram
+          selectedProgram,
         };
-        localStorage.setItem('dashboardFilters', JSON.stringify(filtersToSave));
-        console.log('🔍 Saved filters to localStorage:', filtersToSave);
+        localStorage.setItem("dashboardFilters", JSON.stringify(filtersToSave));
+        console.log("🔍 Saved filters to localStorage:", filtersToSave);
       } catch (error) {
-        console.error('❌ Error saving filters to localStorage:', error);
+        console.error("❌ Error saving filters to localStorage:", error);
       }
     }
   }, [searchQuery, selectedCountry, selectedProgram, isDataLoaded]);
@@ -73,7 +77,7 @@ export const EnhancedDashboard = () => {
   const getUniqueCountries = () => {
     if (popularUniversities.length === 0) return [];
     const countries = popularUniversities.map(uni => {
-      const locationParts = uni.location.split(', ');
+      const locationParts = uni.location.split(", ");
       return locationParts[locationParts.length - 1];
     });
     return Array.from(new Set(countries)).sort();
@@ -85,26 +89,31 @@ export const EnhancedDashboard = () => {
     return Array.from(new Set(allPrograms)).sort();
   };
 
-  const filterUniversities = useCallback((universities: University[]) => {
-    return universities.filter(uni => {
-      const matchesSearch = searchQuery === "" || 
-        uni.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        uni.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        uni.programs.some(program => 
-          program.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      
-      const matchesCountry = selectedCountry === "all" || 
-        uni.location.includes(selectedCountry);
-      
-      const matchesProgram = selectedProgram === "all" || 
-        uni.programs.some(program => 
-          program.toLowerCase().includes(selectedProgram.toLowerCase())
-        );
-      
-      return matchesSearch && matchesCountry && matchesProgram;
-    });
-  }, [searchQuery, selectedCountry, selectedProgram]);
+  const filterUniversities = useCallback(
+    (universities: University[]) => {
+      return universities.filter(uni => {
+        const matchesSearch =
+          searchQuery === "" ||
+          uni.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          uni.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          uni.programs.some(program =>
+            program.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+
+        const matchesCountry =
+          selectedCountry === "all" || uni.location.includes(selectedCountry);
+
+        const matchesProgram =
+          selectedProgram === "all" ||
+          uni.programs.some(program =>
+            program.toLowerCase().includes(selectedProgram.toLowerCase())
+          );
+
+        return matchesSearch && matchesCountry && matchesProgram;
+      });
+    },
+    [searchQuery, selectedCountry, selectedProgram]
+  );
 
   // Search functions
   const handleSearch = async (query: string) => {
@@ -142,7 +151,6 @@ export const EnhancedDashboard = () => {
     setFilteredUniversities([university]);
     setShowSuggestions(false);
   };
-
 
   // Handle quick actions
   const handleQuickAction = (action: string) => {
@@ -188,39 +196,52 @@ export const EnhancedDashboard = () => {
   const handleRemoveUniversity = (universityId: string) => {
     console.log("Removing university:", universityId);
     setSavedUniversities((prev: SavedUniversity[]) => {
-      const updatedList = prev.filter((uni: SavedUniversity) => uni.id !== universityId);
-      const removedUni = prev.find((uni: SavedUniversity) => uni.id === universityId);
+      const updatedList = prev.filter(
+        (uni: SavedUniversity) => uni.id !== universityId
+      );
+      const removedUni = prev.find(
+        (uni: SavedUniversity) => uni.id === universityId
+      );
       if (removedUni) {
-        alert(`${removedUni.name} has been removed from your saved universities!`);
+        alert(
+          `${removedUni.name} has been removed from your saved universities!`
+        );
       }
       return updatedList;
     });
   };
 
   // Get university ranking based on name
-  const getUniversityRanking = (universityName: string): number => {
+  const getUniversityRanking = (universityName: string | undefined): number => {
+    // Handle undefined or null university names
+    if (!universityName || typeof universityName !== "string") {
+      return 999;
+    }
+
     const rankingMap: { [key: string]: number } = {
       "Massachusetts Institute of Technology": 1,
-      "MIT": 1,
+      MIT: 1,
       "University of Cambridge": 2,
       "Cambridge University": 2,
       "University of Oxford": 3,
       "Oxford University": 3,
       "Harvard University": 4,
-      "Harvard": 4,
+      Harvard: 4,
       "Stanford University": 5,
-      "Stanford": 5,
+      Stanford: 5,
       "Imperial College London": 6,
       "University College London": 9,
       "University of Melbourne": 14,
       "University of Toronto": 21,
-      "Technical University of Munich": 37
+      "Technical University of Munich": 37,
     };
 
     // Try to find exact match or partial match
     for (const [key, ranking] of Object.entries(rankingMap)) {
-      if (universityName.toLowerCase().includes(key.toLowerCase()) || 
-          key.toLowerCase().includes(universityName.toLowerCase())) {
+      if (
+        universityName.toLowerCase().includes(key.toLowerCase()) ||
+        key.toLowerCase().includes(universityName.toLowerCase())
+      ) {
         return ranking;
       }
     }
@@ -230,7 +251,29 @@ export const EnhancedDashboard = () => {
   };
 
   // Get university details based on name
-  const getUniversityDetails = (universityName: string) => {
+  const getUniversityDetails = (universityName: string | undefined) => {
+    // Handle undefined or null university names
+    if (!universityName || typeof universityName !== "string") {
+      return {
+        tuition: "Contact for details",
+        acceptance: "Contact for details",
+        deadline: "Contact for details",
+        location: "Contact for details",
+        programs: ["General"],
+        details: {
+          founded: "Contact for details",
+          students: "Contact for details",
+          faculty: "Contact for details",
+          endowment: "Contact for details",
+          research: "Contact university for research information",
+          notable: "Contact for achievements and notable alumni",
+          website: "Contact for details",
+          type: "Contact for details",
+          language: "Contact for details",
+          campus: "Contact for details",
+        },
+      };
+    }
     const universityData = {
       // USA Universities
       "Massachusetts Institute of Technology": {
@@ -249,10 +292,10 @@ export const EnhancedDashboard = () => {
           website: "https://web.mit.edu",
           type: "Private Research University",
           language: "English",
-          campus: "Urban technology campus"
-        }
+          campus: "Urban technology campus",
+        },
       },
-      "MIT": {
+      MIT: {
         tuition: "$57,986/year",
         acceptance: "6.7%",
         deadline: "Jan 1, 2025",
@@ -268,15 +311,20 @@ export const EnhancedDashboard = () => {
           website: "https://web.mit.edu",
           type: "Private Research University",
           language: "English",
-          campus: "Urban technology campus"
-        }
+          campus: "Urban technology campus",
+        },
       },
       "University of Cambridge": {
         tuition: "£33,825/year",
         acceptance: "21.0%",
         deadline: "Oct 15, 2024",
         location: "Cambridge, England, UK",
-        programs: ["Natural Sciences", "Engineering", "Mathematics", "Medicine"],
+        programs: [
+          "Natural Sciences",
+          "Engineering",
+          "Mathematics",
+          "Medicine",
+        ],
         details: {
           founded: "1209",
           students: "24,450",
@@ -287,15 +335,20 @@ export const EnhancedDashboard = () => {
           website: "https://www.cam.ac.uk",
           type: "Collegiate Research University",
           language: "English",
-          campus: "Historic collegiate city"
-        }
+          campus: "Historic collegiate city",
+        },
       },
       "Cambridge University": {
         tuition: "£33,825/year",
         acceptance: "21.0%",
         deadline: "Oct 15, 2024",
         location: "Cambridge, England, UK",
-        programs: ["Natural Sciences", "Engineering", "Mathematics", "Medicine"],
+        programs: [
+          "Natural Sciences",
+          "Engineering",
+          "Mathematics",
+          "Medicine",
+        ],
         details: {
           founded: "1209",
           students: "24,450",
@@ -306,8 +359,8 @@ export const EnhancedDashboard = () => {
           website: "https://www.cam.ac.uk",
           type: "Collegiate Research University",
           language: "English",
-          campus: "Historic collegiate city"
-        }
+          campus: "Historic collegiate city",
+        },
       },
       "University of Oxford": {
         tuition: "£31,230/year",
@@ -325,8 +378,8 @@ export const EnhancedDashboard = () => {
           website: "https://www.ox.ac.uk",
           type: "Collegiate Research University",
           language: "English",
-          campus: "Historic collegiate system"
-        }
+          campus: "Historic collegiate system",
+        },
       },
       "Oxford University": {
         tuition: "£31,230/year",
@@ -344,8 +397,8 @@ export const EnhancedDashboard = () => {
           website: "https://www.ox.ac.uk",
           type: "Collegiate Research University",
           language: "English",
-          campus: "Historic collegiate system"
-        }
+          campus: "Historic collegiate system",
+        },
       },
       "Harvard University": {
         tuition: "$54,269/year",
@@ -363,10 +416,10 @@ export const EnhancedDashboard = () => {
           website: "https://www.harvard.edu",
           type: "Private Ivy League University",
           language: "English",
-          campus: "Historic urban campus"
-        }
+          campus: "Historic urban campus",
+        },
       },
-      "Harvard": {
+      Harvard: {
         tuition: "$54,269/year",
         acceptance: "3.4%",
         deadline: "Jan 1, 2025",
@@ -382,8 +435,8 @@ export const EnhancedDashboard = () => {
           website: "https://www.harvard.edu",
           type: "Private Ivy League University",
           language: "English",
-          campus: "Historic urban campus"
-        }
+          campus: "Historic urban campus",
+        },
       },
       "Stanford University": {
         tuition: "$61,731/year",
@@ -401,10 +454,10 @@ export const EnhancedDashboard = () => {
           website: "https://www.stanford.edu",
           type: "Private Research University",
           language: "English",
-          campus: "Suburban Silicon Valley campus"
-        }
+          campus: "Suburban Silicon Valley campus",
+        },
       },
-      "Stanford": {
+      Stanford: {
         tuition: "$61,731/year",
         acceptance: "4.3%",
         deadline: "Jan 2, 2025",
@@ -420,8 +473,8 @@ export const EnhancedDashboard = () => {
           website: "https://www.stanford.edu",
           type: "Private Research University",
           language: "English",
-          campus: "Suburban Silicon Valley campus"
-        }
+          campus: "Suburban Silicon Valley campus",
+        },
       },
       "Imperial College London": {
         tuition: "£37,900/year",
@@ -439,8 +492,8 @@ export const EnhancedDashboard = () => {
           website: "https://www.imperial.ac.uk",
           type: "Public Research University",
           language: "English",
-          campus: "Urban London campus"
-        }
+          campus: "Urban London campus",
+        },
       },
       "University College London": {
         tuition: "£31,200/year",
@@ -458,8 +511,8 @@ export const EnhancedDashboard = () => {
           website: "https://www.ucl.ac.uk",
           type: "Public Research University",
           language: "English",
-          campus: "Central London campus"
-        }
+          campus: "Central London campus",
+        },
       },
       "University of Toronto": {
         tuition: "CAD $58,160/year",
@@ -477,8 +530,8 @@ export const EnhancedDashboard = () => {
           website: "https://www.utoronto.ca",
           type: "Public Research University",
           language: "English",
-          campus: "Urban multi-campus system"
-        }
+          campus: "Urban multi-campus system",
+        },
       },
       "University of Melbourne": {
         tuition: "AUD $45,000/year",
@@ -496,15 +549,20 @@ export const EnhancedDashboard = () => {
           website: "https://www.unimelb.edu.au",
           type: "Public Research University",
           language: "English",
-          campus: "Urban Parkville campus"
-        }
+          campus: "Urban Parkville campus",
+        },
       },
       "Technical University of Munich": {
         tuition: "€0/year (Free)",
         acceptance: "25.0%",
         deadline: "Jul 15, 2025",
         location: "Munich, Bavaria, Germany",
-        programs: ["Engineering", "Computer Science", "Natural Sciences", "Medicine"],
+        programs: [
+          "Engineering",
+          "Computer Science",
+          "Natural Sciences",
+          "Medicine",
+        ],
         details: {
           founded: "1868",
           students: "48,000+",
@@ -515,15 +573,17 @@ export const EnhancedDashboard = () => {
           website: "https://www.tum.de",
           type: "Public Technical University",
           language: "German/English",
-          campus: "Multi-campus technical focus"
-        }
-      }
+          campus: "Multi-campus technical focus",
+        },
+      },
     };
 
     // Try to find exact match or partial match
     for (const [key, data] of Object.entries(universityData)) {
-      if (universityName.toLowerCase().includes(key.toLowerCase()) || 
-          key.toLowerCase().includes(universityName.toLowerCase())) {
+      if (
+        universityName.toLowerCase().includes(key.toLowerCase()) ||
+        key.toLowerCase().includes(universityName.toLowerCase())
+      ) {
         return data;
       }
     }
@@ -545,17 +605,20 @@ export const EnhancedDashboard = () => {
         website: "Contact for website",
         type: "Contact for institution type",
         language: "Contact for language information",
-        campus: "Contact for campus information"
-      }
+        campus: "Contact for campus information",
+      },
     };
   };
 
-  const handleApplyToUniversity = (university: { name: string; id: string }) => {
+  const handleApplyToUniversity = (university: {
+    name: string;
+    id: string;
+  }) => {
     console.log("Applying to university:", university.name);
     // Add university to saved universities
     const universityRanking = getUniversityRanking(university.name);
     const universityDetails = getUniversityDetails(university.name);
-    
+
     const newUniversity = {
       id: university.id,
       name: university.name,
@@ -567,23 +630,27 @@ export const EnhancedDashboard = () => {
       location: universityDetails.location,
       programs: universityDetails.programs,
       image: "/placeholder-logo.svg",
-      details: universityDetails.details
+      details: universityDetails.details,
     };
-    
+
     setSavedUniversities((prev: SavedUniversity[]) => {
       // Check if university already exists
-      const exists = prev.some((uni: SavedUniversity) => uni.id === university.id);
+      const exists = prev.some(
+        (uni: SavedUniversity) => uni.id === university.id
+      );
       if (exists) {
         alert(`${university.name} is already in your saved universities!`);
         return prev;
       }
-      
+
       // Add new university and sort by ranking
-      const updated = [...prev, newUniversity].sort((a, b) => a.ranking - b.ranking);
+      const updated = [...prev, newUniversity].sort(
+        (a, b) => a.ranking - b.ranking
+      );
       alert(`${university.name} has been added to your saved universities!`);
       return updated;
     });
-    
+
     // Close the modal
     setIsAddApplicationModalOpen(false);
   };
@@ -591,14 +658,16 @@ export const EnhancedDashboard = () => {
   const handleViewAllUniversities = () => {
     console.log("Viewing all universities...");
     // Navigate to universities page or open modal
-    alert("Opening all universities view - This would show the complete university database");
+    alert(
+      "Opening all universities view - This would show the complete university database"
+    );
   };
 
   // Load popular universities with fallback data
   const loadPopularUniversities = async () => {
     setIsLoadingExternal(true);
-    console.log('🔄 Loading universities...');
-    
+    console.log("🔄 Loading universities...");
+
     // Fallback university data with real information
     const fallbackUniversities: University[] = [
       // Top Global Universities (2024-2025 QS World Rankings)
@@ -622,8 +691,8 @@ export const EnhancedDashboard = () => {
           website: "https://web.mit.edu",
           type: "Private Research University",
           language: "English",
-          campus: "Urban technology campus"
-        }
+          campus: "Urban technology campus",
+        },
       },
       {
         id: "api-cambridge-2",
@@ -645,8 +714,8 @@ export const EnhancedDashboard = () => {
           website: "https://www.cam.ac.uk",
           type: "Collegiate Research University",
           language: "English",
-          campus: "Historic collegiate city"
-        }
+          campus: "Historic collegiate city",
+        },
       },
       {
         id: "api-oxford-3",
@@ -668,8 +737,8 @@ export const EnhancedDashboard = () => {
           website: "https://www.ox.ac.uk",
           type: "Collegiate Research University",
           language: "English",
-          campus: "Historic collegiate system"
-        }
+          campus: "Historic collegiate system",
+        },
       },
       {
         id: "api-harvard-4",
@@ -691,8 +760,8 @@ export const EnhancedDashboard = () => {
           website: "https://www.harvard.edu",
           type: "Private Ivy League University",
           language: "English",
-          campus: "Historic urban campus"
-        }
+          campus: "Historic urban campus",
+        },
       },
       {
         id: "api-stanford-5",
@@ -714,8 +783,8 @@ export const EnhancedDashboard = () => {
           website: "https://www.stanford.edu",
           type: "Private Research University",
           language: "English",
-          campus: "Suburban Silicon Valley campus"
-        }
+          campus: "Suburban Silicon Valley campus",
+        },
       },
       {
         id: "api-toronto-21",
@@ -737,8 +806,8 @@ export const EnhancedDashboard = () => {
           website: "https://www.utoronto.ca",
           type: "Public Research University",
           language: "English",
-          campus: "Urban multi-campus system"
-        }
+          campus: "Urban multi-campus system",
+        },
       },
       {
         id: "api-melbourne-14",
@@ -760,8 +829,8 @@ export const EnhancedDashboard = () => {
           website: "https://www.unimelb.edu.au",
           type: "Public Research University",
           language: "English",
-          campus: "Urban Parkville campus"
-        }
+          campus: "Urban Parkville campus",
+        },
       },
       {
         id: "api-tum-37",
@@ -783,67 +852,76 @@ export const EnhancedDashboard = () => {
           website: "https://www.tum.de",
           type: "Public Technical University",
           language: "German/English",
-          campus: "Multi-campus technical focus"
-        }
-      }
+          campus: "Multi-campus technical focus",
+        },
+      },
     ];
-    
+
     try {
       // Try to fetch from API first, but use fallback if it fails
-      console.log('🌐 Attempting to connect to university API...');
-      
+      console.log("🌐 Attempting to connect to university API...");
+
       setTimeout(() => {
-        console.log('📚 Using curated university database');
+        console.log("📚 Using curated university database");
         setPopularUniversities(fallbackUniversities);
         setIsLoadingExternal(false);
       }, 1000); // Simulate loading time
-      
+
       return fallbackUniversities;
     } catch (error) {
-      console.error('💥 API unavailable, using curated data:', error);
+      console.error("💥 API unavailable, using curated data:", error);
       setPopularUniversities(fallbackUniversities);
       return fallbackUniversities;
     }
   };
 
   // Fetch external university data
-  const fetchExternalUniversities = async (searchTerm = '') => {
+  const fetchExternalUniversities = async (searchTerm = "") => {
     setIsLoadingExternal(true);
     try {
       // Using HIPO API (Higher Education Database)
-      const response = await fetch(`https://universities.hipolabs.com/search?name=${encodeURIComponent(searchTerm)}`);
-      
+      const response = await fetch(
+        `https://universities.hipolabs.com/search?name=${encodeURIComponent(searchTerm)}`
+      );
+
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       // Transform external data to match our University interface
-      const transformedData: University[] = data.slice(0, 50).map((uni: { name: string; country: string; state_province?: string }, index: number) => ({
-        id: `search-${index}`,
-        name: uni.name,
-        location: `${uni.country}${uni.state_province ? `, ${uni.state_province}` : ''}`,
-        ranking: 100 + index, // Placeholder ranking
-        tuition: "Contact for details",
-        acceptance: "Contact for details",
-        deadline: "Varies",
-        image: "/placeholder-logo.svg",
-        programs: ["General Programs"],
-        details: {
-          founded: "N/A",
-          students: "Contact for details",
-          faculty: "Contact for details",
-          endowment: "Contact for details",
-          research: "Contact university for research information",
-          notable: "Contact for achievements and notable alumni"
-        }
-      }));
+      const transformedData: University[] = data
+        .slice(0, 50)
+        .map(
+          (
+            uni: { name: string; country: string; state_province?: string },
+            index: number
+          ) => ({
+            id: `search-${index}`,
+            name: uni.name,
+            location: `${uni.country}${uni.state_province ? `, ${uni.state_province}` : ""}`,
+            ranking: 100 + index, // Placeholder ranking
+            tuition: "Contact for details",
+            acceptance: "Contact for details",
+            deadline: "Varies",
+            image: "/placeholder-logo.svg",
+            programs: ["General Programs"],
+            details: {
+              founded: "N/A",
+              students: "Contact for details",
+              faculty: "Contact for details",
+              endowment: "Contact for details",
+              research: "Contact university for research information",
+              notable: "Contact for achievements and notable alumni",
+            },
+          })
+        );
 
       return transformedData;
     } catch (error) {
-      console.error('Error fetching external universities:', error);
-      alert('Failed to fetch external university data. Please try again.');
+      console.error("Error fetching external universities:", error);
+      alert("Failed to fetch external university data. Please try again.");
       return [];
     } finally {
       setIsLoadingExternal(false);
@@ -853,10 +931,10 @@ export const EnhancedDashboard = () => {
   // Enhanced search that includes external data
   const handleEnhancedSearch = async (query: string) => {
     setSearchQuery(query);
-    
+
     // First, filter local universities
     const localFiltered = filterUniversities(popularUniversities);
-    
+
     // If search query is provided and we have few local results, fetch external data
     if (query.length > 2 && localFiltered.length < 5) {
       const externalData = await fetchExternalUniversities(query);
@@ -865,7 +943,7 @@ export const EnhancedDashboard = () => {
     } else {
       setFilteredUniversities(localFiltered);
     }
-    
+
     setShowSuggestions(query.length > 0);
   };
 
@@ -877,144 +955,284 @@ export const EnhancedDashboard = () => {
       activeApplications: 0,
       universitiesTracked: 0,
       documentsUploaded: 0,
-      upcomingDeadlines: 0
-    }
+      upcomingDeadlines: 0,
+    },
   });
 
   // External university data
   const [isLoadingExternal, setIsLoadingExternal] = useState(false);
 
   // Mock data with enhanced information
-  const applications: Application[] = useMemo(() => [
-    {
-      id: 1,
-      university: "MIT",
-      program: "Computer Science",
-      status: "In Progress",
-      deadline: "Jan 1, 2025",
-      progress: 75,
-      ranking: 1,
-      location: "Cambridge, MA, USA",
-      tuition: "$57,986/year",
-      acceptance: "6.7%",
-      image: "/mit-campus-aerial.png",
-      description: "The Computer Science program at MIT focuses on the fundamental principles of computing and their applications.",
-      website: "https://www.mit.edu",
-      requirements: [
-        "SAT: 1500+ or ACT: 34+",
-        "IELTS: 7.0+ or TOEFL: 100+",
-        "High school transcripts",
-        "Letters of recommendation (2)",
-        "Personal statement",
-        "Extracurricular activities",
-      ],
-      documents: [
-        { name: "High School Transcript", status: "uploaded", required: true },
-        { name: "SAT Scores", status: "uploaded", required: true },
-        { name: "Personal Statement", status: "draft", required: true },
-        { name: "Letters of Recommendation", status: "pending", required: true },
-        { name: "Portfolio", status: "not-required", required: false },
-        { name: "Financial Aid Forms", status: "pending", required: false },
-      ],
-      milestones: [
-        { title: "Application Started", date: "Nov 1, 2024", completed: true },
-        { title: "Documents Uploaded", date: "Nov 15, 2024", completed: true },
-        { title: "Personal Statement Draft", date: "Dec 1, 2024", completed: true },
-        { title: "Letters of Recommendation", date: "Dec 20, 2024", completed: false },
-        { title: "Final Review", date: "Dec 28, 2024", completed: false },
-        { title: "Submission", date: "Jan 1, 2025", completed: false },
-      ],
-    },
-    {
-      id: 2,
-      university: "Stanford",
-      program: "Computer Science",
-      status: "Submitted",
-      deadline: "Jan 2, 2025",
-      progress: 100,
-      ranking: 2,
-      location: "Stanford, CA, USA",
-      tuition: "$61,731/year",
-      acceptance: "4.3%",
-      image: "/stanford-campus.jpg",
-      description: "Stanford's CS program emphasizes both theoretical foundations and practical applications.",
-      website: "https://www.stanford.edu",
-      requirements: [
-        "SAT: 1520+ or ACT: 35+",
-        "IELTS: 7.5+ or TOEFL: 110+",
-        "High school transcripts",
-        "Letters of recommendation (3)",
-        "Personal statement",
-        "Research experience preferred",
-      ],
-      documents: [
-        { name: "High School Transcript", status: "uploaded", required: true },
-        { name: "SAT Scores", status: "uploaded", required: true },
-        { name: "Personal Statement", status: "uploaded", required: true },
-        { name: "Letters of Recommendation", status: "uploaded", required: true },
-        { name: "Research Portfolio", status: "uploaded", required: true },
-        { name: "Financial Aid Forms", status: "uploaded", required: false },
-      ],
-      milestones: [
-        { title: "Application Started", date: "Oct 15, 2024", completed: true },
-        { title: "Documents Uploaded", date: "Nov 1, 2024", completed: true },
-        { title: "Personal Statement Final", date: "Nov 15, 2024", completed: true },
-        { title: "Letters of Recommendation", date: "Nov 20, 2024", completed: true },
-        { title: "Final Review", date: "Dec 1, 2024", completed: true },
-        { title: "Submission", date: "Dec 15, 2024", completed: true },
-      ],
-    },
-  ], []);
+  const applications: Application[] = useMemo(
+    () => [
+      {
+        id: 1,
+        university: "MIT",
+        program: "Computer Science",
+        status: "In Progress",
+        deadline: "Jan 1, 2025",
+        progress: 75,
+        ranking: 1,
+        location: "Cambridge, MA, USA",
+        tuition: "$57,986/year",
+        acceptance: "6.7%",
+        image: "/mit-campus-aerial.png",
+        description:
+          "The Computer Science program at MIT focuses on the fundamental principles of computing and their applications.",
+        website: "https://www.mit.edu",
+        requirements: [
+          "SAT: 1500+ or ACT: 34+",
+          "IELTS: 7.0+ or TOEFL: 100+",
+          "High school transcripts",
+          "Letters of recommendation (2)",
+          "Personal statement",
+          "Extracurricular activities",
+        ],
+        documents: [
+          {
+            name: "High School Transcript",
+            status: "uploaded",
+            required: true,
+          },
+          { name: "SAT Scores", status: "uploaded", required: true },
+          { name: "Personal Statement", status: "draft", required: true },
+          {
+            name: "Letters of Recommendation",
+            status: "pending",
+            required: true,
+          },
+          { name: "Portfolio", status: "not-required", required: false },
+          { name: "Financial Aid Forms", status: "pending", required: false },
+        ],
+        milestones: [
+          {
+            title: "Application Started",
+            date: "Nov 1, 2024",
+            completed: true,
+          },
+          {
+            title: "Documents Uploaded",
+            date: "Nov 15, 2024",
+            completed: true,
+          },
+          {
+            title: "Personal Statement Draft",
+            date: "Dec 1, 2024",
+            completed: true,
+          },
+          {
+            title: "Letters of Recommendation",
+            date: "Dec 20, 2024",
+            completed: false,
+          },
+          { title: "Final Review", date: "Dec 28, 2024", completed: false },
+          { title: "Submission", date: "Jan 1, 2025", completed: false },
+        ],
+      },
+      {
+        id: 2,
+        university: "Stanford",
+        program: "Computer Science",
+        status: "Submitted",
+        deadline: "Jan 2, 2025",
+        progress: 100,
+        ranking: 2,
+        location: "Stanford, CA, USA",
+        tuition: "$61,731/year",
+        acceptance: "4.3%",
+        image: "/stanford-campus.jpg",
+        description:
+          "Stanford's CS program emphasizes both theoretical foundations and practical applications.",
+        website: "https://www.stanford.edu",
+        requirements: [
+          "SAT: 1520+ or ACT: 35+",
+          "IELTS: 7.5+ or TOEFL: 110+",
+          "High school transcripts",
+          "Letters of recommendation (3)",
+          "Personal statement",
+          "Research experience preferred",
+        ],
+        documents: [
+          {
+            name: "High School Transcript",
+            status: "uploaded",
+            required: true,
+          },
+          { name: "SAT Scores", status: "uploaded", required: true },
+          { name: "Personal Statement", status: "uploaded", required: true },
+          {
+            name: "Letters of Recommendation",
+            status: "uploaded",
+            required: true,
+          },
+          { name: "Research Portfolio", status: "uploaded", required: true },
+          { name: "Financial Aid Forms", status: "uploaded", required: false },
+        ],
+        milestones: [
+          {
+            title: "Application Started",
+            date: "Oct 15, 2024",
+            completed: true,
+          },
+          { title: "Documents Uploaded", date: "Nov 1, 2024", completed: true },
+          {
+            title: "Personal Statement Final",
+            date: "Nov 15, 2024",
+            completed: true,
+          },
+          {
+            title: "Letters of Recommendation",
+            date: "Nov 20, 2024",
+            completed: true,
+          },
+          { title: "Final Review", date: "Dec 1, 2024", completed: true },
+          { title: "Submission", date: "Dec 15, 2024", completed: true },
+        ],
+      },
+    ],
+    []
+  );
 
-  const examProgress: Exam[] = useMemo(() => [
-    {
-      id: 1,
-      exam: "SAT",
-      fullName: "Scholastic Assessment Test",
-      date: "Dec 14, 2024",
-      daysLeft: 2,
-      status: "registered",
-      score: "1480",
-      target: "1500+",
-      progress: 85,
-      registrationId: "SAT-2024-12-14-12345",
-      location: "Downtown Test Center, Ulaanbaatar",
-      duration: "3 hours 45 minutes",
-      sections: [
-        { name: "Reading", score: 370, target: 380, progress: 95, status: "completed" },
-        { name: "Writing & Language", score: 360, target: 370, progress: 90, status: "completed" },
-        { name: "Math", score: 750, target: 750, progress: 100, status: "completed" },
-      ],
-      practiceTests: [
-        { name: "Practice Test 1", date: "Nov 15, 2024", score: 1420, status: "completed", improvement: "+20" },
-        { name: "Practice Test 2", date: "Nov 1, 2024", score: 1400, status: "completed", improvement: "+15" },
-        { name: "Practice Test 3", date: "Oct 15, 2024", score: 1385, status: "completed", improvement: "Baseline" },
-      ],
-      studyPlan: [
-        { topic: "Reading Comprehension", progress: 100, priority: "high", status: "completed" },
-        { topic: "Grammar Rules", progress: 100, priority: "high", status: "completed" },
-        { topic: "Algebra & Functions", progress: 100, priority: "medium", status: "completed" },
-        { topic: "Advanced Math", progress: 60, priority: "high", status: "in-progress" },
-        { topic: "Data Analysis", progress: 30, priority: "medium", status: "in-progress" },
-      ],
-      resources: [
-        { name: "Khan Academy SAT Prep", type: "Practice Tests", status: "active", url: "https://www.khanacademy.org/test-prep/sat" },
-        { name: "College Board Official Guide", type: "Study Material", status: "completed", url: "https://satsuite.collegeboard.org/sat/practice-preparation" },
-        { name: "SAT Math Bootcamp", type: "Course", status: "in-progress", url: "https://www.khanacademy.org/math" },
-      ],
-    },
-  ], []);
+  const examProgress: Exam[] = useMemo(
+    () => [
+      {
+        id: 1,
+        exam: "SAT",
+        fullName: "Scholastic Assessment Test",
+        date: "Dec 14, 2024",
+        daysLeft: 2,
+        status: "registered",
+        score: "1480",
+        target: "1500+",
+        progress: 85,
+        registrationId: "SAT-2024-12-14-12345",
+        location: "Downtown Test Center, Ulaanbaatar",
+        duration: "3 hours 45 minutes",
+        sections: [
+          {
+            name: "Reading",
+            score: 370,
+            target: 380,
+            progress: 95,
+            status: "completed",
+          },
+          {
+            name: "Writing & Language",
+            score: 360,
+            target: 370,
+            progress: 90,
+            status: "completed",
+          },
+          {
+            name: "Math",
+            score: 750,
+            target: 750,
+            progress: 100,
+            status: "completed",
+          },
+        ],
+        practiceTests: [
+          {
+            name: "Practice Test 1",
+            date: "Nov 15, 2024",
+            score: 1420,
+            status: "completed",
+            improvement: "+20",
+          },
+          {
+            name: "Practice Test 2",
+            date: "Nov 1, 2024",
+            score: 1400,
+            status: "completed",
+            improvement: "+15",
+          },
+          {
+            name: "Practice Test 3",
+            date: "Oct 15, 2024",
+            score: 1385,
+            status: "completed",
+            improvement: "Baseline",
+          },
+        ],
+        studyPlan: [
+          {
+            topic: "Reading Comprehension",
+            progress: 100,
+            priority: "high",
+            status: "completed",
+          },
+          {
+            topic: "Grammar Rules",
+            progress: 100,
+            priority: "high",
+            status: "completed",
+          },
+          {
+            topic: "Algebra & Functions",
+            progress: 100,
+            priority: "medium",
+            status: "completed",
+          },
+          {
+            topic: "Advanced Math",
+            progress: 60,
+            priority: "high",
+            status: "in-progress",
+          },
+          {
+            topic: "Data Analysis",
+            progress: 30,
+            priority: "medium",
+            status: "in-progress",
+          },
+        ],
+        resources: [
+          {
+            name: "Khan Academy SAT Prep",
+            type: "Practice Tests",
+            status: "active",
+            url: "https://www.khanacademy.org/test-prep/sat",
+          },
+          {
+            name: "College Board Official Guide",
+            type: "Study Material",
+            status: "completed",
+            url: "https://satsuite.collegeboard.org/sat/practice-preparation",
+          },
+          {
+            name: "SAT Math Bootcamp",
+            type: "Course",
+            status: "in-progress",
+            url: "https://www.khanacademy.org/math",
+          },
+        ],
+      },
+    ],
+    []
+  );
 
-  const [popularUniversities, setPopularUniversities] = useState<University[]>([]);
+  const [popularUniversities, setPopularUniversities] = useState<University[]>(
+    []
+  );
 
   // Save popular universities to localStorage whenever they change (only after initial load)
   useEffect(() => {
     if (isDataLoaded && popularUniversities.length > 0) {
       try {
-        localStorage.setItem('popularUniversities', JSON.stringify(popularUniversities));
-        console.log('🌍 Saved popular universities to localStorage:', popularUniversities.length, 'universities');
+        localStorage.setItem(
+          "popularUniversities",
+          JSON.stringify(popularUniversities)
+        );
+        console.log(
+          "🌍 Saved popular universities to localStorage:",
+          popularUniversities.length,
+          "universities"
+        );
       } catch (error) {
-        console.error('❌ Error saving popular universities to localStorage:', error);
+        console.error(
+          "❌ Error saving popular universities to localStorage:",
+          error
+        );
       }
     }
   }, [popularUniversities, isDataLoaded]);
@@ -1040,33 +1258,77 @@ export const EnhancedDashboard = () => {
     },
   ];
 
-
   const stats: Stat[] = [
-    { label: "Active Applications", value: realTimeData.stats.activeApplications.toString(), icon: FileText },
-    { label: "Universities Tracked", value: `${realTimeData.stats.universitiesTracked.toLocaleString()}+`, icon: GraduationCap },
-    { label: "Documents Uploaded", value: realTimeData.stats.documentsUploaded.toString(), icon: BookOpen },
-    { label: "Upcoming Deadlines", value: realTimeData.stats.upcomingDeadlines.toString(), icon: Calendar },
+    {
+      label: "Active Applications",
+      value: realTimeData.stats.activeApplications.toString(),
+      icon: FileText,
+    },
+    {
+      label: "Universities Tracked",
+      value: `${realTimeData.stats.universitiesTracked.toLocaleString()}+`,
+      icon: GraduationCap,
+    },
+    {
+      label: "Documents Uploaded",
+      value: realTimeData.stats.documentsUploaded.toString(),
+      icon: BookOpen,
+    },
+    {
+      label: "Upcoming Deadlines",
+      value: realTimeData.stats.upcomingDeadlines.toString(),
+      icon: Calendar,
+    },
   ];
 
   const quickActions: QuickAction[] = [
-    { label: "Add Application", icon: Plus, action: "add-application", color: "bg-blue-500" },
-    { label: "Upload Documents", icon: Upload, action: "upload-docs", color: "bg-green-500" },
-    { label: "Schedule Exam", icon: Calendar, action: "schedule-exam", color: "bg-purple-500" },
-    { label: "Find Scholarships", icon: Award, action: "find-scholarships", color: "bg-yellow-500" },
-    { label: "AI Suggestions", icon: Sparkles, action: "ai-suggestions", color: "bg-pink-500" },
-    { label: "Export Data", icon: Download, action: "export-data", color: "bg-indigo-500" },
+    {
+      label: "Add Application",
+      icon: Plus,
+      action: "add-application",
+      color: "bg-blue-500",
+    },
+    {
+      label: "Upload Documents",
+      icon: Upload,
+      action: "upload-docs",
+      color: "bg-green-500",
+    },
+    {
+      label: "Schedule Exam",
+      icon: Calendar,
+      action: "schedule-exam",
+      color: "bg-purple-500",
+    },
+    {
+      label: "Find Scholarships",
+      icon: Award,
+      action: "find-scholarships",
+      color: "bg-yellow-500",
+    },
+    {
+      label: "AI Suggestions",
+      icon: Sparkles,
+      action: "ai-suggestions",
+      color: "bg-pink-500",
+    },
+    {
+      label: "Export Data",
+      icon: Download,
+      action: "export-data",
+      color: "bg-indigo-500",
+    },
   ];
-
 
   // Default saved universities
   const defaultSavedUniversities = [
-    { 
-      id: "mit", 
-      name: "Massachusetts Institute of Technology (MIT)", 
-      ranking: 1, 
-      tuition: "$57,986/year", 
-      acceptance: "6.7%", 
-      deadline: "Jan 1, 2025", 
+    {
+      id: "mit",
+      name: "Massachusetts Institute of Technology (MIT)",
+      ranking: 1,
+      tuition: "$57,986/year",
+      acceptance: "6.7%",
+      deadline: "Jan 1, 2025",
       status: "applying",
       location: "Cambridge, MA, USA",
       programs: ["Computer Science", "Engineering", "Physics", "Mathematics"],
@@ -1076,21 +1338,23 @@ export const EnhancedDashboard = () => {
         students: "11,934",
         faculty: "1,000+",
         endowment: "$18.4 billion",
-        research: "World's leading research university focusing on science, technology, and innovation",
-        notable: "91 Nobel laureates, 6 Turing Award winners, 3 Fields Medalists",
+        research:
+          "World's leading research university focusing on science, technology, and innovation",
+        notable:
+          "91 Nobel laureates, 6 Turing Award winners, 3 Fields Medalists",
         website: "https://web.mit.edu",
         type: "Private Research University",
         language: "English",
-        campus: "Urban campus in Cambridge"
-      }
+        campus: "Urban campus in Cambridge",
+      },
     },
-    { 
-      id: "cambridge", 
-      name: "University of Cambridge", 
-      ranking: 2, 
-      tuition: "£33,825/year", 
-      acceptance: "21.0%", 
-      deadline: "Oct 15, 2024", 
+    {
+      id: "cambridge",
+      name: "University of Cambridge",
+      ranking: 2,
+      tuition: "£33,825/year",
+      acceptance: "21.0%",
+      deadline: "Oct 15, 2024",
       status: "applying",
       location: "Cambridge, England, UK",
       programs: ["Natural Sciences", "Engineering", "Mathematics", "Medicine"],
@@ -1105,16 +1369,16 @@ export const EnhancedDashboard = () => {
         website: "https://www.cam.ac.uk",
         type: "Collegiate Research University",
         language: "English",
-        campus: "Historic collegiate city"
-      }
+        campus: "Historic collegiate city",
+      },
     },
-    { 
-      id: "harvard", 
-      name: "Harvard University", 
-      ranking: 4, 
-      tuition: "$54,269/year", 
-      acceptance: "3.4%", 
-      deadline: "Jan 1, 2025", 
+    {
+      id: "harvard",
+      name: "Harvard University",
+      ranking: 4,
+      tuition: "$54,269/year",
+      acceptance: "3.4%",
+      deadline: "Jan 1, 2025",
       status: "considering",
       location: "Cambridge, MA, USA",
       programs: ["Liberal Arts", "Medicine", "Law", "Business"],
@@ -1124,42 +1388,54 @@ export const EnhancedDashboard = () => {
         students: "23,731",
         faculty: "2,400+",
         endowment: "$53.2 billion",
-        research: "America's oldest university, leader in liberal arts and professional education",
-        notable: "161 Nobel laureates, 8 US Presidents, 14 Turing Award winners",
+        research:
+          "America's oldest university, leader in liberal arts and professional education",
+        notable:
+          "161 Nobel laureates, 8 US Presidents, 14 Turing Award winners",
         website: "https://www.harvard.edu",
         type: "Private Ivy League University",
         language: "English",
-        campus: "Historic urban campus in Cambridge"
-      }
+        campus: "Historic urban campus in Cambridge",
+      },
     },
   ];
 
-  const [savedUniversities, setSavedUniversities] = useState<SavedUniversity[]>(defaultSavedUniversities);
+  const [savedUniversities, setSavedUniversities] = useState<SavedUniversity[]>(
+    defaultSavedUniversities
+  );
 
   // Load data from localStorage on client side
   useEffect(() => {
     try {
       // Load saved universities
-      const savedUnis = localStorage.getItem('savedUniversities');
+      const savedUnis = localStorage.getItem("savedUniversities");
       if (savedUnis) {
         const parsedUnis = JSON.parse(savedUnis);
-        console.log('📚 Loaded saved universities from localStorage:', parsedUnis.length, 'universities');
+        console.log(
+          "📚 Loaded saved universities from localStorage:",
+          parsedUnis.length,
+          "universities"
+        );
         setSavedUniversities(parsedUnis);
       }
 
       // Load popular universities
-      const popularUnis = localStorage.getItem('popularUniversities');
+      const popularUnis = localStorage.getItem("popularUniversities");
       if (popularUnis) {
         const parsedPopular = JSON.parse(popularUnis);
-        console.log('🌍 Loaded popular universities from localStorage:', parsedPopular.length, 'universities');
+        console.log(
+          "🌍 Loaded popular universities from localStorage:",
+          parsedPopular.length,
+          "universities"
+        );
         setPopularUniversities(parsedPopular);
       }
 
       // Load filters
-      const savedFilters = localStorage.getItem('dashboardFilters');
+      const savedFilters = localStorage.getItem("dashboardFilters");
       if (savedFilters) {
         const parsedFilters = JSON.parse(savedFilters);
-        console.log('🔍 Loaded filters from localStorage:', parsedFilters);
+        console.log("🔍 Loaded filters from localStorage:", parsedFilters);
         setSearchQuery(parsedFilters.searchQuery || "");
         setSelectedCountry(parsedFilters.selectedCountry || "all");
         setSelectedProgram(parsedFilters.selectedProgram || "all");
@@ -1167,7 +1443,7 @@ export const EnhancedDashboard = () => {
 
       setIsDataLoaded(true);
     } catch (error) {
-      console.error('❌ Error loading data from localStorage:', error);
+      console.error("❌ Error loading data from localStorage:", error);
       setIsDataLoaded(true);
     }
   }, []);
@@ -1176,10 +1452,17 @@ export const EnhancedDashboard = () => {
   useEffect(() => {
     if (isDataLoaded) {
       try {
-        localStorage.setItem('savedUniversities', JSON.stringify(savedUniversities));
-        console.log('💾 Saved universities to localStorage:', savedUniversities.length, 'universities');
+        localStorage.setItem(
+          "savedUniversities",
+          JSON.stringify(savedUniversities)
+        );
+        console.log(
+          "💾 Saved universities to localStorage:",
+          savedUniversities.length,
+          "universities"
+        );
       } catch (error) {
-        console.error('❌ Error saving universities to localStorage:', error);
+        console.error("❌ Error saving universities to localStorage:", error);
       }
     }
   }, [savedUniversities, isDataLoaded]);
@@ -1187,20 +1470,24 @@ export const EnhancedDashboard = () => {
   // Fix existing saved universities rankings and details
   useEffect(() => {
     setSavedUniversities((prev: SavedUniversity[]) => {
-      const updated = prev.map((uni: SavedUniversity) => {
-        const ranking = getUniversityRanking(uni.name);
-        const details = getUniversityDetails(uni.name);
-        return {
-          ...uni,
-          ranking: ranking,
-          tuition: details.tuition,
-          acceptance: details.acceptance,
-          deadline: details.deadline,
-          location: details.location,
-          programs: details.programs,
-          details: details.details
-        };
-      }).sort((a: SavedUniversity, b: SavedUniversity) => a.ranking - b.ranking);
+      const updated = prev
+        .map((uni: SavedUniversity) => {
+          const ranking = getUniversityRanking(uni.name);
+          const details = getUniversityDetails(uni.name);
+          return {
+            ...uni,
+            ranking: ranking,
+            tuition: details.tuition,
+            acceptance: details.acceptance,
+            deadline: details.deadline,
+            location: details.location,
+            programs: details.programs,
+            details: details.details,
+          };
+        })
+        .sort(
+          (a: SavedUniversity, b: SavedUniversity) => a.ranking - b.ranking
+        );
       return updated;
     });
   }, []);
@@ -1208,10 +1495,12 @@ export const EnhancedDashboard = () => {
   // Load universities from API only if not in localStorage (after initial data load)
   useEffect(() => {
     if (isDataLoaded && popularUniversities.length === 0) {
-      console.log('📡 No universities in localStorage, loading from API...');
+      console.log("📡 No universities in localStorage, loading from API...");
       loadPopularUniversities();
     } else if (isDataLoaded && popularUniversities.length > 0) {
-      console.log('✅ Universities already loaded from localStorage, skipping API call');
+      console.log(
+        "✅ Universities already loaded from localStorage, skipping API call"
+      );
     }
   }, [isDataLoaded, popularUniversities.length]);
 
@@ -1227,7 +1516,13 @@ export const EnhancedDashboard = () => {
       const filtered = filterUniversities(popularUniversities);
       setFilteredUniversities(filtered);
     }
-  }, [selectedCountry, selectedProgram, popularUniversities, filterUniversities, searchQuery]);
+  }, [
+    selectedCountry,
+    selectedProgram,
+    popularUniversities,
+    filterUniversities,
+    searchQuery,
+  ]);
 
   // Real-time data updates
   useEffect(() => {
@@ -1239,8 +1534,8 @@ export const EnhancedDashboard = () => {
         activeApplications: applications.length,
         universitiesTracked: 2500,
         documentsUploaded: 12,
-        upcomingDeadlines: 3
-      }
+        upcomingDeadlines: 3,
+      },
     });
 
     // Simulate real-time updates every 30 seconds
@@ -1251,19 +1546,22 @@ export const EnhancedDashboard = () => {
         applications: prevData.applications.map(app => ({
           ...app,
           progress: Math.min(100, app.progress + Math.random() * 2), // Simulate progress updates
-          lastUpdated: new Date().toISOString()
+          lastUpdated: new Date().toISOString(),
         })),
         stats: {
           ...prevData.stats,
-          documentsUploaded: prevData.stats.documentsUploaded + Math.floor(Math.random() * 2),
-          upcomingDeadlines: Math.max(0, prevData.stats.upcomingDeadlines - Math.floor(Math.random() * 2))
-        }
+          documentsUploaded:
+            prevData.stats.documentsUploaded + Math.floor(Math.random() * 2),
+          upcomingDeadlines: Math.max(
+            0,
+            prevData.stats.upcomingDeadlines - Math.floor(Math.random() * 2)
+          ),
+        },
       }));
     }, 30000); // Update every 30 seconds
 
     return () => clearInterval(interval);
   }, [applications, examProgress]);
-
 
   // Event handlers
   const handleViewDetails = (application: Application) => {
@@ -1308,10 +1606,6 @@ export const EnhancedDashboard = () => {
     }
   };
 
-
-
-
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -1340,14 +1634,14 @@ export const EnhancedDashboard = () => {
 
         {/* Saved Universities - Top Priority */}
         <div className="mb-8">
-          <EnhancedSavedUniversities 
+          <EnhancedSavedUniversities
             universities={savedUniversities}
             onEditUniversity={handleEditUniversity}
             onRemoveUniversity={handleRemoveUniversity}
             onApplyToUniversity={handleApplyToUniversity}
             onViewAllUniversities={handleViewAllUniversities}
-            />
-          </div>
+          />
+        </div>
 
         {/* Application Milestones - Full Width */}
         <div className="mb-8">
@@ -1356,12 +1650,13 @@ export const EnhancedDashboard = () => {
               {
                 id: "1",
                 title: "MIT Application Submission",
-                description: "Complete and submit MIT application with all required documents",
+                description:
+                  "Complete and submit MIT application with all required documents",
                 status: "completed",
                 category: "Application",
                 dueDate: "Dec 1, 2024",
                 completedDate: "Dec 1, 2024",
-                    priority: "high",
+                priority: "high",
                 progress: 100,
                 totalSteps: 6,
                 completedSteps: 6,
@@ -1372,12 +1667,12 @@ export const EnhancedDashboard = () => {
                   "Personal statement",
                   "Letters of recommendation (2)",
                   "Portfolio (if applicable)",
-                  "Application fee payment"
+                  "Application fee payment",
                 ],
                 tips: [
                   "Start your personal statement early and get feedback from teachers",
                   "Request recommendation letters at least 3 weeks before deadline",
-                  "Review all requirements carefully to avoid missing documents"
+                  "Review all requirements carefully to avoid missing documents",
                 ],
                 icon: FileText,
                 color: "bg-blue-500",
@@ -1385,113 +1680,170 @@ export const EnhancedDashboard = () => {
                   {
                     id: "1-1",
                     title: "Create MIT Application Account",
-                    description: "Register on MIT's application portal and complete basic information",
+                    description:
+                      "Register on MIT's application portal and complete basic information",
                     status: "completed",
                     priority: "high",
                     dueDate: "Nov 1, 2024",
                     completedDate: "Nov 1, 2024",
                     estimatedTime: "30 minutes",
-                    requirements: ["Valid email address", "Personal information"],
+                    requirements: [
+                      "Valid email address",
+                      "Personal information",
+                    ],
                     resources: [
-                      { name: "MIT Application Portal", url: "https://apply.mit.edu", type: "website" },
-                      { name: "Application Guide", url: "https://mit.edu/apply", type: "guide" }
+                      {
+                        name: "MIT Application Portal",
+                        url: "https://apply.mit.edu",
+                        type: "website",
+                      },
+                      {
+                        name: "Application Guide",
+                        url: "https://mit.edu/apply",
+                        type: "guide",
+                      },
                     ],
                     progress: 100,
-                    notes: "Account created successfully"
+                    notes: "Account created successfully",
                   },
                   {
                     id: "1-2",
                     title: "Upload Academic Documents",
-                    description: "Submit high school transcripts and test scores",
+                    description:
+                      "Submit high school transcripts and test scores",
                     status: "completed",
                     priority: "high",
                     dueDate: "Nov 15, 2024",
                     completedDate: "Nov 15, 2024",
                     estimatedTime: "2 hours",
-                    requirements: ["Official transcripts", "SAT/ACT scores", "AP scores (if applicable)"],
+                    requirements: [
+                      "Official transcripts",
+                      "SAT/ACT scores",
+                      "AP scores (if applicable)",
+                    ],
                     resources: [
-                      { name: "Transcript Request Form", url: "#", type: "form" },
-                      { name: "Score Reporting Guide", url: "#", type: "guide" }
+                      {
+                        name: "Transcript Request Form",
+                        url: "#",
+                        type: "form",
+                      },
+                      {
+                        name: "Score Reporting Guide",
+                        url: "#",
+                        type: "guide",
+                      },
                     ],
                     progress: 100,
-                    notes: "All academic documents uploaded"
+                    notes: "All academic documents uploaded",
                   },
                   {
                     id: "1-3",
                     title: "Write Personal Statement",
-                    description: "Complete the main essay and supplemental essays",
+                    description:
+                      "Complete the main essay and supplemental essays",
                     status: "completed",
                     priority: "high",
                     dueDate: "Nov 20, 2024",
                     completedDate: "Nov 20, 2024",
                     estimatedTime: "1-2 weeks",
-                    requirements: ["Main essay (500 words)", "Supplemental essays", "Proofreading"],
+                    requirements: [
+                      "Main essay (500 words)",
+                      "Supplemental essays",
+                      "Proofreading",
+                    ],
                     resources: [
                       { name: "Essay Prompts", url: "#", type: "guide" },
-                      { name: "Writing Tips", url: "#", type: "guide" }
+                      { name: "Writing Tips", url: "#", type: "guide" },
                     ],
                     progress: 100,
-                    notes: "Personal statement reviewed by counselor"
+                    notes: "Personal statement reviewed by counselor",
                   },
                   {
                     id: "1-4",
                     title: "Request Letters of Recommendation",
-                    description: "Ask teachers and counselors for recommendation letters",
+                    description:
+                      "Ask teachers and counselors for recommendation letters",
                     status: "completed",
                     priority: "high",
                     dueDate: "Nov 25, 2024",
                     completedDate: "Nov 25, 2024",
                     estimatedTime: "1 week",
-                    requirements: ["Identify recommenders", "Send formal requests", "Provide supporting materials"],
+                    requirements: [
+                      "Identify recommenders",
+                      "Send formal requests",
+                      "Provide supporting materials",
+                    ],
                     resources: [
-                      { name: "Recommender Guidelines", url: "#", type: "guide" },
-                      { name: "Request Template", url: "#", type: "document" }
+                      {
+                        name: "Recommender Guidelines",
+                        url: "#",
+                        type: "guide",
+                      },
+                      { name: "Request Template", url: "#", type: "document" },
                     ],
                     progress: 100,
-                    notes: "Both letters submitted on time"
+                    notes: "Both letters submitted on time",
                   },
                   {
                     id: "1-5",
                     title: "Complete Application Review",
-                    description: "Final review of all application materials before submission",
+                    description:
+                      "Final review of all application materials before submission",
                     status: "completed",
                     priority: "high",
                     dueDate: "Nov 28, 2024",
                     completedDate: "Nov 28, 2024",
                     estimatedTime: "2 hours",
-                    requirements: ["Check all sections", "Verify document uploads", "Proofread essays"],
+                    requirements: [
+                      "Check all sections",
+                      "Verify document uploads",
+                      "Proofread essays",
+                    ],
                     resources: [
-                      { name: "Application Checklist", url: "#", type: "document" },
-                      { name: "Final Review Guide", url: "#", type: "guide" }
+                      {
+                        name: "Application Checklist",
+                        url: "#",
+                        type: "document",
+                      },
+                      { name: "Final Review Guide", url: "#", type: "guide" },
                     ],
                     progress: 100,
-                    notes: "Application thoroughly reviewed"
+                    notes: "Application thoroughly reviewed",
                   },
                   {
                     id: "1-6",
                     title: "Submit Application",
-                    description: "Final submission of MIT application with payment",
+                    description:
+                      "Final submission of MIT application with payment",
                     status: "completed",
                     priority: "high",
                     dueDate: "Dec 1, 2024",
                     completedDate: "Dec 1, 2024",
                     estimatedTime: "30 minutes",
-                    requirements: ["Submit application", "Pay application fee", "Receive confirmation"],
+                    requirements: [
+                      "Submit application",
+                      "Pay application fee",
+                      "Receive confirmation",
+                    ],
                     resources: [
                       { name: "Payment Portal", url: "#", type: "website" },
-                      { name: "Submission Confirmation", url: "#", type: "document" }
+                      {
+                        name: "Submission Confirmation",
+                        url: "#",
+                        type: "document",
+                      },
                     ],
                     progress: 100,
-                    notes: "Application successfully submitted"
-                  }
-                ]
+                    notes: "Application successfully submitted",
                   },
-                  {
-                    id: "2",
+                ],
+              },
+              {
+                id: "2",
                 title: "MIT Interview Preparation",
                 description: "Prepare for and complete MIT admission interview",
-                    status: "current",
-                    category: "Interview",
+                status: "current",
+                category: "Interview",
                 dueDate: "Dec 20, 2024",
                 priority: "high",
                 progress: 60,
@@ -1502,12 +1854,12 @@ export const EnhancedDashboard = () => {
                   "Schedule interview",
                   "Prepare responses to common questions",
                   "Research MIT programs",
-                  "Practice with mock interviews"
+                  "Practice with mock interviews",
                 ],
                 tips: [
                   "Be yourself and show genuine interest in MIT",
                   "Prepare specific examples of your achievements and challenges",
-                  "Research MIT's culture and values to align your responses"
+                  "Research MIT's culture and values to align your responses",
                 ],
                 icon: Users,
                 color: "bg-green-500",
@@ -1521,13 +1873,25 @@ export const EnhancedDashboard = () => {
                     dueDate: "Dec 10, 2024",
                     completedDate: "Dec 8, 2024",
                     estimatedTime: "1 hour",
-                    requirements: ["Find local MIT alumni", "Schedule convenient time", "Confirm location"],
+                    requirements: [
+                      "Find local MIT alumni",
+                      "Schedule convenient time",
+                      "Confirm location",
+                    ],
                     resources: [
-                      { name: "Alumni Interview Portal", url: "#", type: "website" },
-                      { name: "Interview Scheduling Guide", url: "#", type: "guide" }
+                      {
+                        name: "Alumni Interview Portal",
+                        url: "#",
+                        type: "website",
+                      },
+                      {
+                        name: "Interview Scheduling Guide",
+                        url: "#",
+                        type: "guide",
+                      },
                     ],
                     progress: 100,
-                    notes: "Interview scheduled for Dec 18, 2024"
+                    notes: "Interview scheduled for Dec 18, 2024",
                   },
                   {
                     id: "2-2",
@@ -1538,54 +1902,76 @@ export const EnhancedDashboard = () => {
                     dueDate: "Dec 12, 2024",
                     completedDate: "Dec 12, 2024",
                     estimatedTime: "3-4 hours",
-                    requirements: ["Study course catalog", "Research faculty", "Understand MIT culture"],
+                    requirements: [
+                      "Study course catalog",
+                      "Research faculty",
+                      "Understand MIT culture",
+                    ],
                     resources: [
-                      { name: "MIT Course Catalog", url: "https://catalog.mit.edu", type: "website" },
-                      { name: "MIT Culture Guide", url: "#", type: "guide" }
+                      {
+                        name: "MIT Course Catalog",
+                        url: "https://catalog.mit.edu",
+                        type: "website",
+                      },
+                      { name: "MIT Culture Guide", url: "#", type: "guide" },
                     ],
                     progress: 100,
-                    notes: "Comprehensive research completed"
+                    notes: "Comprehensive research completed",
                   },
                   {
                     id: "2-3",
                     title: "Practice Interview Questions",
-                    description: "Prepare responses to common interview questions",
+                    description:
+                      "Prepare responses to common interview questions",
                     status: "in-progress",
                     priority: "high",
                     dueDate: "Dec 16, 2024",
                     estimatedTime: "2-3 days",
-                    requirements: ["Prepare personal stories", "Practice common questions", "Record practice sessions"],
+                    requirements: [
+                      "Prepare personal stories",
+                      "Practice common questions",
+                      "Record practice sessions",
+                    ],
                     resources: [
-                      { name: "Common Interview Questions", url: "#", type: "guide" },
-                      { name: "STAR Method Guide", url: "#", type: "guide" }
+                      {
+                        name: "Common Interview Questions",
+                        url: "#",
+                        type: "guide",
+                      },
+                      { name: "STAR Method Guide", url: "#", type: "guide" },
                     ],
                     progress: 60,
-                    notes: "Working on personal story examples"
+                    notes: "Working on personal story examples",
                   },
                   {
                     id: "2-4",
                     title: "Mock Interview Session",
-                    description: "Conduct practice interview with counselor or mentor",
+                    description:
+                      "Conduct practice interview with counselor or mentor",
                     status: "pending",
                     priority: "high",
                     dueDate: "Dec 17, 2024",
                     estimatedTime: "1 hour",
-                    requirements: ["Schedule mock interview", "Practice full interview", "Receive feedback"],
+                    requirements: [
+                      "Schedule mock interview",
+                      "Practice full interview",
+                      "Receive feedback",
+                    ],
                     resources: [
                       { name: "Mock Interview Guide", url: "#", type: "guide" },
-                      { name: "Feedback Template", url: "#", type: "document" }
+                      { name: "Feedback Template", url: "#", type: "document" },
                     ],
                     progress: 0,
-                    notes: "Scheduled for Dec 16, 2024"
-                  }
-                ]
+                    notes: "Scheduled for Dec 16, 2024",
                   },
-                  {
-                    id: "3",
+                ],
+              },
+              {
+                id: "3",
                 title: "Admission Decision",
                 description: "Receive and respond to MIT admission decision",
-                    status: "upcoming",
-                    category: "Decision",
+                status: "upcoming",
+                category: "Decision",
                 dueDate: "Mar 15, 2025",
                 priority: "high",
                 progress: 0,
@@ -1596,12 +1982,12 @@ export const EnhancedDashboard = () => {
                   "Check decision portal",
                   "Review financial aid package",
                   "Make enrollment decision",
-                  "Submit enrollment deposit"
+                  "Submit enrollment deposit",
                 ],
                 tips: [
                   "Check your email and portal regularly on decision day",
                   "Take time to carefully consider all options before deciding",
-                  "Don't hesitate to ask questions about financial aid"
+                  "Don't hesitate to ask questions about financial aid",
                 ],
                 icon: Award,
                 color: "bg-purple-500",
@@ -1609,17 +1995,26 @@ export const EnhancedDashboard = () => {
                   {
                     id: "3-1",
                     title: "Check Decision Portal",
-                    description: "Log in to MIT portal to view admission decision",
+                    description:
+                      "Log in to MIT portal to view admission decision",
                     status: "pending",
                     priority: "high",
                     dueDate: "Mar 15, 2025",
                     estimatedTime: "30 minutes",
-                    requirements: ["Access portal", "View decision letter", "Download decision"],
-                    resources: [
-                      { name: "MIT Decision Portal", url: "#", type: "website" },
-                      { name: "Decision Day Guide", url: "#", type: "guide" }
+                    requirements: [
+                      "Access portal",
+                      "View decision letter",
+                      "Download decision",
                     ],
-                    progress: 0
+                    resources: [
+                      {
+                        name: "MIT Decision Portal",
+                        url: "#",
+                        type: "website",
+                      },
+                      { name: "Decision Day Guide", url: "#", type: "guide" },
+                    ],
+                    progress: 0,
                   },
                   {
                     id: "3-2",
@@ -1629,12 +2024,20 @@ export const EnhancedDashboard = () => {
                     priority: "high",
                     dueDate: "Mar 20, 2025",
                     estimatedTime: "2-3 hours",
-                    requirements: ["Review aid package", "Compare with other offers", "Calculate costs"],
-                    resources: [
-                      { name: "Financial Aid Calculator", url: "#", type: "website" },
-                      { name: "Aid Comparison Tool", url: "#", type: "guide" }
+                    requirements: [
+                      "Review aid package",
+                      "Compare with other offers",
+                      "Calculate costs",
                     ],
-                    progress: 0
+                    resources: [
+                      {
+                        name: "Financial Aid Calculator",
+                        url: "#",
+                        type: "website",
+                      },
+                      { name: "Aid Comparison Tool", url: "#", type: "guide" },
+                    ],
+                    progress: 0,
                   },
                   {
                     id: "3-3",
@@ -1644,15 +2047,19 @@ export const EnhancedDashboard = () => {
                     priority: "high",
                     dueDate: "May 1, 2025",
                     estimatedTime: "1 hour",
-                    requirements: ["Make final decision", "Submit enrollment form", "Pay deposit"],
+                    requirements: [
+                      "Make final decision",
+                      "Submit enrollment form",
+                      "Pay deposit",
+                    ],
                     resources: [
                       { name: "Enrollment Portal", url: "#", type: "website" },
-                      { name: "Decision Timeline", url: "#", type: "guide" }
+                      { name: "Decision Timeline", url: "#", type: "guide" },
                     ],
-                    progress: 0
-                  }
-                ]
-              }
+                    progress: 0,
+                  },
+                ],
+              },
             ]}
             onStepComplete={(milestoneId, stepId) => {
               console.log(`✅ Step completed: ${milestoneId}-${stepId}`);
@@ -1660,10 +2067,10 @@ export const EnhancedDashboard = () => {
             onStepUncomplete={(milestoneId, stepId) => {
               console.log(`❌ Step uncompleted: ${milestoneId}-${stepId}`);
             }}
-            onMilestoneComplete={(milestoneId) => {
+            onMilestoneComplete={milestoneId => {
               console.log(`🎯 Milestone completed: ${milestoneId}`);
             }}
-            onMilestoneUncomplete={(milestoneId) => {
+            onMilestoneUncomplete={milestoneId => {
               console.log(`🔄 Milestone uncompleted: ${milestoneId}`);
             }}
           />
@@ -1690,12 +2097,20 @@ export const EnhancedDashboard = () => {
                 items={realTimeData.applications.map(app => ({
                   name: app.university,
                   progress: Math.round(app.progress),
-                  status: app.status.toLowerCase().replace(' ', '-') as "completed" | "in-progress" | "pending",
+                  status: app.status.toLowerCase().replace(" ", "-") as
+                    | "completed"
+                    | "in-progress"
+                    | "pending",
                   deadline: app.deadline,
-                  priority: app.progress > 80 ? "high" : app.progress > 50 ? "medium" : "low",
+                  priority:
+                    app.progress > 80
+                      ? "high"
+                      : app.progress > 50
+                        ? "medium"
+                        : "low",
                 }))}
               />
-              
+
               {/* Exam Progress Section */}
               <div className="pt-4 border-t border-slate-200">
                 <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
