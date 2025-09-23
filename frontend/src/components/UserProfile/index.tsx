@@ -626,7 +626,7 @@ export const UserProfile = () => {
                     <Button
                       variant="outline"
                       className="w-full justify-start"
-                      onClick={() => router.push("/ai/suggest-universities")}
+                      onClick={() => router.push("/ai-suggestions")}
                     >
                       <Search className="h-4 w-4 mr-2" />
                       Suggest Universities
@@ -634,7 +634,7 @@ export const UserProfile = () => {
                     <Button
                       variant="outline"
                       className="w-full justify-start"
-                      onClick={() => router.push("/ai/improve-cv")}
+                      onClick={() => router.push("/prepare/documents")}
                     >
                       <FileCheck className="h-4 w-4 mr-2" />
                       Improve CV

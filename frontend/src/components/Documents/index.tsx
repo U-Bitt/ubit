@@ -33,7 +33,18 @@ import {
   FileText,
   File,
   Check,
+  FileCheck,
+  User,
+  BookOpen,
+  Briefcase,
+  Target,
+  Award,
 } from "lucide-react";
+import { testScoreApi, documentApi } from "@/utils/api";
+import { CVAnalysis } from "@/components/CVAnalysis";
+import { CVTemplate } from "@/components/CVTemplate";
+import { generateCVAnalysis } from "@/utils/cvScoring";
+import { useUser } from "@/contexts/UserContext";
 import { documentApi } from "@/utils/api";
 
 
@@ -60,12 +71,36 @@ interface Document {
 
 export const Documents = () => {
   const { user } = useUser();
+  const [testScores, setTestScores] = useState<TestScore[]>([
+    {
+      id: "1",
+      examType: "SAT",
+      score: "1450",
+      maxScore: "1600",
+      certified: true,
+      testDate: "2024-10-15",
+      validityDate: "2026-10-15",
+    },
+    {
+      id: "2",
+      examType: "IELTS",
+      score: "7.5",
+      maxScore: "9.0",
+      certified: true,
+      testDate: "2024-09-20",
+      validityDate: "2026-09-20",
+    },
+  ]);
+
   const [documents, setDocuments] = useState<Document[]>([]);
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
+  const [isCVImproveModalOpen, setIsCVImproveModalOpen] = useState(false);
+  const [isCVTemplateModalOpen, setIsCVTemplateModalOpen] = useState(false);
+  const [selectedCVSections, setSelectedCVSections] = useState<string[]>([]);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(
     null
   );
@@ -73,6 +108,8 @@ export const Documents = () => {
   const [selectedDocumentType, setSelectedDocumentType] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [cvAnalysis, setCvAnalysis] = useState<any>(null);
+  const [isAnalyzingCV, setIsAnalyzingCV] = useState(false);
   const itemsPerPage = 5;
 
   // Get hardcoded sample documents
@@ -517,6 +554,73 @@ export const Documents = () => {
     }
   };
 
+  // CV Improvement Functions
+  const handleImproveCV = () => {
+    setSelectedCVSections([]);
+    setIsCVImproveModalOpen(true);
+  };
+
+  const handleStartAnalysis = () => {
+    if (selectedCVSections.length === 0) {
+      alert("Please select a CV file to improve");
+      return;
+    }
+
+    setIsAnalyzingCV(true);
+
+    // Simulate AI analysis delay
+    setTimeout(() => {
+      const userProfile = {
+        personalInfo: user?.personalInfo || {},
+        academicInfo: user?.academicInfo || {},
+        testScores: [],
+        interests: user?.areasOfInterest || [],
+      };
+
+      // Get the selected CV document
+      const selectedDocument = documents.find(
+        doc => selectedCVSections.includes(doc.id) && doc.type === "CV/Resume"
+      );
+
+      // Generate analysis for the selected CV file
+      const analysis = generateCVAnalysis(userProfile);
+      setCvAnalysis(analysis);
+
+      setIsAnalyzingCV(false);
+    }, 3000);
+  };
+
+  const handleGenerateCVTemplate = () => {
+    setIsCVTemplateModalOpen(true);
+  };
+
+  const downloadImprovedCV = () => {
+    if (!cvAnalysis) return;
+
+    const cvContent = cvAnalysis.sections
+      .map(
+        (section: { title: string; improved: string }) =>
+          `${section.title}\n${section.improved}\n`
+      )
+      .join("\n");
+
+    const blob = new Blob([cvContent], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "improved-cv.txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const userProfile = {
+    personalInfo: user?.personalInfo || {},
+    academicInfo: user?.academicInfo || {},
+    interests: user?.areasOfInterest || [],
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Uploaded":
@@ -569,174 +673,226 @@ export const Documents = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input placeholder="Search documents..." className="pl-10" />
               </div>
-              <Dialog
-                open={isUploadModalOpen}
-                onOpenChange={setIsUploadModalOpen}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    className="text-white hover:opacity-90"
-                    style={{ backgroundColor: "#00136A" }}
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload Document
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
-                  <DialogHeader className="flex-shrink-0">
-                    <DialogTitle className="text-2xl font-semibold text-gray-900">
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleImproveCV}
+                  variant="outline"
+                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                >
+                  <FileCheck className="h-4 w-4 mr-2" />
+                  Improve CV
+                </Button>
+                <Button
+                  onClick={handleGenerateCVTemplate}
+                  variant="outline"
+                  className="border-green-300 text-green-700 hover:bg-green-50"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  CV Template
+                </Button>
+                <Dialog
+                  open={isUploadModalOpen}
+                  onOpenChange={setIsUploadModalOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button
+                      className="text-white hover:opacity-90"
+                      style={{ backgroundColor: "#00136A" }}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
                       Upload Document
-                    </DialogTitle>
-                    <DialogDescription className="text-gray-600">
-                      Select document type and upload your files
-                    </DialogDescription>
-                  </DialogHeader>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+                    <DialogHeader className="flex-shrink-0">
+                      <DialogTitle className="text-2xl font-semibold text-gray-900">
+                        Upload Document
+                      </DialogTitle>
+                      <DialogDescription className="text-gray-600">
+                        Select document type and upload your files
+                      </DialogDescription>
+                    </DialogHeader>
 
-                  <div className="flex-1 overflow-y-auto space-y-6">
-                    <div className="space-y-4">
-                      <div>
-                        <Label
-                          htmlFor="documentType"
-                          className="text-sm font-medium text-gray-700"
-                        >
-                          Document Type
-                        </Label>
-                        <Select
-                          value={selectedDocumentType}
-                          onValueChange={setSelectedDocumentType}
-                        >
-                          <SelectTrigger className="mt-1">
-                            <SelectValue placeholder="Select document type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {documentTypes.map(type => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <Label
-                          htmlFor="fileUpload"
-                          className="text-sm font-medium text-gray-700"
-                        >
-                          Select Files
-                        </Label>
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mt-1 hover:border-gray-400 transition-colors">
-                          <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                          <p className="text-lg text-gray-600 mb-2">
-                            Drag and drop files here, or click to select
-                          </p>
-                          <p className="text-sm text-gray-500 mb-4">
-                            PDF, DOC, DOCX, JPG, PNG, GIF, ZIP (Max 10MB)
-                          </p>
-                          <Input
-                            id="fileUpload"
-                            type="file"
-                            multiple
-                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.zip"
-                            onChange={handleFileUpload}
-                            className="hidden"
-                          />
-                          <Button
-                            variant="outline"
-                            size="lg"
-                            onClick={() =>
-                              document.getElementById("fileUpload")?.click()
-                            }
-                            className="bg-white hover:bg-gray-50 border-gray-300 text-gray-700"
+                    <div className="flex-1 overflow-y-auto space-y-6">
+                      <div className="space-y-4">
+                        <div>
+                          <Label
+                            htmlFor="documentType"
+                            className="text-sm font-medium text-gray-700"
                           >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Choose Files
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Document Requirements */}
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Check className="h-4 w-4 text-blue-600" />
-                          <p className="text-sm font-medium text-blue-800">
-                            Document Requirements
-                          </p>
-                        </div>
-                        <div className="text-sm text-blue-700 space-y-1">
-                          <p>• Supported formats: PDF, DOC, DOCX, JPG, PNG</p>
-                          <p>• Maximum file size: 10MB per file</p>
-                          <p>• Multiple files can be uploaded</p>
-                        </div>
-                      </div>
-
-                      {/* Uploaded Files List */}
-                      {uploadedFiles.length > 0 && (
-                        <div className="space-y-3">
-                          <Label className="text-sm font-medium text-gray-700">
-                            Selected Files ({uploadedFiles.length})
+                            Document Type
                           </Label>
-                          <div className="space-y-2 max-h-48 overflow-y-auto bg-gray-50 rounded-lg border border-gray-200 p-4">
-                            {uploadedFiles.map((file, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <File className="h-4 w-4 text-gray-500" />
-                                  <div>
-                                    <span className="text-sm font-medium text-gray-900">
-                                      {file.name}
-                                    </span>
-                                    <p className="text-xs text-gray-500">
-                                      {(file.size / 1024 / 1024).toFixed(2)} MB
-                                    </p>
-                                  </div>
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => removeFile(index)}
-                                  className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 h-8 w-8 p-0"
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            ))}
+                          <Select
+                            value={selectedDocumentType}
+                            onValueChange={setSelectedDocumentType}
+                          >
+                            <SelectTrigger className="mt-1">
+                              <SelectValue placeholder="Select document type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {documentTypes.map(type => (
+                                <SelectItem key={type} value={type}>
+                                  {type}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label
+                            htmlFor="fileUpload"
+                            className="text-sm font-medium text-gray-700"
+                          >
+                            Select Files
+                          </Label>
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mt-1 hover:border-gray-400 transition-colors">
+                            <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                            <p className="text-lg text-gray-600 mb-2">
+                              Drag and drop files here, or click to select
+                            </p>
+                            <p className="text-sm text-gray-500 mb-4">
+                              PDF, DOC, DOCX, JPG, PNG, GIF, ZIP (Max 10MB)
+                            </p>
+                            <Input
+                              id="fileUpload"
+                              type="file"
+                              multiple
+                              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.zip"
+                              onChange={handleFileUpload}
+                              className="hidden"
+                            />
+                            <Button
+                              variant="outline"
+                              size="lg"
+                              onClick={() =>
+                                document.getElementById("fileUpload")?.click()
+                              }
+                              className="bg-white hover:bg-gray-50 border-gray-300 text-gray-700"
+                            >
+                              <Upload className="h-4 w-4 mr-2" />
+                              Choose Files
+                            </Button>
                           </div>
                         </div>
-                      )}
-                    </div>
-                  </div>
 
-                  <div className="flex-shrink-0 flex justify-between items-center pt-6 border-t border-gray-200">
-                    <div className="text-sm text-gray-600">
-                      {uploadedFiles.length} file(s) selected
+                        {/* Document Requirements */}
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Check className="h-4 w-4 text-blue-600" />
+                            <p className="text-sm font-medium text-blue-800">
+                              Document Requirements
+                            </p>
+                          </div>
+                          <div className="text-sm text-blue-700 space-y-1">
+                            <p>• Supported formats: PDF, DOC, DOCX, JPG, PNG</p>
+                            <p>• Maximum file size: 10MB per file</p>
+                            <p>• Multiple files can be uploaded</p>
+                          </div>
+                        </div>
+
+                        {/* Uploaded Files List */}
+                        {uploadedFiles.length > 0 && (
+                          <div className="space-y-3">
+                            <Label className="text-sm font-medium text-gray-700">
+                              Selected Files ({uploadedFiles.length})
+                            </Label>
+                            <div className="space-y-2 max-h-48 overflow-y-auto bg-gray-50 rounded-lg border border-gray-200 p-4">
+                              {uploadedFiles.map((file, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <File className="h-4 w-4 text-gray-500" />
+                                    <div>
+                                      <span className="text-sm font-medium text-gray-900">
+                                        {file.name}
+                                      </span>
+                                      <p className="text-xs text-gray-500">
+                                        {(file.size / 1024 / 1024).toFixed(2)}{" "}
+                                        MB
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeFile(index)}
+                                    className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 h-8 w-8 p-0"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex gap-3">
-                      <Button
-                        variant="outline"
-                        onClick={() => setIsUploadModalOpen(false)}
-                        className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={saveDocuments}
-                        disabled={
-                          !selectedDocumentType || uploadedFiles.length === 0
-                        }
-                        className="text-white hover:opacity-90"
-                        style={{ backgroundColor: "#00136A" }}
-                      >
-                        <Upload className="h-4 w-4 mr-2" />
-                        Upload Documents
-                      </Button>
+
+                    <div className="flex-shrink-0 flex justify-between items-center pt-6 border-t border-gray-200">
+                      <div className="text-sm text-gray-600">
+                        {uploadedFiles.length} file(s) selected
+                      </div>
+                      <div className="flex gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsUploadModalOpen(false)}
+                          className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={saveDocuments}
+                          disabled={
+                            !selectedDocumentType || uploadedFiles.length === 0
+                          }
+                          className="text-white hover:opacity-90"
+                          style={{ backgroundColor: "#00136A" }}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Upload Documents
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
+
+            {/* CV Quick Actions */}
+            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                      CV Development
+                    </h3>
+                    <p className="text-blue-700 text-sm">
+                      Improve your CV with AI assistance and use templates
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleImproveCV}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <FileCheck className="h-4 w-4 mr-2" />
+                      Improve CV
+                    </Button>
+                    <Button
+                      onClick={handleGenerateCVTemplate}
+                      variant="outline"
+                      className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Template
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Documents List */}
             <div className="space-y-4">
@@ -786,6 +942,17 @@ export const Documents = () => {
                           >
                             <Download className="h-4 w-4" />
                           </Button>
+                          {doc.type === "CV/Resume" && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleImproveCV}
+                              title="Improve CV with AI"
+                              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            >
+                              <FileCheck className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
@@ -1281,6 +1448,176 @@ export const Documents = () => {
               <Button
                 variant="outline"
                 onClick={() => setIsVersionModalOpen(false)}
+                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* CV Improvement Modal */}
+        <Dialog
+          open={isCVImproveModalOpen}
+          onOpenChange={open => {
+            setIsCVImproveModalOpen(open);
+            if (!open) {
+              // Reset selections when modal is closed
+              setSelectedCVSections([]);
+              setCvAnalysis(null);
+              setIsAnalyzingCV(false);
+            }
+          }}
+        >
+          <DialogContent className="max-w-6xl max-h-[95vh] flex flex-col">
+            <DialogHeader className="flex-shrink-0">
+              <DialogTitle className="text-2xl font-semibold text-gray-900">
+                Improve CV
+              </DialogTitle>
+              <DialogDescription className="text-gray-600">
+                Get AI-powered analysis and improvement suggestions for your CV
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex-1 overflow-y-auto">
+              {!isAnalyzingCV && !cvAnalysis && (
+                <div className="space-y-6">
+                  {/* File Selection - Show uploaded CV files directly */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">
+                      Select CV File to Improve
+                    </h3>
+                    <div className="space-y-2">
+                      {documents
+                        .filter(doc => doc.type === "CV/Resume")
+                        .map(doc => (
+                          <Card
+                            key={doc.id}
+                            className={`cursor-pointer transition-all ${
+                              selectedCVSections.includes(doc.id)
+                                ? "ring-2 ring-blue-500 bg-blue-50"
+                                : "hover:shadow-md"
+                            }`}
+                            onClick={() => setSelectedCVSections([doc.id])}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-3">
+                                <FileText className="h-8 w-8 text-blue-600" />
+                                <div className="flex-1">
+                                  <h4 className="font-semibold">{doc.name}</h4>
+                                  <p className="text-sm text-gray-600">
+                                    {doc.uploadDate} • {doc.size} • {doc.format}
+                                  </p>
+                                </div>
+                                {selectedCVSections.includes(doc.id) && (
+                                  <Check className="h-5 w-5 text-blue-600" />
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      {documents.filter(doc => doc.type === "CV/Resume")
+                        .length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                          <FileText className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                          <p>No CV files found. Please upload a CV first.</p>
+                          <Button
+                            onClick={() => {
+                              setIsCVImproveModalOpen(false);
+                              setIsUploadModalOpen(true);
+                            }}
+                            className="mt-4"
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload CV
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Start Analysis Button */}
+                  {selectedCVSections.length > 0 && (
+                    <div className="flex justify-center">
+                      <Button
+                        onClick={handleStartAnalysis}
+                        size="lg"
+                        className="px-8"
+                      >
+                        <FileCheck className="h-5 w-5 mr-2" />
+                        Start Analysis
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {isAnalyzingCV && (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <h2 className="text-xl font-semibold mb-2">
+                    AI is analyzing your CV...
+                  </h2>
+                  <p className="text-gray-600">
+                    This will take a few minutes to generate personalized
+                    suggestions.
+                  </p>
+                </div>
+              )}
+
+              {cvAnalysis && !isAnalyzingCV && (
+                <CVAnalysis
+                  analysis={cvAnalysis}
+                  onDownload={downloadImprovedCV}
+                  selectedSections={selectedCVSections}
+                />
+              )}
+            </div>
+
+            <div className="flex-shrink-0 flex justify-end gap-3 pt-6 border-t border-gray-200">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsCVImproveModalOpen(false);
+                  // Reset selections when closing modal
+                  setSelectedCVSections([]);
+                  setCvAnalysis(null);
+                  setIsAnalyzingCV(false);
+                }}
+                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* CV Template Modal */}
+        <Dialog
+          open={isCVTemplateModalOpen}
+          onOpenChange={setIsCVTemplateModalOpen}
+        >
+          <DialogContent className="max-w-6xl max-h-[95vh] flex flex-col">
+            <DialogHeader className="flex-shrink-0">
+              <DialogTitle className="text-2xl font-semibold text-gray-900">
+                CV Template
+              </DialogTitle>
+              <DialogDescription className="text-gray-600">
+                Create a new CV using our template
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex-1 overflow-y-auto">
+              <CVTemplate
+                userProfile={userProfile}
+                onDownload={downloadImprovedCV}
+              />
+            </div>
+
+            <div className="flex-shrink-0 flex justify-end gap-3 pt-6 border-t border-gray-200">
+              <Button
+                variant="outline"
+                onClick={() => setIsCVTemplateModalOpen(false)}
                 className="border-gray-300 text-gray-700 hover:bg-gray-50"
               >
                 Close

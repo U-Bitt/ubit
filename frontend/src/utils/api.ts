@@ -64,6 +64,50 @@ export interface Exam {
   difficulty: string;
 }
 
+export interface Document {
+  id: string;
+  name: string;
+  type: string;
+  university?: string;
+  description?: string;
+  filePath: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  uploadedBy: string;
+  versions?: DocumentVersion[];
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DocumentVersion {
+  id: string;
+  version: number;
+  filePath: string;
+  fileName: string;
+  fileSize: number;
+  uploadedAt: Date;
+  uploadedBy: string;
+}
+
+export interface UniversitySuggestion {
+  id: string;
+  name: string;
+  location: string;
+  ranking: number;
+  rating: number;
+  tuition: string;
+  acceptance: string;
+  students: string;
+  image: string;
+  programs: string[];
+  highlights: string[];
+  matchScore: number;
+  reason: string;
+  deadline: string;
+}
+
 // Generic API call function
 async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
@@ -566,3 +610,78 @@ export const handleApiError = (error: unknown): never => {
   );
 };
 
+// AI API
+export const aiApi = {
+  suggestUniversities: async (userData: {
+    gpa: string;
+    sat: string;
+    toefl: string;
+    major: string;
+  }) => {
+    return apiCall<{
+      success: boolean;
+      message: string;
+      data: UniversitySuggestion[];
+    }>("/ai/suggest", {
+      method: "POST",
+      body: JSON.stringify(userData),
+    });
+  },
+};
+
+// Test Scores API
+export const testScoresApi = {
+  getAll: (): Promise<{ success: boolean; data: Record<string, unknown>[] }> =>
+    apiCall("/test-scores", {
+      method: "GET",
+      headers: {
+        "user-id": "user-123", // In real app, get from auth context
+      },
+    }),
+
+  getById: (id: string): Promise<Record<string, unknown>> =>
+    apiCall(`/test-scores/${id}`, {
+      method: "GET",
+      headers: {
+        "user-id": "user-123",
+      },
+    }),
+
+  create: (data: {
+    examType: string;
+    score: string;
+    maxScore: string;
+    certified: boolean;
+    testDate: string;
+    validityDate: string;
+  }): Promise<Record<string, unknown>> =>
+    apiCall("/test-scores", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "user-id": "user-123",
+      },
+      body: JSON.stringify(data),
+    }),
+
+  update: (
+    id: string,
+    data: Record<string, unknown>
+  ): Promise<Record<string, unknown>> =>
+    apiCall(`/test-scores/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "user-id": "user-123",
+      },
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string): Promise<Record<string, unknown>> =>
+    apiCall(`/test-scores/${id}`, {
+      method: "DELETE",
+      headers: {
+        "user-id": "user-123",
+      },
+    }),
+};
