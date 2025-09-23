@@ -1,23 +1,4 @@
-export declare const scholarshipData: ({
-    id: string;
-    title: string;
-    description: string;
-    amount: string;
-    university: string;
-    country: string;
-    deadline: string;
-    requirements: string[];
-    type: string;
-    coverage: string;
-    duration: string;
-    applicationProcess: string;
-    eligibility: string;
-    benefits: string[];
-    image: string;
-    donor?: undefined;
-    contactEmail?: undefined;
-    website?: undefined;
-} | {
+export declare const scholarshipData: {
     id: string;
     title: string;
     description: string;
@@ -36,7 +17,7 @@ export declare const scholarshipData: ({
     donor: string;
     contactEmail: string;
     website: string;
-})[];
+}[];
 export declare const seedUniversities: () => Promise<void>;
 export declare const seedScholarships: () => Promise<void>;
 export declare const seedAllData: () => Promise<void>;
