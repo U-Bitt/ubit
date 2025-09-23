@@ -8,11 +8,11 @@ export const testScoreController = {
     res: Response
   ): Promise<Response | void> => {
     try {
-      const userId = (req.headers["user-id"] as string) || "user-123";
-      
+      const userId = (req.headers["x-user-id"] as string) || "user-123";
+
       // Find user and return their test scores
       const user = await User.findById(userId).select("testScores");
-      
+
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -51,7 +51,7 @@ export const testScoreController = {
         });
       }
 
-      const userId = (req.headers["user-id"] as string) || "user-123";
+      const userId = (req.headers["x-user-id"] as string) || "user-123";
 
       const newTestScore = {
         id: Date.now().toString(),
@@ -69,7 +69,7 @@ export const testScoreController = {
 
       // Find user and add test score
       const user = await User.findById(userId);
-      
+
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -108,11 +108,11 @@ export const testScoreController = {
     try {
       const { id } = req.params;
       const updates = req.body;
-      const userId = (req.headers["user-id"] as string) || "user-123";
+      const userId = (req.headers["x-user-id"] as string) || "user-123";
 
       // Find user
       const user = await User.findById(userId);
-      
+
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -121,10 +121,10 @@ export const testScoreController = {
       }
 
       // Find the test score to update by custom id field or MongoDB _id
-      const scoreIndex = user.testScores?.findIndex((score: any) => 
-        score.id === id || score._id?.toString() === id
+      const scoreIndex = user.testScores?.findIndex(
+        (score: any) => score.id === id || score._id?.toString() === id
       );
-      
+
       if (scoreIndex === -1 || scoreIndex === undefined) {
         return res.status(404).json({
           success: false,
@@ -134,7 +134,10 @@ export const testScoreController = {
 
       // Update the test score
       if (user.testScores && user.testScores[scoreIndex]) {
-        user.testScores[scoreIndex] = { ...user.testScores[scoreIndex], ...updates };
+        user.testScores[scoreIndex] = {
+          ...user.testScores[scoreIndex],
+          ...updates,
+        };
         await user.save();
 
         res.status(200).json({
@@ -165,11 +168,11 @@ export const testScoreController = {
   ): Promise<Response | void> => {
     try {
       const { id } = req.params;
-      const userId = (req.headers["user-id"] as string) || "user-123";
+      const userId = (req.headers["x-user-id"] as string) || "user-123";
 
       // Find user
       const user = await User.findById(userId);
-      
+
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -178,10 +181,10 @@ export const testScoreController = {
       }
 
       // Find the test score to delete by custom id field or MongoDB _id
-      const scoreIndex = user.testScores?.findIndex((score: any) => 
-        score.id === id || score._id?.toString() === id
+      const scoreIndex = user.testScores?.findIndex(
+        (score: any) => score.id === id || score._id?.toString() === id
       );
-      
+
       if (scoreIndex === -1 || scoreIndex === undefined) {
         return res.status(404).json({
           success: false,

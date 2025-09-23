@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import { aiApi, UniversitySuggestion } from "@/utils/api";
+import { aiApi, UniversitySuggestion, testScoreApi } from "@/utils/api";
+import { useUser } from "@/contexts/UserContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -15,34 +16,110 @@ import {
   Calendar,
   DollarSign,
   ArrowRight,
+  RefreshCw,
+  AlertCircle,
 } from "lucide-react";
 
 export default function AISuggestionsPage() {
   const router = useRouter();
+  const { user, isLoading: userLoading } = useUser();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<UniversitySuggestion[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [testScores, setTestScores] = useState<any[]>([]);
+  const [scoresLoading, setScoresLoading] = useState(false);
+  const [scoresError, setScoresError] = useState<string | null>(null);
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0);
 
-  // Get user data from sessionStorage or use defaults
+  // Get user data from user context and test scores
   const [userData, setUserData] = useState({
-    gpa: "3.8/4.0",
-    sat: "1450",
-    toefl: "108",
-    major: "Computer Science",
+    gpa: "",
+    sat: "",
+    ielts: "",
+    major: "",
   });
 
-  useEffect(() => {
-    // Try to get user data from sessionStorage
-    const storedData = sessionStorage.getItem("aiSuggestionsData");
-    if (storedData) {
-      try {
-        const parsedData = JSON.parse(storedData);
-        setUserData(parsedData);
-      } catch (error) {
-        console.error("Error parsing stored user data:", error);
-      }
+  // Fetch test scores with rate limiting
+  const fetchTestScores = async () => {
+    if (!user?.id) return;
+
+    // Rate limiting: only fetch if last fetch was more than 5 seconds ago
+    const now = Date.now();
+    if (now - lastFetchTime < 5000) {
+      console.log("Rate limited: Skipping test scores fetch");
+      return;
     }
-  }, []);
+
+    try {
+      setScoresLoading(true);
+      setScoresError(null);
+      setLastFetchTime(now);
+
+      const scores = await testScoreApi.getAll(user.id);
+      if (Array.isArray(scores)) {
+        setTestScores(scores);
+      }
+    } catch (error) {
+      console.error("Error fetching test scores:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to fetch test scores";
+      setScoresError(errorMessage);
+
+      // If it's a rate limit error, show a more user-friendly message
+      if (errorMessage.includes("Rate limit exceeded")) {
+        setScoresError(
+          "Too many requests. Please wait a moment and refresh the page."
+        );
+      }
+    } finally {
+      setScoresLoading(false);
+    }
+  };
+
+  // Update user data from user context and test scores
+  useEffect(() => {
+    if (user) {
+      const newUserData = {
+        gpa: user.academicInfo?.gpa ? `${user.academicInfo.gpa}/4.0` : "",
+        sat: "", // Will be updated from test scores
+        ielts: "", // Will be updated from test scores
+        major: user.academicInfo?.intendedMajors?.[0] || "",
+      };
+      setUserData(newUserData);
+    }
+  }, [user]);
+
+  // Fetch test scores when user is available
+  useEffect(() => {
+    if (user?.id) {
+      fetchTestScores();
+    }
+  }, [user?.id]);
+
+  // Update SAT and IELTS scores from test scores
+  useEffect(() => {
+    if (testScores.length > 0) {
+      const satScore = testScores.find(
+        score => score.examType === "SAT" && score.score
+      );
+      const ieltsScore = testScores.find(
+        score => score.examType === "IELTS" && score.score
+      );
+
+      setUserData(prev => ({
+        ...prev,
+        sat: satScore?.score || "",
+        ielts: ieltsScore?.score || "",
+      }));
+    } else {
+      // If no test scores, set to empty
+      setUserData(prev => ({
+        ...prev,
+        sat: "",
+        ielts: "",
+      }));
+    }
+  }, [testScores]);
 
   useEffect(() => {
     // Automatically load suggestions when page loads
@@ -54,7 +131,24 @@ export default function AISuggestionsPage() {
     setError(null);
 
     try {
-      const response = await aiApi.suggestUniversities(userData);
+      // Check if we have the minimum required data
+      if (!userData.gpa || !userData.major) {
+        setError(
+          "Please complete your profile with GPA and intended major to get AI suggestions"
+        );
+        setLoading(false);
+        return;
+      }
+
+      // Prepare data for API - use default values for missing test scores
+      const apiData = {
+        gpa: userData.gpa,
+        sat: userData.sat || "1200", // Default SAT score if not provided
+        toefl: userData.ielts || "6.5", // Send IELTS score as toefl field for API compatibility
+        major: userData.major,
+      };
+
+      const response = await aiApi.suggestUniversities(apiData);
       setResult(response.data || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -64,7 +158,7 @@ export default function AISuggestionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -72,78 +166,174 @@ export default function AISuggestionsPage() {
             <Button
               variant="outline"
               onClick={() => router.back()}
-              className="flex items-center gap-2 bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700"
+              className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
               Back
             </Button>
-            <h1 className="text-3xl font-bold text-white">
+            <h1 className="text-3xl font-bold text-gray-900">
               AI Suggested Universities
             </h1>
           </div>
-          <p className="text-slate-300">
+          <p className="text-gray-600">
             AI recommended universities based on your academic information
           </p>
         </div>
 
         {/* User Profile Summary */}
-        <Card className="mb-8 bg-slate-800 border-slate-700">
+        <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+            <CardTitle className="flex items-center gap-2">
               <GraduationCap className="h-5 w-5" />
               Your Academic Information
+              {scoresLoading && (
+                <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-slate-700 rounded-lg">
-                <div className="text-2xl font-bold text-blue-400">
-                  {userData.gpa}
+            <div className="overflow-x-auto">
+              <div className="flex gap-4 pb-2 min-w-max">
+                {/* GPA Card */}
+                <div className="text-center p-6 bg-white rounded-lg border border-gray-200 flex-shrink-0 w-[220px] h-[130px] flex flex-col justify-center">
+                  <div className="text-3xl font-bold text-blue-900">
+                    {userData.gpa || "Not set"}
+                  </div>
+                  <div className="text-base text-gray-600">GPA</div>
                 </div>
-                <div className="text-sm text-slate-300">GPA</div>
-              </div>
-              <div className="text-center p-4 bg-slate-700 rounded-lg">
-                <div className="text-2xl font-bold text-blue-400">
-                  {userData.sat}
+
+                {/* SAT Card */}
+                <div className="text-center p-6 bg-white rounded-lg border border-gray-200 flex-shrink-0 w-[220px] h-[130px] flex flex-col justify-center">
+                  <div className="text-3xl font-bold text-blue-900">
+                    {scoresLoading ? (
+                      <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+                    ) : userData.sat ? (
+                      userData.sat
+                    ) : (
+                      <span className="text-gray-400 text-xl">
+                        Not submitted
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-base text-gray-600">
+                    SAT{" "}
+                    {!userData.sat && (
+                      <span className="text-xs text-orange-500">
+                        (using default)
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="text-sm text-slate-300">SAT</div>
-              </div>
-              <div className="text-center p-4 bg-slate-700 rounded-lg">
-                <div className="text-2xl font-bold text-blue-400">
-                  {userData.toefl}
+
+                {/* IELTS Card */}
+                <div className="text-center p-6 bg-white rounded-lg border border-gray-200 flex-shrink-0 w-[220px] h-[130px] flex flex-col justify-center">
+                  <div className="text-3xl font-bold text-blue-900">
+                    {scoresLoading ? (
+                      <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+                    ) : userData.ielts ? (
+                      userData.ielts
+                    ) : (
+                      <span className="text-gray-400 text-xl">
+                        Not submitted
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-base text-gray-600">
+                    IELTS{" "}
+                    {!userData.ielts && (
+                      <span className="text-xs text-orange-500">
+                        (using default)
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="text-sm text-slate-300">TOEFL</div>
-              </div>
-              <div className="text-center p-4 bg-slate-700 rounded-lg">
-                <div className="text-lg font-bold text-blue-400">
-                  {userData.major}
+
+                {/* Major Card */}
+                <div className="text-center p-6 bg-white rounded-lg border border-gray-200 flex-shrink-0 w-[220px] h-[130px] flex flex-col justify-center">
+                  <div className="text-xl font-bold text-blue-900">
+                    {userData.major || "Not set"}
+                  </div>
+                  <div className="text-base text-gray-600">Major</div>
                 </div>
-                <div className="text-sm text-slate-300">Major</div>
+
+                {/* All Other Test Scores */}
+                {testScores
+                  .filter(
+                    (score, index, self) =>
+                      // Remove duplicates by exam type and exclude SAT/IELTS (already shown above)
+                      index ===
+                        self.findIndex(s => s.examType === score.examType) &&
+                      score.examType !== "SAT" &&
+                      score.examType !== "IELTS"
+                  )
+                  .map((score, index) => (
+                    <div
+                      key={index}
+                      className="text-center p-6 bg-white rounded-lg border border-gray-200 flex-shrink-0 w-[220px] h-[130px] flex flex-col justify-center"
+                    >
+                      <div className="text-3xl font-bold text-blue-900">
+                        {score.score}
+                      </div>
+                      <div className="text-base text-gray-600">
+                        {score.examType}
+                      </div>
+                      {score.band && (
+                        <div className="text-xs text-gray-500">
+                          Band {score.band}
+                        </div>
+                      )}
+                      {score.examDate && (
+                        <div className="text-xs text-gray-400">
+                          {new Date(score.examDate).toLocaleDateString()}
+                        </div>
+                      )}
+                    </div>
+                  ))}
               </div>
             </div>
+
+            {/* Test Scores Error */}
+            {scoresError && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center gap-2 text-red-700">
+                  <AlertCircle className="h-4 w-4" />
+                  <span className="text-sm">{scoresError}</span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={fetchTestScores}
+                  disabled={scoresLoading}
+                  className="mt-2 text-xs"
+                >
+                  {scoresLoading ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  ) : (
+                    <RefreshCw className="h-3 w-3 mr-1" />
+                  )}
+                  Try Again
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Loading State */}
         {loading && (
-          <Card className="bg-slate-800 border-slate-700">
+          <Card>
             <CardContent className="p-8 text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-400" />
-              <p className="text-slate-300">Preparing AI suggestions...</p>
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="text-gray-600">Preparing AI suggestions...</p>
             </CardContent>
           </Card>
         )}
 
         {/* Error State */}
         {error && (
-          <Card className="border-red-500 bg-red-900/20">
+          <Card className="border-red-200 bg-red-50">
             <CardContent className="p-6 text-center">
-              <p className="text-red-400 mb-4">Error occurred: {error}</p>
-              <Button
-                onClick={handleGetSuggestions}
-                variant="outline"
-                className="bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700"
-              >
+              <p className="text-red-600 mb-4">Error occurred: {error}</p>
+              <Button onClick={handleGetSuggestions} variant="outline">
                 Try Again
               </Button>
             </CardContent>
@@ -154,14 +344,10 @@ export default function AISuggestionsPage() {
         {result && result.length > 0 && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-2xl font-bold text-gray-900">
                 Suggested Universities ({result.length})
               </h2>
-              <Button
-                onClick={handleGetSuggestions}
-                variant="outline"
-                className="bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700"
-              >
+              <Button onClick={handleGetSuggestions} variant="outline">
                 Refresh
               </Button>
             </div>
@@ -170,52 +356,67 @@ export default function AISuggestionsPage() {
               {result.map(university => (
                 <Card
                   key={university.id}
-                  className="relative h-96 overflow-hidden rounded-2xl hover:shadow-xl transition-all duration-300 group bg-slate-800 border-slate-700"
+                  className="relative min-h-[500px] overflow-hidden rounded-2xl hover:shadow-xl transition-all duration-300 group"
+                  style={{ position: "relative" }}
                 >
                   {/* Background Image */}
-                  <Image
-                    src={university.image}
-                    alt={university.name}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    onError={e => {
-                      e.currentTarget.src = "/placeholder-logo.svg";
-                    }}
-                  />
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-900 to-purple-900">
+                    <Image
+                      src={university.image}
+                      alt={university.name}
+                      fill
+                      className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      priority={false}
+                      style={{
+                        objectFit: "cover",
+                        objectPosition: "center",
+                      }}
+                      onError={e => {
+                        e.currentTarget.src = "/placeholder-logo.svg";
+                      }}
+                    />
+                  </div>
 
-                  {/* Dark Blue Overlay */}
-                  <div className="absolute inset-0 bg-slate-900/60"></div>
+                  {/* 70% Opacity Shadow Overlay */}
+                  <div className="absolute inset-0 bg-black opacity-70"></div>
 
                   {/* Content Overlay */}
-                  <div className="absolute inset-0 p-6 flex flex-col justify-between text-white">
+                  <div className="absolute inset-0 p-4 md:p-6 flex flex-col justify-between text-white">
                     {/* Top Section - University Info */}
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h3 className="text-2xl font-bold mb-2 line-clamp-2">
+                    <div className="space-y-3 flex-1">
+                      <div className="flex justify-between items-start gap-4">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-xl md:text-2xl font-bold mb-2 line-clamp-2">
                             {university.name}
                           </h3>
                           <div className="flex items-center gap-2 text-white/90 mb-2">
-                            <MapPin className="h-4 w-4" />
-                            <span>{university.location}</span>
+                            <MapPin className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate text-sm">
+                              {university.location}
+                            </span>
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-white/80">
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-white/80">
                             <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4" />
+                              <Star className="h-3 w-3 flex-shrink-0" />
                               <span>#{university.ranking}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <Users className="h-4 w-4" />
-                              <span>{university.students}</span>
+                              <Users className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">
+                                {university.students}
+                              </span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <DollarSign className="h-4 w-4" />
-                              <span>{university.tuition}</span>
+                              <DollarSign className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">
+                                {university.tuition}
+                              </span>
                             </div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-3xl font-bold text-white mb-1">
+                        <div className="text-right flex-shrink-0">
+                          <div className="text-2xl md:text-3xl font-bold text-white mb-1">
                             {university.matchScore}%
                           </div>
                           <div className="text-sm text-white/80">
@@ -224,52 +425,80 @@ export default function AISuggestionsPage() {
                         </div>
                       </div>
 
-                      {/* Why it was matched for you */}
-                      <div>
-                        <h4 className="font-semibold mb-2 text-white">
-                          Why it was matched for you:
+                      {/* Compact Score Analysis */}
+                      <div className="space-y-2">
+                        <h4 className="font-bold text-base text-white">
+                          Score Analysis:
                         </h4>
-                        <div className="text-sm text-white/90">
-                          <Check className="h-4 w-4 text-white inline mr-2" />
-                          {university.reason}
+
+                        {/* Compact Score Grid */}
+                        <div className="grid grid-cols-2 gap-2">
+                          {/* GPA */}
+                          <div className="bg-white/10 rounded-lg p-2">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-xs font-medium text-white">
+                                GPA
+                              </span>
+                              <span className="text-xs text-white/80">
+                                {university.scoreDetails.gpa.points}/20
+                              </span>
+                            </div>
+                            <div className="text-xs text-white/90 mb-1">
+                              {university.scoreDetails.gpa.yourScore} vs{" "}
+                              {university.scoreDetails.gpa.required}
+                            </div>
+                          </div>
+
+                          {/* SAT */}
+                          <div className="bg-white/10 rounded-lg p-2">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-xs font-medium text-white">
+                                SAT
+                              </span>
+                              <span className="text-xs text-white/80">
+                                {university.scoreDetails.sat.points}/24
+                              </span>
+                            </div>
+                            <div className="text-xs text-white/90 mb-1">
+                              {university.scoreDetails.sat.yourScore} vs{" "}
+                              {university.scoreDetails.sat.required}
+                            </div>
+                          </div>
+
+                          {/* IELTS */}
+                          <div className="bg-white/10 rounded-lg p-2">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-xs font-medium text-white">
+                                IELTS
+                              </span>
+                              <span className="text-xs text-white/80">
+                                {university.scoreDetails.ielts.points}/24
+                              </span>
+                            </div>
+                            <div className="text-xs text-white/90 mb-1">
+                              {university.scoreDetails.ielts.yourScore} vs{" "}
+                              {university.scoreDetails.ielts.required}
+                            </div>
+                          </div>
                         </div>
+
+                        {/* Highlights */}
                         {university.highlights &&
                           university.highlights.length > 0 && (
-                            <div className="mt-2">
-                              <div className="text-xs text-white/80">
-                                Highlights:{" "}
+                            <div className="bg-white/10 rounded-lg p-2">
+                              <div className="text-xs font-medium text-white mb-1">
+                                Highlights:
+                              </div>
+                              <div className="text-xs text-white/90">
                                 {university.highlights.slice(0, 2).join(", ")}
                               </div>
                             </div>
                           )}
                       </div>
-
-                      {/* University Info */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <h5 className="font-medium text-sm mb-2 text-blue-300">
-                            Programs:
-                          </h5>
-                          <div className="text-xs text-white/80">
-                            {university.programs
-                              ? university.programs.slice(0, 2).join(", ")
-                              : "Various programs available"}
-                          </div>
-                        </div>
-                        <div>
-                          <h5 className="font-medium text-sm mb-2 text-blue-300">
-                            Deadline:
-                          </h5>
-                          <div className="text-xs text-white/80 flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {university.deadline || "Check website"}
-                          </div>
-                        </div>
-                      </div>
                     </div>
 
                     {/* Bottom Section - Actions and Deadline */}
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <div className="text-sm text-white/90">
                         <span>Application Deadline: </span>
                         <span className="font-medium text-white">
@@ -277,20 +506,20 @@ export default function AISuggestionsPage() {
                         </span>
                       </div>
 
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="bg-blue-600/20 text-blue-300 border-blue-500/30 hover:bg-blue-600/30 hover:text-blue-200"
+                          className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white flex-1 min-w-0"
                         >
                           Apply Now
                         </Button>
                         <Button
                           size="sm"
-                          className="bg-blue-600 text-white hover:bg-blue-700"
+                          className="bg-white text-black hover:bg-white/90 flex-1 min-w-0"
                         >
-                          View Details
-                          <ArrowRight className="ml-2 h-4 w-4" />
+                          <span className="truncate">View Details</span>
+                          <ArrowRight className="ml-2 h-4 w-4 flex-shrink-0" />
                         </Button>
                       </div>
                     </div>
@@ -303,17 +532,13 @@ export default function AISuggestionsPage() {
 
         {/* No Results */}
         {result && result.length === 0 && (
-          <Card className="bg-slate-800 border-slate-700">
+          <Card>
             <CardContent className="p-8 text-center">
-              <GraduationCap className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-              <p className="text-slate-300 text-lg mb-4">
+              <GraduationCap className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg mb-4">
                 No universities found to suggest.
               </p>
-              <Button
-                onClick={handleGetSuggestions}
-                variant="outline"
-                className="bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700"
-              >
+              <Button onClick={handleGetSuggestions} variant="outline">
                 Try Again
               </Button>
             </CardContent>
