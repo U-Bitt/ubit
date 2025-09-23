@@ -6,6 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUser } from "@/contexts/UserContext";
+
+interface TestScore extends Record<string, unknown> {
+  id: string;
+  examType: string;
+  score: string;
+  maxScore: string;
+  certified: boolean;
+  testDate: string;
+  validityDate: string;
+}
 import {
   Dialog,
   DialogContent,
@@ -92,6 +102,7 @@ export const Documents = () => {
   ]);
 
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -107,6 +118,7 @@ export const Documents = () => {
   const [selectedDocumentType, setSelectedDocumentType] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [cvAnalysis, setCvAnalysis] = useState<any>(null);
   const [isAnalyzingCV, setIsAnalyzingCV] = useState(false);
   const itemsPerPage = 5;
@@ -204,6 +216,13 @@ export const Documents = () => {
     "Certificate",
     "Other",
   ];
+
+  // Filter documents based on search query
+  const filteredDocuments = documents.filter(doc => 
+    doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    doc.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    doc.university.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -559,8 +578,8 @@ export const Documents = () => {
     }
   };
 
-  const totalPages = Math.ceil(documents.length / itemsPerPage);
-  const paginatedDocuments = documents.slice(
+  const totalPages = Math.ceil(filteredDocuments.length / itemsPerPage);
+  const paginatedDocuments = filteredDocuments.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -583,25 +602,14 @@ export const Documents = () => {
             <div className="flex justify-between items-center">
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input placeholder="Search documents..." className="pl-10" />
+                <Input 
+                  placeholder="Search documents..." 
+                  className="pl-10"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
               <div className="flex gap-2">
-                <Button
-                  onClick={handleImproveCV}
-                  variant="outline"
-                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
-                >
-                  <FileCheck className="h-4 w-4 mr-2" />
-                  Improve Document
-                </Button>
-                <Button
-                  onClick={handleGenerateCVTemplate}
-                  variant="outline"
-                  className="border-green-300 text-green-700 hover:bg-green-50"
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Document Template
-                </Button>
                 <Dialog
                   open={isUploadModalOpen}
                   onOpenChange={setIsUploadModalOpen}
@@ -806,9 +814,42 @@ export const Documents = () => {
               </CardContent>
             </Card>
 
+            {/* Search Results Counter */}
+            {searchQuery && (
+              <div className="mb-4">
+                <p className="text-sm text-muted-foreground">
+                  Found {filteredDocuments.length} document{filteredDocuments.length !== 1 ? 's' : ''} matching &quot;{searchQuery}&quot;
+                </p>
+              </div>
+            )}
+
             {/* Documents List */}
             <div className="space-y-4">
-              {paginatedDocuments.map(doc => (
+              {filteredDocuments.length === 0 ? (
+                <div className="text-center py-12">
+                  <File className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">
+                    {searchQuery ? 'No documents found' : 'No documents uploaded'}
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    {searchQuery 
+                      ? `No documents match "${searchQuery}". Try a different search term.`
+                      : 'Upload your first document to get started.'
+                    }
+                  </p>
+                  {!searchQuery && (
+                    <Button
+                      onClick={() => setIsUploadModalOpen(true)}
+                      className="text-white hover:opacity-90"
+                      style={{ backgroundColor: "#00136A" }}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload Document
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                paginatedDocuments.map(doc => (
                 <Card
                   key={doc.id}
                   className="hover:shadow-md transition-shadow"
@@ -895,7 +936,8 @@ export const Documents = () => {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+                ))
+              )}
             </div>
 
             {/* Pagination */}

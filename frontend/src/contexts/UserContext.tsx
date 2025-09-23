@@ -102,8 +102,12 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
           areasOfInterest: ['Programming', 'Machine Learning', 'Web Development', 'Mobile Apps'],
         };
         setUser(defaultUser);
-        localStorage.setItem('currentUserId', defaultUser.id);
+        if (defaultUser.id) {
+          localStorage.setItem('currentUserId', defaultUser.id);
+        }
+        if (defaultUser.id) {
         localStorage.setItem(`user_${defaultUser.id}`, JSON.stringify(defaultUser));
+      }
 
       } catch (error) {
         console.error('Error loading user data:', error);
@@ -117,7 +121,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
   // Save user data to localStorage whenever it changes
   useEffect(() => {
-    if (user) {
+    if (user && user.id) {
       localStorage.setItem('currentUserId', user.id);
       localStorage.setItem(`user_${user.id}`, JSON.stringify(user));
     }

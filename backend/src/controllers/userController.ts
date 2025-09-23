@@ -762,11 +762,12 @@ export const getTestScores = async (
 
 export const addTestScore = async (
   req: Request<{}, ApiResponse<any>, {
-    testName: string;
+    examType: string;
     score: string;
-    date: string;
-    maxScore?: string;
-    percentile?: number;
+    maxScore: string;
+    certified: boolean;
+    testDate: string;
+    validityDate: string;
   }>,
   res: Response<ApiResponse<any>>,
   next: NextFunction
@@ -777,12 +778,15 @@ export const addTestScore = async (
 
     const newTestScore = {
       id: `test_${Date.now()}`,
-      testName: testScoreData.testName,
+      examType: testScoreData.examType,
       score: testScoreData.score,
-      date: new Date(testScoreData.date),
       maxScore: testScoreData.maxScore,
-      percentile: testScoreData.percentile,
+      certified: testScoreData.certified,
+      testDate: testScoreData.testDate,
+      validityDate: testScoreData.validityDate,
     };
+
+    console.log("Creating new test score:", JSON.stringify(newTestScore, null, 2));
 
     const user = await User.findByIdAndUpdate(
       userId,
@@ -802,6 +806,8 @@ export const addTestScore = async (
       return;
     }
 
+    console.log("Returning response with data:", JSON.stringify(newTestScore, null, 2));
+    
     res.status(201).json({
       success: true,
       data: newTestScore,
@@ -818,27 +824,29 @@ export const addTestScore = async (
 };
 
 export const updateTestScore = async (
-  req: Request<{ testId: string }, ApiResponse<any>, {
-    testName?: string;
+  req: Request<{ id: string }, ApiResponse<any>, {
+    examType?: string;
     score?: string;
-    date?: string;
     maxScore?: string;
-    percentile?: number;
+    certified?: boolean;
+    testDate?: string;
+    validityDate?: string;
   }>,
   res: Response<ApiResponse<any>>,
   next: NextFunction
 ): Promise<void> => {
   try {
     const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
-    const { testId } = req.params;
+    const { id: testId } = req.params;
     const updates = req.body;
 
     const updateData: any = {};
-    if (updates.testName) updateData["testScores.$.testName"] = updates.testName;
+    if (updates.examType) updateData["testScores.$.examType"] = updates.examType;
     if (updates.score) updateData["testScores.$.score"] = updates.score;
-    if (updates.date) updateData["testScores.$.date"] = new Date(updates.date);
     if (updates.maxScore) updateData["testScores.$.maxScore"] = updates.maxScore;
-    if (updates.percentile !== undefined) updateData["testScores.$.percentile"] = updates.percentile;
+    if (updates.certified !== undefined) updateData["testScores.$.certified"] = updates.certified;
+    if (updates.testDate) updateData["testScores.$.testDate"] = updates.testDate;
+    if (updates.validityDate) updateData["testScores.$.validityDate"] = updates.validityDate;
 
     const user = await User.findOneAndUpdate(
       { 
@@ -881,13 +889,13 @@ export const updateTestScore = async (
 };
 
 export const deleteTestScore = async (
-  req: Request<{ testId: string }>,
+  req: Request<{ id: string }>,
   res: Response<ApiResponse<{}>>,
   next: NextFunction
 ): Promise<void> => {
   try {
     const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
-    const { testId } = req.params;
+    const { id: testId } = req.params;
 
     const user = await User.findByIdAndUpdate(
       userId,

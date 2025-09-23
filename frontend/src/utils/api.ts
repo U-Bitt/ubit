@@ -284,16 +284,16 @@ export const userApi = {
     return response.data;
   },
   // Saved Universities
-  getSavedUniversities: async (userId: string): Promise<any[]> => {
-    const response = await apiCall<{ success: boolean; data: any[] }>("/users/saved-universities/me", {
+  getSavedUniversities: async (userId: string): Promise<Record<string, unknown>[]> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>("/users/saved-universities/me", {
       headers: {
         "x-user-id": userId,
       },
     });
     return response.data;
   },
-  saveUniversity: async (userId: string, universityId: string, universityName: string, notes?: string): Promise<any> => {
-    const response = await apiCall<{ success: boolean; data: any }>("/users/saved-universities", {
+  saveUniversity: async (userId: string, universityId: string, universityName: string, notes?: string): Promise<Record<string, unknown>> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown> }>("/users/saved-universities", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -308,7 +308,7 @@ export const userApi = {
     return response.data;
   },
   unsaveUniversity: async (userId: string, savedId: string): Promise<void> => {
-    await apiCall<{ success: boolean; data: any }>(`/users/saved-universities/${savedId}`, {
+    await apiCall<{ success: boolean; data: Record<string, unknown> }>(`/users/saved-universities/${savedId}`, {
       method: "DELETE",
       headers: {
         "x-user-id": userId,
@@ -321,8 +321,8 @@ export const userApi = {
     highSchoolName?: string;
     graduationYear?: number;
     intendedMajors?: string[];
-  }): Promise<any> => {
-    const response = await apiCall<{ success: boolean; data: any }>("/users/academic-info", {
+  }): Promise<Record<string, unknown>> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown> }>("/users/academic-info", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -368,18 +368,18 @@ export const userApi = {
 // Test Scores API functions
 export const testScoreApi = {
   getAll: async (userId: string): Promise<Record<string, unknown>[]> => {
-    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>("/test-scores", {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>("/users/test-scores/me", {
       headers: {
-        "user-id": userId,
+        "x-user-id": userId,
       },
     });
     return response.data;
   },
   create: async (userId: string, data: Record<string, unknown>): Promise<Record<string, unknown>> => {
-    const response = await apiCall<{ success: boolean; data: Record<string, unknown> }>("/test-scores", {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown> }>("/users/test-scores", {
       method: "POST",
       headers: {
-        "user-id": userId,
+        "x-user-id": userId,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
@@ -391,10 +391,10 @@ export const testScoreApi = {
     id: string,
     data: Record<string, unknown>
   ): Promise<Record<string, unknown>> => {
-    const response = await apiCall<{ success: boolean; data: Record<string, unknown> }>(`/test-scores/${id}`, {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown> }>(`/users/test-scores/${id}`, {
       method: "PUT",
       headers: {
-        "user-id": userId,
+        "x-user-id": userId,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
@@ -402,10 +402,10 @@ export const testScoreApi = {
     return response.data;
   },
   delete: async (userId: string, id: string): Promise<Record<string, unknown>> => {
-    const response = await apiCall<{ success: boolean; data: Record<string, unknown> }>(`/test-scores/${id}`, {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown> }>(`/users/test-scores/${id}`, {
       method: "DELETE",
       headers: {
-        "user-id": userId,
+        "x-user-id": userId,
       },
     });
     return response.data;
@@ -652,7 +652,7 @@ export const testScoresApi = {
     apiCall("/test-scores", {
       method: "GET",
       headers: {
-        "user-id": "user-123", // In real app, get from auth context
+        "x-user-id": "user-123", // In real app, get from auth context
       },
     }),
 
@@ -660,7 +660,7 @@ export const testScoresApi = {
     apiCall(`/test-scores/${id}`, {
       method: "GET",
       headers: {
-        "user-id": "user-123",
+        "x-user-id": "user-123",
       },
     }),
 
@@ -676,7 +676,7 @@ export const testScoresApi = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "user-id": "user-123",
+        "x-user-id": "user-123",
       },
       body: JSON.stringify(data),
     }),
@@ -689,7 +689,7 @@ export const testScoresApi = {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "user-id": "user-123",
+        "x-user-id": "user-123",
       },
       body: JSON.stringify(data),
     }),
@@ -698,7 +698,7 @@ export const testScoresApi = {
     apiCall(`/test-scores/${id}`, {
       method: "DELETE",
       headers: {
-        "user-id": "user-123",
+        "x-user-id": "user-123",
       },
     }),
 };
