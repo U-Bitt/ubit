@@ -16,7 +16,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useSavedUniversities } from "@/hooks/useSavedUniversities";
-import { universityApi, University } from "@/utils/api";
+import { universityApi, scholarshipApi, University } from "@/utils/api";
 
 interface UniversityDetailsProps {
   universityId: string;
@@ -28,6 +28,22 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
   const [university, setUniversity] = useState<University | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [linkedScholarships, setLinkedScholarships] = useState<any[]>([]);
+  const [scholarshipsLoading, setScholarshipsLoading] = useState(false);
+
+  // Fetch linked scholarships for the university
+  const fetchLinkedScholarships = async (universityName: string) => {
+    try {
+      setScholarshipsLoading(true);
+      const scholarships = await scholarshipApi.getByUniversity(universityName);
+      setLinkedScholarships(scholarships);
+    } catch (err) {
+      console.error("Error fetching linked scholarships:", err);
+      setLinkedScholarships([]);
+    } finally {
+      setScholarshipsLoading(false);
+    }
+  };
 
   // Fetch university data from API
   useEffect(() => {
@@ -36,6 +52,11 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
         setLoading(true);
         const data = await universityApi.getById(universityId);
         setUniversity(data);
+
+        // Fetch linked scholarships after university data is loaded
+        if (data.name) {
+          await fetchLinkedScholarships(data.name);
+        }
       } catch (err) {
         console.error("Error fetching university:", err);
         setError("Failed to load university details");
@@ -55,7 +76,9 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <h3 className="text-lg font-semibold mb-2">Loading university details...</h3>
+          <h3 className="text-lg font-semibold mb-2">
+            Loading university details...
+          </h3>
           <p>Please wait while we fetch the information</p>
         </div>
       </div>
@@ -67,9 +90,14 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <h3 className="text-lg font-semibold mb-2 text-red-600">University not found</h3>
-          <p className="text-gray-600 mb-4">The university you&apos;re looking for doesn&apos;t exist or has been removed.</p>
-          <Button onClick={() => router.push('/discover/universities')}>
+          <h3 className="text-lg font-semibold mb-2 text-red-600">
+            University not found
+          </h3>
+          <p className="text-gray-600 mb-4">
+            The university you&apos;re looking for doesn&apos;t exist or has
+            been removed.
+          </p>
+          <Button onClick={() => router.push("/discover/universities")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Universities
           </Button>
@@ -78,30 +106,18 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
     );
   }
 
-
-  // Sample requirements and scholarships data (in a real app, this would come from the API)
-  const requirements = [
+  // Use data from the backend instead of hardcoded values
+  const requirements = university.requirements || [
     "High School Transcript",
-    "SAT/ACT Scores", 
+    "SAT/ACT Scores",
     "Personal Statement",
     "Letters of Recommendation",
     "Portfolio (for certain programs)",
   ];
 
-  const scholarships = [
-    {
-      name: "Merit Scholarship",
-      amount: "$15,000/year",
-      requirements: ["High academic performance", "Leadership experience"],
-      deadline: "Dec 15, 2024",
-    },
-    {
-      name: "Need-based Financial Aid", 
-      amount: "Up to full tuition",
-      requirements: ["Financial need", "Academic merit"],
-      deadline: "Jan 1, 2025",
-    },
-  ];
+  // Combine university's own scholarships with linked scholarships from scholarship detail pages
+  const universityScholarships = university.scholarships || [];
+  const allScholarships = [...universityScholarships, ...linkedScholarships];
 
   return (
     <div className="min-h-screen bg-white">
@@ -137,16 +153,19 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button 
-                  variant={isSaved(university.id) ? "default" : "outline"} 
+                <Button
+                  variant={isSaved(university.id) ? "default" : "outline"}
                   size="sm"
                   onClick={() => toggleSave(university.id, university.name)}
-                  className={isSaved(university.id) 
-                    ? "bg-red-500 hover:bg-red-600 text-white" 
-                    : "hover:bg-red-50"
+                  className={
+                    isSaved(university.id)
+                      ? "bg-red-500 hover:bg-red-600 text-white"
+                      : "hover:bg-red-50"
                   }
                 >
-                  <Heart className={`h-4 w-4 mr-2 ${isSaved(university.id) ? "fill-current" : ""}`} />
+                  <Heart
+                    className={`h-4 w-4 mr-2 ${isSaved(university.id) ? "fill-current" : ""}`}
+                  />
                   {isSaved(university.id) ? "Saved" : "Save"}
                 </Button>
               </div>
@@ -207,12 +226,12 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
 
         {/* Detailed Information Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="programs">Programs</TabsTrigger>
-          <TabsTrigger value="requirements">Requirements</TabsTrigger>
-          <TabsTrigger value="scholarships">Scholarships</TabsTrigger>
-        </TabsList>
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="programs">Programs</TabsTrigger>
+            <TabsTrigger value="requirements">Requirements</TabsTrigger>
+            <TabsTrigger value="scholarships">Scholarships</TabsTrigger>
+          </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid md:grid-cols-1 gap-8">
@@ -224,25 +243,23 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Founded</span>
                     <span className="font-semibold">
-                      {university.id === 'mit' ? '1861' : 
-                       university.id === 'stanford' ? '1885' :
-                       university.id === 'harvard' ? '1636' :
-                       university.id === 'oxford' ? '1096' : 'N/A'}
+                      {university.founded || "N/A"}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Type</span>
                     <span className="font-semibold">
-                      {university.id === 'oxford' ? 'Public Research' : 'Private Research'}
+                      {university.type === "public"
+                        ? "Public Research"
+                        : university.type === "private"
+                          ? "Private Research"
+                          : "N/A"}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Campus Size</span>
                     <span className="font-semibold">
-                      {university.id === 'mit' ? '168 acres' :
-                       university.id === 'stanford' ? '8,180 acres' :
-                       university.id === 'harvard' ? '5,076 acres' :
-                       university.id === 'oxford' ? '1,000+ acres' : 'N/A'}
+                      {university.campusSize || "N/A"}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -250,10 +267,7 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
                       Student-Faculty Ratio
                     </span>
                     <span className="font-semibold">
-                      {university.id === 'mit' ? '3:1' :
-                       university.id === 'stanford' ? '5:1' :
-                       university.id === 'harvard' ? '6:1' :
-                       university.id === 'oxford' ? '11:1' : 'N/A'}
+                      {university.studentFacultyRatio || "N/A"}
                     </span>
                   </div>
                 </CardContent>
@@ -307,40 +321,155 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
           </TabsContent>
 
           <TabsContent value="scholarships" className="space-y-6">
-            <div className="grid gap-6">
-              {scholarships.map((scholarship, index) => (
-                <Card key={index}>
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-xl font-bold mb-1">
-                          {scholarship.name}
-                        </h3>
-                        <p className="text-muted-foreground">
-                          {scholarship.amount}
-                        </p>
-                      </div>
-                      <Badge variant="secondary">{scholarship.deadline}</Badge>
+            {scholarshipsLoading ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">
+                    Loading scholarships...
+                  </p>
+                </CardContent>
+              </Card>
+            ) : allScholarships.length > 0 ? (
+              <div className="space-y-6">
+                {/* Show linked scholarships from scholarship detail pages */}
+                {linkedScholarships.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">
+                      Available Scholarships
+                    </h3>
+                    <div className="grid gap-6">
+                      {linkedScholarships.map((scholarship, index) => (
+                        <Card
+                          key={`linked-${index}`}
+                          className="border-l-4 border-l-primary"
+                        >
+                          <CardContent className="p-6">
+                            <div className="flex justify-between items-start mb-4">
+                              <div>
+                                <h3 className="text-xl font-bold mb-1">
+                                  {scholarship.title}
+                                </h3>
+                                <p className="text-muted-foreground">
+                                  {scholarship.amount} • {scholarship.type}
+                                </p>
+                                {scholarship.description && (
+                                  <p className="text-sm text-muted-foreground mt-2">
+                                    {scholarship.description}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex flex-col items-end gap-2">
+                                <Badge variant="secondary">
+                                  {scholarship.deadline}
+                                </Badge>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    router.push(
+                                      `/scholarshipDetail/${scholarship.id}`
+                                    )
+                                  }
+                                >
+                                  View Details
+                                </Button>
+                              </div>
+                            </div>
+                            {scholarship.requirements &&
+                              scholarship.requirements.length > 0 && (
+                                <div>
+                                  <h4 className="font-medium mb-2">
+                                    Requirements:
+                                  </h4>
+                                  <ul className="space-y-1">
+                                    {scholarship.requirements.map(
+                                      (req: string, reqIndex: number) => (
+                                        <li
+                                          key={reqIndex}
+                                          className="text-sm text-muted-foreground"
+                                        >
+                                          • {req}
+                                        </li>
+                                      )
+                                    )}
+                                  </ul>
+                                </div>
+                              )}
+                          </CardContent>
+                        </Card>
+                      ))}
                     </div>
-                    <div>
-                      <h4 className="font-medium mb-2">Requirements:</h4>
-                      <ul className="space-y-1">
-                        {scholarship.requirements.map((req, reqIndex) => (
-                          <li
-                            key={reqIndex}
-                            className="text-sm text-muted-foreground"
-                          >
-                            • {req}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
+                  </div>
+                )}
 
+                {/* Show university's own scholarships */}
+                {universityScholarships.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">
+                      University Scholarships
+                    </h3>
+                    <div className="grid gap-6">
+                      {universityScholarships.map((scholarship, index) => (
+                        <Card key={`university-${index}`}>
+                          <CardContent className="p-6">
+                            <div className="flex justify-between items-start mb-4">
+                              <div>
+                                <h3 className="text-xl font-bold mb-1">
+                                  {scholarship.name}
+                                </h3>
+                                <p className="text-muted-foreground">
+                                  {scholarship.amount}
+                                </p>
+                              </div>
+                              <Badge variant="secondary">
+                                {scholarship.deadline}
+                              </Badge>
+                            </div>
+                            <div>
+                              <h4 className="font-medium mb-2">
+                                Requirements:
+                              </h4>
+                              <ul className="space-y-1">
+                                {scholarship.requirements.map(
+                                  (req: string, reqIndex: number) => (
+                                    <li
+                                      key={reqIndex}
+                                      className="text-sm text-muted-foreground"
+                                    >
+                                      • {req}
+                                    </li>
+                                  )
+                                )}
+                              </ul>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <div className="text-muted-foreground">
+                    <h3 className="text-lg font-semibold mb-2">
+                      No scholarships available
+                    </h3>
+                    <p>
+                      Scholarship information for this university is not
+                      currently available.
+                    </p>
+                    <p className="text-sm mt-2">
+                      Please check the university's official website for current
+                      scholarship opportunities.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
         </Tabs>
       </div>
     </div>
