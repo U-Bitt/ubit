@@ -11,7 +11,6 @@ import {
   Star,
   ArrowRight,
   Heart,
-  X,
   Bookmark,
 } from "lucide-react";
 import { useSavedUniversities } from "@/hooks/useSavedUniversities";
@@ -38,9 +37,16 @@ export const Universities = () => {
 
   // Debug: Log saved universities when they change
   useEffect(() => {
-    console.log("Universities component: savedUniversities changed:", savedUniversities);
-    console.log("Universities component: savedUniversities.length:", savedUniversities.length);
-  }, [savedUniversities]);
+    console.log(
+      "Universities component: savedUniversities changed:",
+      savedUniversities
+    );
+    console.log(
+      "Universities component: savedUniversities.length:",
+      savedUniversities.length
+    );
+    console.log("Universities component: user ID:", user?.id);
+  }, [savedUniversities, user?.id]);
 
   // Note: Removed force refresh to avoid rate limiting
   // The useSavedUniversities hook will handle user changes automatically
@@ -49,7 +55,7 @@ export const Universities = () => {
   useEffect(() => {
     const loadUniversities = async () => {
       setLoading(true);
-      
+
       try {
         // Now getAll() returns all universities without pagination
         const response = await universityApi.getAll();
@@ -109,14 +115,26 @@ export const Universities = () => {
     return false;
   };
 
+  // Helper function to extract tuition amount for sorting
+  const getTuitionAmount = (tuition: string): number => {
+    if (!tuition.includes("$")) return Infinity; // Put non-dollar amounts at the end
+
+    // Extract number from tuition string (e.g., "$15,000/year" -> 15000)
+    const match = tuition.match(/\$?([0-9,]+)/);
+    if (match) {
+      return parseFloat(match[1].replace(/,/g, ""));
+    }
+    return Infinity;
+  };
+
   // Filter and search logic
   const filteredUniversities = useMemo(() => {
     // Safety check to ensure universities is an array
     if (!Array.isArray(universities)) {
       return [];
     }
-    
-    return universities.filter(university => {
+
+    const filtered = universities.filter(university => {
       // Search filter (including country matching)
       const matchesSearch =
         searchQuery === "" ||
@@ -145,10 +163,10 @@ export const Universities = () => {
                   "Chemistry",
                 ].includes(program)
               );
-            case "scholarships":
+            case "low-tuition":
               return (
                 university.tuition.includes("$") &&
-                parseFloat(university.tuition.replace(/[$,]/g, "")) > 50000
+                parseFloat(university.tuition.replace(/[$,]/g, "")) < 30000
               );
             case "saved":
               return isSaved(university.id);
@@ -159,6 +177,17 @@ export const Universities = () => {
 
       return matchesSearch && matchesFilters;
     });
+
+    // Sort by tuition if "low-tuition" filter is active
+    if (activeFilters.includes("low-tuition")) {
+      return filtered.sort((a, b) => {
+        const tuitionA = getTuitionAmount(a.tuition);
+        const tuitionB = getTuitionAmount(b.tuition);
+        return tuitionA - tuitionB; // Sort from lowest to highest
+      });
+    }
+
+    return filtered;
   }, [searchQuery, activeFilters, isSaved, universities]);
 
   // Filter toggle function
@@ -200,10 +229,6 @@ export const Universities = () => {
               />
             </div>
             <div className="flex gap-2 flex-wrap">
-              <Button variant="outline" onClick={clearFilters}>
-                <X className="h-4 w-4 mr-2" />
-                Clear
-              </Button>
               <Badge
                 variant={
                   activeFilters.includes("top-ranked") ? "default" : "outline"
@@ -226,12 +251,12 @@ export const Universities = () => {
               </Badge>
               <Badge
                 variant={
-                  activeFilters.includes("scholarships") ? "default" : "outline"
+                  activeFilters.includes("low-tuition") ? "default" : "outline"
                 }
                 className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
-                onClick={() => toggleFilter("scholarships")}
+                onClick={() => toggleFilter("low-tuition")}
               >
-                Scholarships
+                Low Tuition
               </Badge>
               <Badge
                 variant={
@@ -243,6 +268,26 @@ export const Universities = () => {
                 <Bookmark className="h-3 w-3 mr-1" />
                 Saved ({savedUniversities.length})
               </Badge>
+              {savedUniversities.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (
+                      confirm(
+                        `Clear all ${savedUniversities.length} saved universities?`
+                      )
+                    ) {
+                      savedUniversities.forEach(saved => {
+                        toggleSave(saved.universityId, saved.universityName);
+                      });
+                    }
+                  }}
+                  className="text-xs"
+                >
+                  Clear All
+                </Button>
+              )}
             </div>
           </div>
         </div>
