@@ -43,7 +43,6 @@ export const UserProfile = () => {
     major: "Computer Science",
   });
 
-
   // State for Areas of Interest
   const [interests, setInterests] = useState([
     "Computer Science",
@@ -71,8 +70,10 @@ export const UserProfile = () => {
 
   // State for profile switching
   const [isProfileSwitchOpen, setIsProfileSwitchOpen] = useState(false);
-  const [currentProfileId, setCurrentProfileId] = useState("68d0e375f42237519f071445"); // John Doe's ID
-  const [profiles, setProfiles] = useState<any[]>([]);
+  const [currentProfileId, setCurrentProfileId] = useState(
+    "68d0e375f42237519f071445"
+  ); // John Doe's ID
+  const [profiles, setProfiles] = useState<Record<string, unknown>[]>([]);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
 
   // Load profiles from backend
@@ -116,7 +117,7 @@ export const UserProfile = () => {
         dateOfBirth: user.dateOfBirth || "2005-06-15",
         nationality: user.nationality || "American",
       });
-      
+
       if (user.academicInfo) {
         setAcademicInfo({
           gpa: user.academicInfo.gpa?.toString() || "",
@@ -125,7 +126,7 @@ export const UserProfile = () => {
           major: user.academicInfo.intendedMajors?.[0] || "Computer Science",
         });
       }
-      
+
       if (user.areasOfInterest) {
         setInterests(user.areasOfInterest);
       }
@@ -183,7 +184,6 @@ export const UserProfile = () => {
     }));
   };
 
-
   const addInterest = () => {
     if (newInterest.trim() && !interests.includes(newInterest.trim())) {
       setInterests(prev => [...prev, newInterest.trim()]);
@@ -236,18 +236,28 @@ export const UserProfile = () => {
     try {
       // Validate and prepare academic info
       const gpa = academicInfo.gpa ? parseFloat(academicInfo.gpa) : undefined;
-      const graduationYear = academicInfo.graduationYear ? parseInt(academicInfo.graduationYear) : undefined;
-      
+      const graduationYear = academicInfo.graduationYear
+        ? parseInt(academicInfo.graduationYear)
+        : undefined;
+
       // Only include academicInfo if we have valid data
-      const academicInfoData = (gpa !== undefined && gpa >= 0 && gpa <= 4) || 
-                              academicInfo.school || 
-                              (graduationYear !== undefined && graduationYear >= 1900) || 
-                              academicInfo.major ? {
-        ...(gpa !== undefined && gpa >= 0 && gpa <= 4 && { gpa }),
-        ...(academicInfo.school && { highSchoolName: academicInfo.school }),
-        ...(graduationYear !== undefined && graduationYear >= 1900 && { graduationYear }),
-        ...(academicInfo.major && { intendedMajors: [academicInfo.major] }),
-      } : undefined;
+      const academicInfoData =
+        (gpa !== undefined && gpa >= 0 && gpa <= 4) ||
+        academicInfo.school ||
+        (graduationYear !== undefined && graduationYear >= 1900) ||
+        academicInfo.major
+          ? {
+              ...(gpa !== undefined && gpa >= 0 && gpa <= 4 && { gpa }),
+              ...(academicInfo.school && {
+                highSchoolName: academicInfo.school,
+              }),
+              ...(graduationYear !== undefined &&
+                graduationYear >= 1900 && { graduationYear }),
+              ...(academicInfo.major && {
+                intendedMajors: [academicInfo.major],
+              }),
+            }
+          : undefined;
 
       // Validate email format
       const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
@@ -276,20 +286,20 @@ export const UserProfile = () => {
         try {
           console.log("Sending user data to backend:", {
             userId: user.id,
-            data: updatedUserData
+            data: updatedUserData,
           });
-          await userApi.update(user.id, updatedUserData as any);
+          await userApi.update(user.id, updatedUserData);
           console.log("Profile saved to backend successfully");
           alert("Profile updated successfully!");
-        } catch (apiError: any) {
+        } catch (apiError: unknown) {
           console.error("Error saving to backend:", apiError);
-          
+
           // Try to extract meaningful error message
           let errorMessage = "Failed to update profile. Please try again.";
-          if (apiError.message) {
+          if (apiError instanceof Error && apiError.message) {
             errorMessage = apiError.message;
           }
-          
+
           alert(`Error: ${errorMessage}`);
           // Continue with local storage even if backend fails
         }
@@ -323,11 +333,11 @@ export const UserProfile = () => {
     }
 
     setCurrentProfileId(profileId);
-    
+
     // Load the selected profile's data from backend
     try {
       const selectedUser = await userApi.getById(profileId);
-      
+
       // Update personal information
       setPersonalInfo({
         firstName: selectedUser.firstName,
@@ -337,21 +347,22 @@ export const UserProfile = () => {
         dateOfBirth: selectedUser.dateOfBirth || "",
         nationality: selectedUser.nationality || "",
       });
-      
+
       // Update academic information - always reset to ensure clean state
       setAcademicInfo({
         gpa: selectedUser.academicInfo?.gpa?.toString() || "",
         school: selectedUser.academicInfo?.highSchoolName || "",
-        graduationYear: selectedUser.academicInfo?.graduationYear?.toString() || "",
+        graduationYear:
+          selectedUser.academicInfo?.graduationYear?.toString() || "",
         major: selectedUser.academicInfo?.intendedMajors?.[0] || "",
       });
-      
+
       // Update interests
       setInterests(selectedUser.areasOfInterest || []);
-      
+
       // Update user context with selected profile
       updateUser(selectedUser);
-      
+
       // Save to localStorage
       try {
         const profileData = {
@@ -366,7 +377,8 @@ export const UserProfile = () => {
           academicInfo: {
             gpa: selectedUser.academicInfo?.gpa?.toString() || "0",
             school: selectedUser.academicInfo?.highSchoolName || "",
-            graduationYear: selectedUser.academicInfo?.graduationYear?.toString() || "",
+            graduationYear:
+              selectedUser.academicInfo?.graduationYear?.toString() || "",
             major: selectedUser.academicInfo?.intendedMajors?.[0] || "",
           },
           interests: selectedUser.areasOfInterest || [],
@@ -381,14 +393,43 @@ export const UserProfile = () => {
       // Fallback to hardcoded profile data if backend fails
       const selectedProfile = profiles.find(p => p.id === profileId);
       if (selectedProfile) {
-        setPersonalInfo(selectedProfile.personalInfo);
-        setAcademicInfo({
-          gpa: selectedProfile.academicInfo.gpa.toString(),
-          school: selectedProfile.academicInfo.highSchoolName,
-          graduationYear: selectedProfile.academicInfo.graduationYear.toString(),
-          major: selectedProfile.academicInfo.major,
+        setPersonalInfo({
+          firstName:
+            ((selectedProfile.personalInfo as Record<string, unknown>)
+              .firstName as string) || "",
+          lastName:
+            ((selectedProfile.personalInfo as Record<string, unknown>)
+              .lastName as string) || "",
+          email:
+            ((selectedProfile.personalInfo as Record<string, unknown>)
+              .email as string) || "",
+          phone:
+            ((selectedProfile.personalInfo as Record<string, unknown>)
+              .phone as string) || "",
+          dateOfBirth:
+            ((selectedProfile.personalInfo as Record<string, unknown>)
+              .dateOfBirth as string) || "",
+          nationality:
+            ((selectedProfile.personalInfo as Record<string, unknown>)
+              .nationality as string) || "",
         });
-        setInterests(selectedProfile.interests);
+        setAcademicInfo({
+          gpa:
+            (
+              selectedProfile.academicInfo as Record<string, unknown>
+            ).gpa?.toString() || "",
+          school:
+            ((selectedProfile.academicInfo as Record<string, unknown>)
+              .highSchoolName as string) || "",
+          graduationYear:
+            (
+              selectedProfile.academicInfo as Record<string, unknown>
+            ).graduationYear?.toString() || "",
+          major:
+            ((selectedProfile.academicInfo as Record<string, unknown>)
+              .major as string) || "",
+        });
+        setInterests(selectedProfile.interests as string[]);
       }
     }
   };
@@ -399,7 +440,7 @@ export const UserProfile = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            {personalInfo.firstName} {personalInfo.lastName}'s Profile
+            {personalInfo.firstName} {personalInfo.lastName}&apos;s Profile
           </h1>
           <p className="text-muted-foreground">
             Manage your personal information and academic details
@@ -463,9 +504,7 @@ export const UserProfile = () => {
                 <p className="text-muted-foreground mb-2">
                   {personalInfo.email}
                 </p>
-                <Badge variant="secondary">
-                  Student
-                </Badge>
+                <Badge variant="secondary">Student</Badge>
               </CardContent>
             </Card>
 
@@ -483,7 +522,12 @@ export const UserProfile = () => {
                   {isEditing ? (
                     <Input
                       value={academicInfo.gpa}
-                      onChange={e => setAcademicInfo(prev => ({ ...prev, gpa: e.target.value }))}
+                      onChange={e =>
+                        setAcademicInfo(prev => ({
+                          ...prev,
+                          gpa: e.target.value,
+                        }))
+                      }
                       placeholder="e.g., 3.8/4.0"
                       className="text-2xl font-bold text-primary"
                     />
@@ -498,7 +542,12 @@ export const UserProfile = () => {
                   {isEditing ? (
                     <Input
                       value={academicInfo.school}
-                      onChange={e => setAcademicInfo(prev => ({ ...prev, school: e.target.value }))}
+                      onChange={e =>
+                        setAcademicInfo(prev => ({
+                          ...prev,
+                          school: e.target.value,
+                        }))
+                      }
                       placeholder="Enter school name"
                     />
                   ) : (
@@ -510,7 +559,12 @@ export const UserProfile = () => {
                   {isEditing ? (
                     <Input
                       value={academicInfo.graduationYear}
-                      onChange={e => setAcademicInfo(prev => ({ ...prev, graduationYear: e.target.value }))}
+                      onChange={e =>
+                        setAcademicInfo(prev => ({
+                          ...prev,
+                          graduationYear: e.target.value,
+                        }))
+                      }
                       placeholder="e.g., 2024"
                     />
                   ) : (
@@ -522,7 +576,12 @@ export const UserProfile = () => {
                   {isEditing ? (
                     <Input
                       value={academicInfo.major}
-                      onChange={e => setAcademicInfo(prev => ({ ...prev, major: e.target.value }))}
+                      onChange={e =>
+                        setAcademicInfo(prev => ({
+                          ...prev,
+                          major: e.target.value,
+                        }))
+                      }
                       placeholder="e.g., Computer Science"
                     />
                   ) : (
@@ -646,7 +705,6 @@ export const UserProfile = () => {
               </CardContent>
             </Card>
 
-
             {/* Interests */}
             <Card>
               <CardHeader>
@@ -752,7 +810,14 @@ export const UserProfile = () => {
           isOpen={isProfileSwitchOpen}
           onClose={() => setIsProfileSwitchOpen(false)}
           onSwitchProfile={handleSwitchProfile}
-          profiles={profiles}
+          profiles={profiles.map(profile => ({
+            id: profile.id as string,
+            name: profile.name as string,
+            email: profile.email as string,
+            avatar: profile.avatar as string | undefined,
+            role: profile.role as string,
+            isActive: profile.isActive as boolean,
+          }))}
           currentProfileId={currentProfileId}
         />
       </div>

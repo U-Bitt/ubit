@@ -68,7 +68,7 @@ export interface User {
   dateOfBirth?: string;
   nationality?: string;
   avatar?: string;
-  
+
   // Personal Information
   personalInfo?: {
     firstName: string;
@@ -78,7 +78,7 @@ export interface User {
     dateOfBirth?: string;
     nationality?: string;
   };
-  
+
   // Academic Information
   academicInfo?: {
     gpa: number; // GPA out of 4
@@ -86,10 +86,10 @@ export interface User {
     graduationYear: number;
     intendedMajors: string[];
   };
-  
+
   // Areas of Interest
   areasOfInterest?: string[];
-  
+
   // Test Scores
   testScores?: Array<{
     id: string;
@@ -99,7 +99,7 @@ export interface User {
     maxScore?: string;
     percentile?: number;
   }>;
-  
+
   // Documents
   documents?: Array<{
     id: string;
@@ -109,7 +109,7 @@ export interface User {
     uploadedAt: string;
     status: "draft" | "uploaded" | "verified" | "rejected";
   }>;
-  
+
   // Saved Universities
   savedUniversities?: Array<{
     id: string;
@@ -118,7 +118,7 @@ export interface User {
     savedAt: string;
     notes?: string;
   }>;
-  
+
   // Legacy fields for backward compatibility
   preferences?: UserPreferences;
   applications?: Application[];
@@ -145,6 +145,33 @@ export interface Application {
   documents: string[];
   submittedAt?: Date;
   deadline?: Date;
+}
+
+// Visa types
+export interface Visa {
+  id: string;
+  type: string;
+  country: string;
+  duration?: string;
+  requirements: string[];
+  processingTime: string;
+  cost: string;
+  description?: string;
+  isWorkPermit?: boolean;
+  isStudentVisa?: boolean;
+  validityPeriod?: string;
+  applicationProcess?: string;
+  documents: string[];
+  eligibility?: string;
+  restrictions?: string[];
+  benefits?: string[];
+  validity: string;
+  officialWebsite: string;
+  workRights: string;
+  studyRights: string;
+  familyRights: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // Scholarship types
@@ -208,22 +235,30 @@ export interface SearchQuery extends PaginationQuery {
   maxTuition?: number;
 }
 
-// Visa types
-export interface Visa {
+// Document types
+export interface Document {
   id: string;
-  country: string;
+  name: string;
   type: string;
-  processingTime: string;
-  cost: string;
-  validity: string;
-  requirements: string[];
-  documents: string[];
-  officialWebsite: string;
+  university?: string;
   description?: string;
-  eligibility?: string[];
-  restrictions?: string[];
-  benefits?: string[];
+  filePath: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  uploadedBy: string;
+  versions?: DocumentVersion[];
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface DocumentVersion {
+  id: string;
+  version: number;
+  filePath: string;
+  fileName: string;
+  fileSize: number;
+  uploadedAt: Date;
+  uploadedBy: string;
 }

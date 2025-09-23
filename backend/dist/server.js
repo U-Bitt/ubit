@@ -28,9 +28,19 @@ const initializeDatabase = async () => {
 initializeDatabase();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5001;
-app.use((0, helmet_1.default)());
+app.use((0, helmet_1.default)({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
+    frameguard: false,
+}));
 app.use((0, cors_1.default)({
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    origin: [
+        process.env.CORS_ORIGIN || "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3000",
+    ],
     credentials: true,
 }));
 const limiter = (0, express_rate_limit_1.default)({
@@ -42,6 +52,12 @@ app.use(limiter);
 app.use((0, morgan_1.default)("combined"));
 app.use(express_1.default.json({ limit: "10mb" }));
 app.use(express_1.default.urlencoded({ extended: true, limit: "10mb" }));
+app.use("/uploads", (req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+    next();
+}, express_1.default.static("uploads"));
 app.get("/health", (req, res) => {
     res.status(200).json({
         success: true,
