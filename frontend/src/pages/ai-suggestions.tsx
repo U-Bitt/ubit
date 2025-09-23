@@ -31,6 +31,17 @@ export default function AISuggestionsPage() {
   const [scoresError, setScoresError] = useState<string | null>(null);
   const [lastFetchTime, setLastFetchTime] = useState<number>(0);
 
+  // Navigation handlers
+  const handleViewDetails = (universityId: string) => {
+    router.push(`/universityDetail/${universityId}`);
+  };
+
+  const handleApplyNow = (universityId: string) => {
+    // For now, navigate to university detail page
+    // In the future, this could navigate to an application form
+    router.push(`/universityDetail/${universityId}`);
+  };
+
   // Get user data from user context and test scores
   const [userData, setUserData] = useState({
     gpa: "",
@@ -511,12 +522,14 @@ export default function AISuggestionsPage() {
                           variant="outline"
                           size="sm"
                           className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white flex-1 min-w-0"
+                          onClick={() => handleApplyNow(university.id)}
                         >
                           Apply Now
                         </Button>
                         <Button
                           size="sm"
                           className="bg-white text-black hover:bg-white/90 flex-1 min-w-0"
+                          onClick={() => handleViewDetails(university.id)}
                         >
                           <span className="truncate">View Details</span>
                           <ArrowRight className="ml-2 h-4 w-4 flex-shrink-0" />

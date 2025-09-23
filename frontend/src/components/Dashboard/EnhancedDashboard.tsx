@@ -962,8 +962,22 @@ export const EnhancedDashboard = () => {
   // External university data
   const [isLoadingExternal, setIsLoadingExternal] = useState(false);
 
+  // Load applications from localStorage
+  const [savedApplications, setSavedApplications] = useState<Application[]>([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("applications");
+    if (saved) {
+      try {
+        setSavedApplications(JSON.parse(saved));
+      } catch (error) {
+        console.error("Error loading applications from localStorage:", error);
+      }
+    }
+  }, []);
+
   // Mock data with enhanced information
-  const applications: Application[] = useMemo(
+  const mockApplications: Application[] = useMemo(
     () => [
       {
         id: 1,
@@ -1210,6 +1224,17 @@ export const EnhancedDashboard = () => {
     ],
     []
   );
+
+  // Combine mock applications with saved applications
+  const applications: Application[] = useMemo(() => {
+    // Filter out any saved applications that might conflict with mock data
+    const mockUniversityNames = mockApplications.map(app => app.university);
+    const filteredSaved = savedApplications.filter(
+      app => !mockUniversityNames.includes(app.university)
+    );
+
+    return [...mockApplications, ...filteredSaved];
+  }, [mockApplications, savedApplications]);
 
   const [popularUniversities, setPopularUniversities] = useState<University[]>(
     []
