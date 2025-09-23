@@ -91,6 +91,24 @@ export interface University {
   deadline: string;
   image: string;
   programs: string[];
+  status?: string;
+  details?: {
+    founded?: string;
+    students?: string;
+    faculty?: string;
+    endowment?: string;
+    research?: string;
+    notable?: string;
+    website?: string;
+    type?: string;
+    language?: string;
+    campus?: string;
+  };
+}
+
+// SavedUniversity extends University with required status
+export interface SavedUniversity extends University {
+  status: string;
 }
 
 // Scholarship related types

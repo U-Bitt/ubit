@@ -49,9 +49,9 @@ export const ExamProgressTracker = ({
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Progress</span>
-                <span>{exam.progress}%</span>
+                <span>{Math.round(exam.progress)}%</span>
               </div>
-              <Progress value={exam.progress} className="h-2" />
+              <Progress value={Math.round(exam.progress)} className="h-2" />
             </div>
             <div className="flex justify-between items-center text-xs">
               {exam.score ? (

@@ -83,9 +83,9 @@ export const ProgressTracker = ({
               </span>
             </div>
             <div className="space-y-2">
-              <Progress value={item.progress} className="h-2" />
+              <Progress value={Math.round(item.progress)} className="h-2" />
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{item.progress}% complete</span>
+                <span>{Math.round(item.progress)}% complete</span>
                 <span>{item.status}</span>
               </div>
             </div>

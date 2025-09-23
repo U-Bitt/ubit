@@ -12,7 +12,6 @@ import {
   Heart,
   ExternalLink,
   MoreHorizontal,
-  Plus,
   Bookmark,
   TrendingUp,
   Award,
@@ -57,7 +56,8 @@ interface EnhancedSavedUniversitiesProps {
 
 export const EnhancedSavedUniversities = ({ 
   universities, 
-  onEditUniversity, 
+  onEditUniversity,
+  onRemoveUniversity,
   onApplyToUniversity,
   onViewAllUniversities
 }: EnhancedSavedUniversitiesProps) => {
@@ -110,18 +110,12 @@ export const EnhancedSavedUniversities = ({
   return (
     <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
       <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-3 text-xl">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500">
-              <GraduationCap className="h-5 w-5 text-white" />
-            </div>
-            Saved Universities
-          </CardTitle>
-          <Button size="sm" variant="outline" className="gap-2">
-            <Plus className="h-4 w-4" />
-            Add
-          </Button>
-        </div>
+        <CardTitle className="flex items-center gap-3 text-xl">
+          <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500">
+            <GraduationCap className="h-5 w-5 text-white" />
+          </div>
+          Saved Universities
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {universities.length === 0 ? (
@@ -237,22 +231,12 @@ export const EnhancedSavedUniversities = ({
                       </Button>
                       <Button 
                         size="sm" 
-                        variant="ghost" 
+                        variant="destructive" 
                         className="gap-2"
-                        onClick={() => onEditUniversity?.(university)}
+                        onClick={() => onRemoveUniversity?.(university.id)}
                       >
-                        <Globe className="h-3 w-3" />
-                        Edit
-                      </Button>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="text-xs"
-                        onClick={() => onApplyToUniversity?.(university)}
-                      >
-                        Apply Now
+                        <X className="h-3 w-3" />
+                        Unsave
                       </Button>
                     </div>
                   </div>
