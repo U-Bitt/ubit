@@ -47,23 +47,25 @@ export declare const deleteApplication: (req: Request<{
 }>, res: Response<ApiResponse<{}>>, next: NextFunction) => Promise<void>;
 export declare const getTestScores: (req: Request<{}, ApiResponse<any[]>>, res: Response<ApiResponse<any[]>>, next: NextFunction) => Promise<void>;
 export declare const addTestScore: (req: Request<{}, ApiResponse<any>, {
-    testName: string;
+    examType: string;
     score: string;
-    date: string;
-    maxScore?: string;
-    percentile?: number;
+    maxScore: string;
+    certified: boolean;
+    testDate: string;
+    validityDate: string;
 }>, res: Response<ApiResponse<any>>, next: NextFunction) => Promise<void>;
 export declare const updateTestScore: (req: Request<{
-    testId: string;
+    id: string;
 }, ApiResponse<any>, {
-    testName?: string;
+    examType?: string;
     score?: string;
-    date?: string;
     maxScore?: string;
-    percentile?: number;
+    certified?: boolean;
+    testDate?: string;
+    validityDate?: string;
 }>, res: Response<ApiResponse<any>>, next: NextFunction) => Promise<void>;
 export declare const deleteTestScore: (req: Request<{
-    testId: string;
+    id: string;
 }>, res: Response<ApiResponse<{}>>, next: NextFunction) => Promise<void>;
 export declare const getDocuments: (req: Request<{}, ApiResponse<any[]>>, res: Response<ApiResponse<any[]>>, next: NextFunction) => Promise<void>;
 export declare const addDocument: (req: Request<{}, ApiResponse<any>, {

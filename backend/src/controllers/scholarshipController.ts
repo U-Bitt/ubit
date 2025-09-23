@@ -69,6 +69,73 @@ export const getAllScholarships = async (
   }
 };
 
+// Get scholarships by university name
+export const getScholarshipsByUniversity = async (
+  req: Request<{ universityName: string }, ApiResponse<Scholarship[]>, {}, {}>,
+  res: Response<ApiResponse<Scholarship[]>>,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { universityName } = req.params;
+
+    if (!universityName) {
+      res.status(400).json({
+        success: false,
+        data: [] as Scholarship[],
+        message: "University name is required",
+      });
+      return;
+    }
+
+    // Decode the university name and search for scholarships
+    const decodedUniversityName = decodeURIComponent(universityName);
+
+    // Search for scholarships with university name (case insensitive)
+    const scholarships = await ScholarshipModel.find({
+      university: { $regex: new RegExp(decodedUniversityName, "i") },
+      isActive: true,
+    }).lean();
+
+    // Convert MongoDB documents to Scholarship interface
+    const scholarshipData: Scholarship[] = scholarships.map((scholarship) => ({
+      id: (scholarship._id as any).toString(),
+      title: scholarship.title,
+      description: scholarship.description,
+      amount: scholarship.amount,
+      university: scholarship.university,
+      country: scholarship.country,
+      deadline: scholarship.deadline,
+      type: scholarship.type,
+      requirements: scholarship.requirements,
+      coverage: scholarship.coverage,
+      duration: scholarship.duration,
+      applicationProcess: scholarship.applicationProcess,
+      eligibility: scholarship.eligibility,
+      benefits: scholarship.benefits,
+      image: scholarship.image,
+      donor: scholarship.donor,
+      contactEmail: scholarship.contactEmail,
+      website: scholarship.website,
+      isActive: scholarship.isActive,
+      createdAt: scholarship.createdAt,
+      updatedAt: scholarship.updatedAt,
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: scholarshipData,
+      message: `Found ${scholarshipData.length} scholarships for ${decodedUniversityName}`,
+    });
+  } catch (error) {
+    console.error("Error fetching scholarships by university:", error);
+    res.status(500).json({
+      success: false,
+      data: [] as Scholarship[],
+      message: "Internal server error",
+    });
+  }
+};
+
 // Get scholarship by ID
 export const getScholarshipById = async (
   req: Request<{ id: string }>,

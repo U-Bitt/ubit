@@ -2,6 +2,7 @@ import express from "express";
 import {
   getAllScholarships,
   getScholarshipById,
+  getScholarshipsByUniversity,
   searchScholarships,
   createScholarship,
   deleteScholarship,
@@ -17,6 +18,9 @@ router.post("/", createScholarship);
 
 // GET /api/scholarships/search - Search scholarships
 router.get("/search", searchScholarships);
+
+// GET /api/scholarships/university/:universityName - Get scholarships by university
+router.get("/university/:universityName", getScholarshipsByUniversity);
 
 // GET /api/scholarships/:id - Get scholarship by ID
 router.get("/:id", getScholarshipById);

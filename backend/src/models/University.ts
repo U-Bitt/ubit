@@ -18,6 +18,16 @@ export interface IUniversity extends Document {
   founded?: number;
   type?: "public" | "private";
   size?: "small" | "medium" | "large";
+  requirements?: string[];
+  scholarships?: {
+    name: string;
+    amount: string;
+    requirements: string[];
+    deadline: string;
+    description?: string;
+  }[];
+  campusSize?: string;
+  studentFacultyRatio?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -114,6 +124,49 @@ const UniversitySchema = new Schema<IUniversity>(
       type: String,
       enum: ["small", "medium", "large"],
       default: "medium",
+    },
+    requirements: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    scholarships: [
+      {
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        amount: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        requirements: [
+          {
+            type: String,
+            trim: true,
+          },
+        ],
+        deadline: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        description: {
+          type: String,
+          trim: true,
+        },
+      },
+    ],
+    campusSize: {
+      type: String,
+      trim: true,
+    },
+    studentFacultyRatio: {
+      type: String,
+      trim: true,
     },
   },
   {

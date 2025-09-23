@@ -109,52 +109,52 @@ const generateAISuggestions = (gpa, sat, toefl, major) => {
         let reasons = [];
         if (gpaNum >= 3.8) {
             score += 25;
-            reasons.push("Өндөр GPA");
+            reasons.push("High GPA");
         }
         else if (gpaNum >= 3.5) {
             score += 20;
-            reasons.push("Сайн GPA");
+            reasons.push("Good GPA");
         }
         else if (gpaNum >= 3.0) {
             score += 15;
-            reasons.push("Дундаж GPA");
+            reasons.push("Average GPA");
         }
         if (satNum >= 1500) {
             score += 25;
-            reasons.push("Өндөр SAT оноо");
+            reasons.push("High SAT Score");
         }
         else if (satNum >= 1400) {
             score += 20;
-            reasons.push("Сайн SAT оноо");
+            reasons.push("Good SAT Score");
         }
         else if (satNum >= 1300) {
             score += 15;
-            reasons.push("Дундаж SAT оноо");
+            reasons.push("Average SAT Score");
         }
         if (toeflNum >= 110) {
             score += 20;
-            reasons.push("Өндөр TOEFL оноо");
+            reasons.push("High TOEFL Score");
         }
         else if (toeflNum >= 100) {
             score += 15;
-            reasons.push("Сайн TOEFL оноо");
+            reasons.push("Good TOEFL Score");
         }
         else if (toeflNum >= 90) {
             score += 10;
-            reasons.push("Дундаж TOEFL оноо");
+            reasons.push("Average TOEFL Score");
         }
         if (uni.programs.some((program) => program.toLowerCase().includes(major.toLowerCase()) ||
             major.toLowerCase().includes(program.toLowerCase()))) {
             score += 20;
-            reasons.push("Тохирсон мэргэжил");
+            reasons.push("Matching Major");
         }
         if (uni.ranking <= 10) {
             score += 10;
-            reasons.push("Дээд зэрэглэлийн их сургууль");
+            reasons.push("Top Tier University");
         }
         else if (uni.ranking <= 50) {
             score += 5;
-            reasons.push("Сайн зэрэглэлийн их сургууль");
+            reasons.push("High Ranking University");
         }
         return {
             ...uni,
@@ -171,7 +171,7 @@ const suggestUniversities = async (req, res, next) => {
         if (!gpa || !sat || !toefl || !major) {
             const errorResponse = {
                 success: false,
-                message: "GPA, SAT, TOEFL, болон мэргэжил заавал оруулах шаардлагатай",
+                message: "GPA, SAT, TOEFL, and major are required",
                 data: [],
             };
             res.status(400).json(errorResponse);
@@ -180,7 +180,7 @@ const suggestUniversities = async (req, res, next) => {
         const suggestions = generateAISuggestions(gpa, sat, toefl, major);
         const response = {
             success: true,
-            message: "AI санал амжилттай үүсгэгдлээ",
+            message: "AI suggestions generated successfully",
             data: suggestions,
         };
         res.status(200).json(response);

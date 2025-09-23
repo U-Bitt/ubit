@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteScholarship = exports.createScholarship = exports.searchScholarships = exports.getScholarshipById = exports.getAllScholarships = void 0;
+exports.deleteScholarship = exports.createScholarship = exports.searchScholarships = exports.getScholarshipById = exports.getScholarshipsByUniversity = exports.getAllScholarships = void 0;
 const Scholarship_1 = __importDefault(require("../models/Scholarship"));
 const getAllScholarships = async (req, res, next) => {
     try {
@@ -59,6 +59,61 @@ const getAllScholarships = async (req, res, next) => {
     }
 };
 exports.getAllScholarships = getAllScholarships;
+const getScholarshipsByUniversity = async (req, res, next) => {
+    try {
+        const { universityName } = req.params;
+        if (!universityName) {
+            res.status(400).json({
+                success: false,
+                data: [],
+                message: "University name is required",
+            });
+            return;
+        }
+        const decodedUniversityName = decodeURIComponent(universityName);
+        const scholarships = await Scholarship_1.default.find({
+            university: { $regex: new RegExp(decodedUniversityName, "i") },
+            isActive: true,
+        }).lean();
+        const scholarshipData = scholarships.map((scholarship) => ({
+            id: scholarship._id.toString(),
+            title: scholarship.title,
+            description: scholarship.description,
+            amount: scholarship.amount,
+            university: scholarship.university,
+            country: scholarship.country,
+            deadline: scholarship.deadline,
+            type: scholarship.type,
+            requirements: scholarship.requirements,
+            coverage: scholarship.coverage,
+            duration: scholarship.duration,
+            applicationProcess: scholarship.applicationProcess,
+            eligibility: scholarship.eligibility,
+            benefits: scholarship.benefits,
+            image: scholarship.image,
+            donor: scholarship.donor,
+            contactEmail: scholarship.contactEmail,
+            website: scholarship.website,
+            isActive: scholarship.isActive,
+            createdAt: scholarship.createdAt,
+            updatedAt: scholarship.updatedAt,
+        }));
+        res.status(200).json({
+            success: true,
+            data: scholarshipData,
+            message: `Found ${scholarshipData.length} scholarships for ${decodedUniversityName}`,
+        });
+    }
+    catch (error) {
+        console.error("Error fetching scholarships by university:", error);
+        res.status(500).json({
+            success: false,
+            data: [],
+            message: "Internal server error",
+        });
+    }
+};
+exports.getScholarshipsByUniversity = getScholarshipsByUniversity;
 const getScholarshipById = async (req, res, next) => {
     try {
         const { id } = req.params;
