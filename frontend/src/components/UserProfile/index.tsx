@@ -71,8 +71,8 @@ export const UserProfile = () => {
   // State for profile switching
   const [isProfileSwitchOpen, setIsProfileSwitchOpen] = useState(false);
   const [currentProfileId, setCurrentProfileId] = useState(
-    "68d0e375f42237519f071445"
-  ); // John Doe's ID
+    user?.id || ""
+  ); // Current user's ID
   const [profiles, setProfiles] = useState<Record<string, unknown>[]>([]);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
 
@@ -114,7 +114,7 @@ export const UserProfile = () => {
         lastName: user.lastName || "Doe",
         email: user.email || "john.doe@example.com",
         phone: user.phone || "+1 (555) 123-4567",
-        dateOfBirth: user.dateOfBirth || "2005-06-15",
+        dateOfBirth: user.dateOfBirth ? user.dateOfBirth.split('T')[0] : "2005-06-15",
         nationality: user.nationality || "American",
       });
 
@@ -130,6 +130,11 @@ export const UserProfile = () => {
       if (user.areasOfInterest) {
         setInterests(user.areasOfInterest);
       }
+
+      // Update current profile ID when user changes
+      if (user.id) {
+        setCurrentProfileId(user.id);
+      }
     }
   }, [user]);
 
@@ -138,36 +143,40 @@ export const UserProfile = () => {
     loadProfiles();
   }, []);
 
-  // Load data from localStorage on component mount
+  // Load data from localStorage on component mount (user-specific)
   useEffect(() => {
-    try {
-      const savedProfile = localStorage.getItem("userProfile");
-      if (savedProfile) {
-        const profileData = JSON.parse(savedProfile);
-        setPersonalInfo(profileData.personalInfo || personalInfo);
-        setAcademicInfo(profileData.academicInfo || academicInfo);
-        setInterests(profileData.interests || interests);
-        setProfilePicture(profileData.profilePicture || null);
+    if (user?.id) {
+      try {
+        const savedProfile = localStorage.getItem(`userProfile_${user.id}`);
+        if (savedProfile) {
+          const profileData = JSON.parse(savedProfile);
+          setPersonalInfo(profileData.personalInfo || personalInfo);
+          setAcademicInfo(profileData.academicInfo || academicInfo);
+          setInterests(profileData.interests || interests);
+          setProfilePicture(profileData.profilePicture || null);
+        }
+      } catch (error) {
+        console.error("Error loading profile data:", error);
       }
-    } catch (error) {
-      console.error("Error loading profile data:", error);
     }
-  }, []);
+  }, [user?.id]);
 
-  // Save data to localStorage whenever data changes
+  // Save data to localStorage whenever data changes (user-specific)
   useEffect(() => {
-    try {
-      const profileData = {
-        personalInfo,
-        academicInfo,
-        interests,
-        profilePicture,
-      };
-      localStorage.setItem("userProfile", JSON.stringify(profileData));
-    } catch (error) {
-      console.error("Error saving user data:", error);
+    if (user?.id) {
+      try {
+        const profileData = {
+          personalInfo,
+          academicInfo,
+          interests,
+          profilePicture,
+        };
+        localStorage.setItem(`userProfile_${user.id}`, JSON.stringify(profileData));
+      } catch (error) {
+        console.error("Error saving user data:", error);
+      }
     }
-  }, [personalInfo, academicInfo, interests, profilePicture]);
+  }, [personalInfo, academicInfo, interests, profilePicture, user?.id]);
 
   // Handler functions
   const handlePersonalInfoChange = (field: string, value: string) => {
@@ -229,7 +238,9 @@ export const UserProfile = () => {
   const removeProfilePicture = () => {
     setProfilePicture(null);
     setProfilePictureFile(null);
-    localStorage.removeItem("userProfilePicture");
+    if (user?.id) {
+      localStorage.removeItem(`userProfilePicture_${user.id}`);
+    }
   };
 
   const handleSave = async () => {
@@ -288,9 +299,27 @@ export const UserProfile = () => {
             userId: user.id,
             data: updatedUserData,
           });
-          await userApi.update(user.id, updatedUserData);
+          
+          // Update basic user info
+          await userApi.update(user.id, {
+            firstName: personalInfo.firstName,
+            lastName: personalInfo.lastName,
+            email: personalInfo.email,
+            phone: personalInfo.phone,
+            dateOfBirth: personalInfo.dateOfBirth,
+            nationality: personalInfo.nationality,
+            personalInfo: personalInfo,
+          });
+
+          // Update academic info if available
+          if (academicInfoData) {
+            await userApi.updateAcademicInfo(user.id, academicInfoData);
+          }
+
+          // Update areas of interest
+          await userApi.updateAreasOfInterest(user.id, interests);
+
           console.log("Profile saved to backend successfully");
-          alert("Profile updated successfully!");
         } catch (apiError: unknown) {
           console.error("Error saving to backend:", apiError);
 
@@ -305,12 +334,14 @@ export const UserProfile = () => {
         }
       }
 
-      // Save all data to localStorage as backup
-      localStorage.setItem("userPersonalInfo", JSON.stringify(personalInfo));
-      localStorage.setItem("userAcademicInfo", JSON.stringify(academicInfo));
-      localStorage.setItem("userInterests", JSON.stringify(interests));
-      if (profilePicture) {
-        localStorage.setItem("userProfilePicture", profilePicture);
+      // Save all data to localStorage as backup (user-specific)
+      if (user?.id) {
+        localStorage.setItem(`userPersonalInfo_${user.id}`, JSON.stringify(personalInfo));
+        localStorage.setItem(`userAcademicInfo_${user.id}`, JSON.stringify(academicInfo));
+        localStorage.setItem(`userInterests_${user.id}`, JSON.stringify(interests));
+        if (profilePicture) {
+          localStorage.setItem(`userProfilePicture_${user.id}`, profilePicture);
+        }
       }
 
       setIsEditing(false);
@@ -344,7 +375,7 @@ export const UserProfile = () => {
         lastName: selectedUser.lastName,
         email: selectedUser.email,
         phone: selectedUser.phone || "",
-        dateOfBirth: selectedUser.dateOfBirth || "",
+        dateOfBirth: selectedUser.dateOfBirth ? selectedUser.dateOfBirth.split('T')[0] : "",
         nationality: selectedUser.nationality || "",
       });
 
@@ -371,7 +402,7 @@ export const UserProfile = () => {
             lastName: selectedUser.lastName,
             email: selectedUser.email,
             phone: selectedUser.phone || "",
-            dateOfBirth: selectedUser.dateOfBirth || "",
+            dateOfBirth: selectedUser.dateOfBirth ? selectedUser.dateOfBirth.split('T')[0] : "",
             nationality: selectedUser.nationality || "",
           },
           academicInfo: {
@@ -384,7 +415,7 @@ export const UserProfile = () => {
           interests: selectedUser.areasOfInterest || [],
           profilePicture: null,
         };
-        localStorage.setItem("userProfile", JSON.stringify(profileData));
+        localStorage.setItem(`userProfile_${selectedUser.id}`, JSON.stringify(profileData));
       } catch (error) {
         console.error("Error saving profile data:", error);
       }

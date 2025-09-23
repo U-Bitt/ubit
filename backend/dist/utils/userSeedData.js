@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.seedUsers = exports.userSeedData = void 0;
+exports.seedUsersForce = exports.seedUsers = exports.userSeedData = void 0;
 const User_1 = __importDefault(require("../models/User"));
 exports.userSeedData = [
     {
@@ -526,7 +526,12 @@ exports.userSeedData = [
 ];
 const seedUsers = async () => {
     try {
-        await User_1.default.deleteMany({});
+        const existingUsers = await User_1.default.countDocuments();
+        if (existingUsers > 0) {
+            console.log(`⚠️  ${existingUsers} users already exist. Skipping user seeding to preserve existing data.`);
+            console.log("💡 Use seedUsersForce() if you want to replace all users.");
+            return;
+        }
         await User_1.default.insertMany(exports.userSeedData);
         console.log("✅ User seed data inserted successfully");
     }
@@ -535,4 +540,16 @@ const seedUsers = async () => {
     }
 };
 exports.seedUsers = seedUsers;
+const seedUsersForce = async () => {
+    try {
+        console.log("⚠️  Force seeding: This will delete ALL existing users!");
+        await User_1.default.deleteMany({});
+        await User_1.default.insertMany(exports.userSeedData);
+        console.log("✅ User seed data force-inserted successfully");
+    }
+    catch (error) {
+        console.error("❌ Error force-seeding user data:", error);
+    }
+};
+exports.seedUsersForce = seedUsersForce;
 //# sourceMappingURL=userSeedData.js.map

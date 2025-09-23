@@ -22,8 +22,21 @@ const errorHandler_1 = require("./middleware/errorHandler");
 const notFound_1 = require("./middleware/notFound");
 const database_1 = __importDefault(require("./config/database"));
 dotenv_1.default.config();
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    process.exit(1);
+});
 const initializeDatabase = async () => {
-    await (0, database_1.default)();
+    try {
+        await (0, database_1.default)();
+    }
+    catch (error) {
+        console.error("Failed to initialize database:", error);
+        process.exit(1);
+    }
 };
 initializeDatabase();
 const app = (0, express_1.default)();

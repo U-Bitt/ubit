@@ -269,6 +269,28 @@ export const getUserById = async (
       nationality: user.nationality,
       phone: user.phone,
       avatar: user.avatar,
+      personalInfo: user.personalInfo ? {
+        ...user.personalInfo,
+        dateOfBirth: user.personalInfo.dateOfBirth?.toISOString(),
+      } : undefined,
+      academicInfo: user.academicInfo,
+      areasOfInterest: user.areasOfInterest,
+      testScores: user.testScores?.map(score => ({
+        id: score.id,
+        testName: score.examType,
+        score: score.score,
+        date: score.testDate,
+        maxScore: score.maxScore,
+        percentile: 0, // Default value since it's not in the model
+      })),
+      documents: user.documents?.map(doc => ({
+        ...doc,
+        uploadedAt: doc.uploadedAt.toISOString(),
+      })),
+      savedUniversities: user.savedUniversities?.map(saved => ({
+        ...saved,
+        savedAt: saved.savedAt.toISOString(),
+      })),
       preferences: user.preferences,
       applications: user.applications,
       createdAt: user.createdAt,
@@ -371,7 +393,7 @@ export const getUserProfile = async (
   try {
     // This would typically get user ID from JWT token
     // For now, we'll use a mock user ID
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     
     const user = await User.findById(userId).lean();
 
@@ -421,7 +443,7 @@ export const updateUserProfile = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const updates = req.body;
 
     // Remove fields that shouldn't be updated directly
@@ -528,7 +550,7 @@ export const getUserApplications = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     
     const user = await User.findById(userId).lean();
 
@@ -563,7 +585,7 @@ export const createApplication = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const applicationData = req.body;
 
     const newApplication: Application = {
@@ -616,7 +638,7 @@ export const updateApplication = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const { appId } = req.params;
     const updates = req.body;
 
@@ -667,7 +689,7 @@ export const deleteApplication = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const { appId } = req.params;
 
     const user = await User.findByIdAndUpdate(
@@ -710,7 +732,7 @@ export const getTestScores = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     
     const user = await User.findById(userId).lean();
 
@@ -750,7 +772,7 @@ export const addTestScore = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const testScoreData = req.body;
 
     const newTestScore = {
@@ -807,7 +829,7 @@ export const updateTestScore = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const { testId } = req.params;
     const updates = req.body;
 
@@ -864,7 +886,7 @@ export const deleteTestScore = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const { testId } = req.params;
 
     const user = await User.findByIdAndUpdate(
@@ -907,22 +929,20 @@ export const getDocuments = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     
-    const user = await User.findById(userId).lean();
-
-    if (!user) {
-      res.status(404).json({
-        success: false,
-        data: [] as any[],
-        message: "User not found",
-      });
-      return;
-    }
+    // Import Document model
+    const Document = require("../models/Document").default;
+    
+    // Fetch documents from Document collection
+    const documents = await Document.find({
+      uploadedBy: userId,
+      isLatestVersion: true,
+    }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
-      data: user.documents || [],
+      data: documents,
       message: "Documents retrieved successfully",
     });
   } catch (error) {
@@ -945,35 +965,28 @@ export const addDocument = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const documentData = req.body;
 
-    const newDocument = {
-      id: `doc_${Date.now()}`,
+    // Import Document model
+    const Document = require("../models/Document").default;
+
+    const newDocument = new Document({
       name: documentData.name,
       type: documentData.type,
-      url: documentData.url,
-      uploadedAt: new Date(),
-      status: "draft" as const,
-    };
-
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { 
-        $push: { documents: newDocument },
-        updatedAt: new Date()
+      university: "All",
+      status: "Draft",
+      uploadDate: new Date(),
+      size: "0 MB",
+      format: "URL",
+      filePath: documentData.url || "",
+      uploadedBy: userId,
+      metadata: {
+        description: documentData.url ? "External URL document" : "Draft document",
       },
-      { new: true }
-    );
+    });
 
-    if (!user) {
-      res.status(404).json({
-        success: false,
-        data: {} as any,
-        message: "User not found",
-      });
-      return;
-    }
+    await newDocument.save();
 
     res.status(201).json({
       success: true,
@@ -1001,40 +1014,36 @@ export const updateDocument = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const { docId } = req.params;
     const updates = req.body;
 
-    const updateData: any = {};
-    if (updates.name) updateData["documents.$.name"] = updates.name;
-    if (updates.type) updateData["documents.$.type"] = updates.type;
-    if (updates.url) updateData["documents.$.url"] = updates.url;
-    if (updates.status) updateData["documents.$.status"] = updates.status;
+    // Import Document model
+    const Document = require("../models/Document").default;
 
-    const user = await User.findOneAndUpdate(
+    const updateData: any = {};
+    if (updates.name) updateData.name = updates.name;
+    if (updates.type) updateData.type = updates.type;
+    if (updates.url) updateData.filePath = updates.url;
+    if (updates.status) updateData.status = updates.status;
+
+    const updatedDocument = await Document.findOneAndUpdate(
       { 
-        _id: userId, 
-        "documents.id": docId 
+        _id: docId,
+        uploadedBy: userId
       },
-      { 
-        $set: { 
-          ...updateData,
-          updatedAt: new Date()
-        }
-      },
+      updateData,
       { new: true }
     );
 
-    if (!user) {
+    if (!updatedDocument) {
       res.status(404).json({
         success: false,
         data: {} as any,
-        message: "User or document not found",
+        message: "Document not found",
       });
       return;
     }
-
-    const updatedDocument = user.documents?.find(doc => doc.id === docId);
 
     res.status(200).json({
       success: true,
@@ -1057,23 +1066,22 @@ export const deleteDocument = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const { docId } = req.params;
 
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { 
-        $pull: { documents: { id: docId } },
-        updatedAt: new Date()
-      },
-      { new: true }
-    );
+    // Import Document model
+    const Document = require("../models/Document").default;
 
-    if (!user) {
+    const document = await Document.findOneAndDelete({
+      _id: docId,
+      uploadedBy: userId
+    });
+
+    if (!document) {
       res.status(404).json({
         success: false,
         data: {},
-        message: "User not found",
+        message: "Document not found",
       });
       return;
     }
@@ -1100,18 +1108,9 @@ export const getSavedUniversities = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string;
-    
-    console.log("Fetching saved universities for user:", userId);
-    
-    if (!userId) {
-      res.status(400).json({
-        success: false,
-        data: [] as any[],
-        message: "User ID is required",
-      });
-      return;
-    }
+
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
+
     
     const user = await User.findById(userId).lean();
 
@@ -1152,7 +1151,7 @@ export const saveUniversity = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const universityData = req.body;
 
     const newSavedUniversity = {
@@ -1202,7 +1201,7 @@ export const unsaveUniversity = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const { savedId } = req.params;
 
     const user = await User.findByIdAndUpdate(
@@ -1252,7 +1251,7 @@ export const updatePersonalInfo = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const updates = req.body;
 
     const updateData: any = {};
@@ -1310,7 +1309,7 @@ export const updateAcademicInfo = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const updates = req.body;
 
     const updateData: any = {};
@@ -1363,7 +1362,7 @@ export const updateAreasOfInterest = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const { areasOfInterest } = req.body;
 
     const user = await User.findByIdAndUpdate(

@@ -370,4 +370,5 @@ export declare const userSeedData: ({
     lastLogin: Date;
 })[];
 export declare const seedUsers: () => Promise<void>;
+export declare const seedUsersForce: () => Promise<void>;
 //# sourceMappingURL=userSeedData.d.ts.map

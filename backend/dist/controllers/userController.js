@@ -202,6 +202,28 @@ const getUserById = async (req, res, next) => {
             nationality: user.nationality,
             phone: user.phone,
             avatar: user.avatar,
+            personalInfo: user.personalInfo ? {
+                ...user.personalInfo,
+                dateOfBirth: user.personalInfo.dateOfBirth?.toISOString(),
+            } : undefined,
+            academicInfo: user.academicInfo,
+            areasOfInterest: user.areasOfInterest,
+            testScores: user.testScores?.map(score => ({
+                id: score.id,
+                testName: score.examType,
+                score: score.score,
+                date: score.testDate,
+                maxScore: score.maxScore,
+                percentile: 0,
+            })),
+            documents: user.documents?.map(doc => ({
+                ...doc,
+                uploadedAt: doc.uploadedAt.toISOString(),
+            })),
+            savedUniversities: user.savedUniversities?.map(saved => ({
+                ...saved,
+                savedAt: saved.savedAt.toISOString(),
+            })),
             preferences: user.preferences,
             applications: user.applications,
             createdAt: user.createdAt,
@@ -282,7 +304,7 @@ const updateUserById = async (req, res, next) => {
 exports.updateUserById = updateUserById;
 const getUserProfile = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const user = await User_1.default.findById(userId).lean();
         if (!user) {
             res.status(404).json({
@@ -324,7 +346,7 @@ const getUserProfile = async (req, res, next) => {
 exports.getUserProfile = getUserProfile;
 const updateUserProfile = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const updates = req.body;
         const { id, createdAt, ...allowedUpdates } = updates;
         const user = await User_1.default.findByIdAndUpdate(userId, { ...allowedUpdates, updatedAt: new Date() }, { new: true, runValidators: true }).lean();
@@ -404,7 +426,7 @@ const deleteUser = async (req, res, next) => {
 exports.deleteUser = deleteUser;
 const getUserApplications = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const user = await User_1.default.findById(userId).lean();
         if (!user) {
             res.status(404).json({
@@ -432,7 +454,7 @@ const getUserApplications = async (req, res, next) => {
 exports.getUserApplications = getUserApplications;
 const createApplication = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const applicationData = req.body;
         const newApplication = {
             id: `app_${Date.now()}`,
@@ -473,7 +495,7 @@ const createApplication = async (req, res, next) => {
 exports.createApplication = createApplication;
 const updateApplication = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const { appId } = req.params;
         const updates = req.body;
         const user = await User_1.default.findOneAndUpdate({
@@ -512,7 +534,7 @@ const updateApplication = async (req, res, next) => {
 exports.updateApplication = updateApplication;
 const deleteApplication = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const { appId } = req.params;
         const user = await User_1.default.findByIdAndUpdate(userId, {
             $pull: { applications: { id: appId } },
@@ -544,7 +566,7 @@ const deleteApplication = async (req, res, next) => {
 exports.deleteApplication = deleteApplication;
 const getTestScores = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const user = await User_1.default.findById(userId).lean();
         if (!user) {
             res.status(404).json({
@@ -572,7 +594,7 @@ const getTestScores = async (req, res, next) => {
 exports.getTestScores = getTestScores;
 const addTestScore = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const testScoreData = req.body;
         const newTestScore = {
             id: `test_${Date.now()}`,
@@ -612,7 +634,7 @@ const addTestScore = async (req, res, next) => {
 exports.addTestScore = addTestScore;
 const updateTestScore = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const { testId } = req.params;
         const updates = req.body;
         const updateData = {};
@@ -662,7 +684,7 @@ const updateTestScore = async (req, res, next) => {
 exports.updateTestScore = updateTestScore;
 const deleteTestScore = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const { testId } = req.params;
         const user = await User_1.default.findByIdAndUpdate(userId, {
             $pull: { testScores: { id: testId } },
@@ -694,19 +716,15 @@ const deleteTestScore = async (req, res, next) => {
 exports.deleteTestScore = deleteTestScore;
 const getDocuments = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
-        const user = await User_1.default.findById(userId).lean();
-        if (!user) {
-            res.status(404).json({
-                success: false,
-                data: [],
-                message: "User not found",
-            });
-            return;
-        }
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
+        const Document = require("../models/Document").default;
+        const documents = await Document.find({
+            uploadedBy: userId,
+            isLatestVersion: true,
+        }).sort({ createdAt: -1 });
         res.status(200).json({
             success: true,
-            data: user.documents || [],
+            data: documents,
             message: "Documents retrieved successfully",
         });
     }
@@ -722,28 +740,24 @@ const getDocuments = async (req, res, next) => {
 exports.getDocuments = getDocuments;
 const addDocument = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const documentData = req.body;
-        const newDocument = {
-            id: `doc_${Date.now()}`,
+        const Document = require("../models/Document").default;
+        const newDocument = new Document({
             name: documentData.name,
             type: documentData.type,
-            url: documentData.url,
-            uploadedAt: new Date(),
-            status: "draft",
-        };
-        const user = await User_1.default.findByIdAndUpdate(userId, {
-            $push: { documents: newDocument },
-            updatedAt: new Date()
-        }, { new: true });
-        if (!user) {
-            res.status(404).json({
-                success: false,
-                data: {},
-                message: "User not found",
-            });
-            return;
-        }
+            university: "All",
+            status: "Draft",
+            uploadDate: new Date(),
+            size: "0 MB",
+            format: "URL",
+            filePath: documentData.url || "",
+            uploadedBy: userId,
+            metadata: {
+                description: documentData.url ? "External URL document" : "Draft document",
+            },
+        });
+        await newDocument.save();
         res.status(201).json({
             success: true,
             data: newDocument,
@@ -762,36 +776,31 @@ const addDocument = async (req, res, next) => {
 exports.addDocument = addDocument;
 const updateDocument = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const { docId } = req.params;
         const updates = req.body;
+        const Document = require("../models/Document").default;
         const updateData = {};
         if (updates.name)
-            updateData["documents.$.name"] = updates.name;
+            updateData.name = updates.name;
         if (updates.type)
-            updateData["documents.$.type"] = updates.type;
+            updateData.type = updates.type;
         if (updates.url)
-            updateData["documents.$.url"] = updates.url;
+            updateData.filePath = updates.url;
         if (updates.status)
-            updateData["documents.$.status"] = updates.status;
-        const user = await User_1.default.findOneAndUpdate({
-            _id: userId,
-            "documents.id": docId
-        }, {
-            $set: {
-                ...updateData,
-                updatedAt: new Date()
-            }
-        }, { new: true });
-        if (!user) {
+            updateData.status = updates.status;
+        const updatedDocument = await Document.findOneAndUpdate({
+            _id: docId,
+            uploadedBy: userId
+        }, updateData, { new: true });
+        if (!updatedDocument) {
             res.status(404).json({
                 success: false,
                 data: {},
-                message: "User or document not found",
+                message: "Document not found",
             });
             return;
         }
-        const updatedDocument = user.documents?.find(doc => doc.id === docId);
         res.status(200).json({
             success: true,
             data: updatedDocument,
@@ -810,17 +819,18 @@ const updateDocument = async (req, res, next) => {
 exports.updateDocument = updateDocument;
 const deleteDocument = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const { docId } = req.params;
-        const user = await User_1.default.findByIdAndUpdate(userId, {
-            $pull: { documents: { id: docId } },
-            updatedAt: new Date()
-        }, { new: true });
-        if (!user) {
+        const Document = require("../models/Document").default;
+        const document = await Document.findOneAndDelete({
+            _id: docId,
+            uploadedBy: userId
+        });
+        if (!document) {
             res.status(404).json({
                 success: false,
                 data: {},
-                message: "User not found",
+                message: "Document not found",
             });
             return;
         }
@@ -842,16 +852,9 @@ const deleteDocument = async (req, res, next) => {
 exports.deleteDocument = deleteDocument;
 const getSavedUniversities = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"];
-        console.log("Fetching saved universities for user:", userId);
-        if (!userId) {
-            res.status(400).json({
-                success: false,
-                data: [],
-                message: "User ID is required",
-            });
-            return;
-        }
+
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
+
         const user = await User_1.default.findById(userId).lean();
         if (!user) {
             console.log("User not found:", userId);
@@ -881,7 +884,7 @@ const getSavedUniversities = async (req, res, next) => {
 exports.getSavedUniversities = getSavedUniversities;
 const saveUniversity = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const universityData = req.body;
         const newSavedUniversity = {
             id: `saved_${Date.now()}`,
@@ -920,7 +923,7 @@ const saveUniversity = async (req, res, next) => {
 exports.saveUniversity = saveUniversity;
 const unsaveUniversity = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const { savedId } = req.params;
         const user = await User_1.default.findByIdAndUpdate(userId, {
             $pull: { savedUniversities: { id: savedId } },
@@ -952,7 +955,7 @@ const unsaveUniversity = async (req, res, next) => {
 exports.unsaveUniversity = unsaveUniversity;
 const updatePersonalInfo = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const updates = req.body;
         const updateData = {};
         if (updates.firstName)
@@ -999,7 +1002,7 @@ const updatePersonalInfo = async (req, res, next) => {
 exports.updatePersonalInfo = updatePersonalInfo;
 const updateAcademicInfo = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const updates = req.body;
         const updateData = {};
         if (updates.gpa !== undefined)
@@ -1042,7 +1045,7 @@ const updateAcademicInfo = async (req, res, next) => {
 exports.updateAcademicInfo = updateAcademicInfo;
 const updateAreasOfInterest = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"] || "68d24c510a783721f2e82368";
         const { areasOfInterest } = req.body;
         const user = await User_1.default.findByIdAndUpdate(userId, {
             $set: {

@@ -3,8 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-// Dialog components removed as they're not being used
 import {
   Select,
   SelectContent,
@@ -12,33 +10,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plus,
-  Edit,
   Trash2,
-  Save,
+  Check,
   X,
-  Calendar,
-  Award,
-  CheckCircle,
   AlertCircle,
-  BookOpen,
 } from "lucide-react";
-import { testScoresApi } from "@/utils/api";
+import { testScoreApi } from "@/utils/api";
+import { useUser } from "@/contexts/UserContext";
 
-interface TestScore {
-  id?: string;
-  examType: string;
-  score: string;
-  maxScore: string;
-  certified: boolean;
-  testDate: string;
-  validityDate: string;
-  userId?: string;
-}
-
-interface TestScoreFormData {
+interface TestScore extends Record<string, unknown> {
+  id: string;
   examType: string;
   score: string;
   maxScore: string;
@@ -47,74 +30,110 @@ interface TestScoreFormData {
   validityDate: string;
 }
 
-const EXAM_TYPES = [
-  { value: "SAT", label: "SAT", maxScore: "1600" },
-  { value: "ACT", label: "ACT", maxScore: "36" },
-  { value: "TOEFL", label: "TOEFL", maxScore: "120" },
-  { value: "IELTS", label: "IELTS", maxScore: "9.0" },
-  { value: "GRE", label: "GRE", maxScore: "340" },
-  { value: "GMAT", label: "GMAT", maxScore: "800" },
-  { value: "LSAT", label: "LSAT", maxScore: "180" },
-  { value: "MCAT", label: "MCAT", maxScore: "528" },
-  { value: "AP", label: "AP Exams", maxScore: "5" },
-  { value: "IB", label: "IB Exams", maxScore: "45" },
-  { value: "A-Levels", label: "A-Levels", maxScore: "A*" },
-  { value: "Duolingo", label: "Duolingo English Test", maxScore: "160" },
-  { value: "PTE", label: "PTE Academic", maxScore: "90" },
-  { value: "Cambridge", label: "Cambridge English", maxScore: "C2" },
-  { value: "Other", label: "Other", maxScore: "Custom" },
+const examTypes = [
+  // English Language Tests
+  "IELTS",
+  "TOEFL iBT",
+  "TOEFL PBT",
+  "PTE Academic",
+  "Duolingo English Test",
+  "Cambridge English (C1 Advanced)",
+  "Cambridge English (C2 Proficiency)",
+
+  // US Standardized Tests
+  "SAT",
+  "ACT",
+  "SAT Subject Tests",
+  "AP Exams",
+
+  // Graduate Tests
+  "GRE General",
+  "GRE Subject Tests",
+  "GMAT",
+  "MCAT",
+  "LSAT",
+  "DAT",
+  "OAT",
+  "PCAT",
+
+  // UK Tests
+  "UCAT",
+  "BMAT",
+  "LNAT",
+  "TSA",
+  "STEP",
+
+  // Canadian Tests
+  "CAEL",
+  "CanTEST",
+
+  // Australian Tests
+  "OET",
+  "ISLPR",
+
+  // European Tests
+  "TestDaF",
+  "DSH",
+  "DELF",
+  "DALF",
+  "DELE",
+  "SIELE",
+  "CELI",
+  "CILS",
+  "PLIDA",
+
+  // Asian Tests
+  "JLPT",
+  "HSK",
+  "TOPIK",
+  "JPT",
+
+  // Other
+  "Other",
 ];
 
 export const TestScores = () => {
+  const { user } = useUser();
   const [testScores, setTestScores] = useState<TestScore[]>([]);
-  // Modal states
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingScore, setEditingScore] = useState<TestScore | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState<TestScoreFormData>({
-    examType: "",
-    score: "",
-    maxScore: "",
-    certified: false,
-    testDate: "",
-    validityDate: "",
-  });
-
-  // Fetch test scores on component mount
+  // Fetch test scores on component mount and when user changes
   useEffect(() => {
-    fetchTestScores();
-  }, []);
-
-  // Also fetch when component becomes visible (in case of tab switching)
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden && testScores.length === 0 && !loading) {
-        fetchTestScores();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () =>
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [testScores.length, loading]);
+    if (user?.id) {
+      fetchTestScores();
+    }
+  }, [user?.id]);
 
   const fetchTestScores = async () => {
+    if (!user?.id) {
+      setError("User not found. Please log in.");
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
-      console.log("Fetching test scores...");
+      console.log("Fetching test scores for user:", user.id);
 
-      const response = await testScoresApi.getAll();
+      const response = await testScoreApi.getAll(user.id);
 
       console.log("Test scores API response:", response);
 
-      if (response && response.success) {
-        setTestScores((response.data || []) as unknown as TestScore[]);
-        console.log("Test scores loaded:", response.data);
+      if (Array.isArray(response)) {
+        // Transform the data from the old format to the new format
+        const transformedScores = response.map((score: any) => ({
+          id: score.id || score._id,
+          examType: score.testName || score.examType || "Unknown",
+          score: score.score || "",
+          maxScore: score.maxScore || "",
+          certified: score.certified || false,
+          testDate: score.date ? new Date(score.date).toISOString().split('T')[0] : (score.testDate || ""),
+          validityDate: score.validityDate || new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        }));
+        setTestScores(transformedScores as unknown as TestScore[]);
+        console.log("Test scores loaded:", transformedScores);
       } else {
         console.error("Failed to fetch test scores:", response);
         setError("Failed to fetch test scores");
@@ -129,184 +148,192 @@ export const TestScores = () => {
     }
   };
 
-  const handleInputChange = (
-    field: keyof TestScoreFormData,
+  const handleTestScoreChange = (
+    id: string,
+    field: keyof TestScore,
     value: string | boolean
   ) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-
-    // Auto-set max score when exam type changes
-    if (field === "examType") {
-      const examType = EXAM_TYPES.find(exam => exam.value === value);
-      if (examType && examType.value !== "Other") {
-        setFormData(prev => ({
-          ...prev,
-          examType: value as string,
-          maxScore: examType.maxScore,
-        }));
-      }
-    }
+    setTestScores(prev =>
+      prev.map(score => {
+        if (score.id === id) {
+          const updatedScore = { ...score, [field]: value };
+          // Auto-update max score when exam type changes
+          if (field === "examType" && typeof value === "string") {
+            updatedScore.maxScore = getDefaultMaxScore(value);
+          }
+          return updatedScore;
+        }
+        return score;
+      })
+    );
   };
 
-  const resetForm = () => {
-    setFormData({
-      examType: "",
+  const getDefaultMaxScore = (examType: string): string => {
+    const maxScores: Record<string, string> = {
+      SAT: "1600",
+      ACT: "36",
+      IELTS: "9.0",
+      "TOEFL iBT": "120",
+      "TOEFL PBT": "677",
+      "PTE Academic": "90",
+      "Duolingo English Test": "160",
+      "GRE General": "340",
+      GMAT: "800",
+      MCAT: "528",
+      LSAT: "180",
+      UCAT: "3600",
+      BMAT: "9.0",
+      LNAT: "42",
+      TSA: "100",
+      STEP: "120",
+      CAEL: "90",
+      CanTEST: "5.0",
+      OET: "500",
+      ISLPR: "4",
+      TestDaF: "5",
+      DSH: "3",
+      DELF: "100",
+      DALF: "100",
+      DELE: "100",
+      SIELE: "1000",
+      CELI: "100",
+      CILS: "100",
+      PLIDA: "100",
+      JLPT: "5",
+      HSK: "6",
+      TOPIK: "6",
+      JPT: "1000",
+    };
+    return maxScores[examType] || "";
+  };
+
+  const addTestScore = () => {
+    const newScore: TestScore = {
+      id: `temp-${Date.now()}`,
+      examType: "IELTS",
       score: "",
-      maxScore: "",
+      maxScore: getDefaultMaxScore("IELTS"),
       certified: false,
       testDate: "",
       validityDate: "",
-    });
-    setError(null);
-    setSuccess(null);
+    };
+    setTestScores(prev => [...prev, newScore]);
   };
 
-  const handleAddScore = () => {
-    resetForm();
-    setIsAddModalOpen(true);
-  };
-
-  const handleEditScore = (score: TestScore) => {
-    setFormData({
-      examType: score.examType,
-      score: score.score,
-      maxScore: score.maxScore,
-      certified: score.certified,
-      testDate: score.testDate,
-      validityDate: score.validityDate,
-    });
-    setEditingScore(score);
-    setIsEditModalOpen(true);
-  };
-
-  const handleSaveScore = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      setSuccess(null);
-
-      // Validation
-      if (!formData.examType || !formData.score || !formData.maxScore) {
-        setError("Please fill in all required fields");
-        return;
-      }
-
-      const scoreData = {
-        ...formData,
-        testDate: formData.testDate || new Date().toISOString().split("T")[0],
-        validityDate:
-          formData.validityDate ||
-          new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split("T")[0],
-      };
-
-      if (editingScore) {
-        // Update existing score
-        const response = await testScoresApi.update(
-          editingScore.id!,
-          scoreData
-        );
-
-        if (response.success) {
-          setTestScores(prev =>
-            prev.map(score =>
-              score.id === editingScore.id ? { ...score, ...scoreData } : score
-            )
-          );
-          setSuccess("Test score updated successfully!");
-          setIsEditModalOpen(false);
-          setEditingScore(null);
-          // Clear success message after 3 seconds
-          setTimeout(() => setSuccess(null), 3000);
-        } else {
-          setError("Failed to update test score");
-        }
-      } else {
-        // Create new score
-        const response = await testScoresApi.create(scoreData);
-
-        if (response.success) {
-          setTestScores(prev => [
-            ...prev,
-            response.data as unknown as TestScore,
-          ]);
-          setSuccess("Test score saved successfully!");
-          setIsAddModalOpen(false);
-          // Clear success message after 3 seconds
-          setTimeout(() => setSuccess(null), 3000);
-        } else {
-          setError("Failed to save test score");
-        }
-      }
-
-      resetForm();
-    } catch (error) {
-      console.error("Error saving test score:", error);
-      setError("Failed to save test score. Please try again.");
-    } finally {
-      setLoading(false);
+  const removeTestScore = async (id: string) => {
+    if (!user?.id) {
+      setError("User not found. Please log in.");
+      return;
     }
-  };
 
-  const handleDeleteScore = async (scoreId: string) => {
     if (!confirm("Are you sure you want to delete this test score?")) {
       return;
     }
 
     try {
       setLoading(true);
-      const response = await testScoresApi.delete(scoreId);
+      setError(null);
 
-      if (response.success) {
-        setTestScores(prev => prev.filter(score => score.id !== scoreId));
-        setSuccess("Test score deleted successfully!");
-        // Clear success message after 3 seconds
+      // If it's a temporary score (not saved to database), just remove from local state
+      if (id.startsWith("temp-")) {
+        setTestScores(prev => prev.filter(score => score.id !== id));
+        setSuccess("Test score removed successfully!");
         setTimeout(() => setSuccess(null), 3000);
-      } else {
-        setError("Failed to delete test score");
+        return;
+      }
+
+      // Delete from database
+      const response = await testScoreApi.delete(user.id, id);
+
+      if (response) {
+        setTestScores(prev => prev.filter(score => score.id !== id));
+        setSuccess("Test score deleted successfully!");
+        setTimeout(() => setSuccess(null), 3000);
       }
     } catch (error) {
       console.error("Error deleting test score:", error);
       setError("Failed to delete test score. Please try again.");
+      setTimeout(() => setError(null), 5000);
     } finally {
       setLoading(false);
     }
   };
 
-  const getScorePercentage = (score: string, maxScore: string) => {
-    const scoreNum = parseFloat(score);
-    const maxScoreNum = parseFloat(maxScore);
-    if (isNaN(scoreNum) || isNaN(maxScoreNum) || maxScoreNum === 0) return 0;
-    return Math.round((scoreNum / maxScoreNum) * 100);
-  };
+  const saveTestScores = async () => {
+    if (!user?.id) {
+      setError("User not found. Please log in.");
+      return;
+    }
 
-  const getScoreColor = (percentage: number) => {
-    if (percentage >= 90) return "text-green-600";
-    if (percentage >= 80) return "text-blue-600";
-    if (percentage >= 70) return "text-yellow-600";
-    return "text-red-600";
-  };
+    try {
+      setLoading(true);
+      setError(null);
+      setSuccess(null);
 
-  const getValidityStatus = (validityDate: string) => {
-    const today = new Date();
-    const validity = new Date(validityDate);
-    const daysUntilExpiry = Math.ceil(
-      (validity.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-    );
+      let hasChanges = false;
 
-    if (daysUntilExpiry < 0)
-      return { status: "expired", color: "text-red-600", icon: AlertCircle };
-    if (daysUntilExpiry <= 30)
-      return {
-        status: "expiring",
-        color: "text-yellow-600",
-        icon: AlertCircle,
+      // Save each test score individually
+      for (const score of testScores) {
+        if (score.id.startsWith("temp-")) {
+          // New score - create
+          const newScore = {
+            examType: score.examType,
+            score: score.score,
+            maxScore: score.maxScore,
+            certified: score.certified,
+            testDate: score.testDate || new Date().toISOString().split("T")[0],
+        validityDate:
+              score.validityDate ||
+          new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000)
+            .toISOString()
+            .split("T")[0],
       };
-    return { status: "valid", color: "text-green-600", icon: CheckCircle };
+
+          const response = await testScoreApi.create(user.id, newScore);
+          
+          if (response && typeof response === 'object' && 'id' in response) {
+            // Update the local state with the new ID from the database
+          setTestScores(prev =>
+              prev.map(s =>
+                s.id === score.id ? { ...s, id: response.id as string } : s
+              )
+            );
+            hasChanges = true;
+          }
+        } else {
+          // Existing score - update
+          const updatedScore = {
+            examType: score.examType,
+            score: score.score,
+            maxScore: score.maxScore,
+            certified: score.certified,
+            testDate: score.testDate,
+            validityDate: score.validityDate,
+          };
+
+          const response = await testScoreApi.update(user.id, score.id, updatedScore);
+          
+          if (response) {
+            hasChanges = true;
+          }
+        }
+      }
+
+      if (hasChanges) {
+        setSuccess("Test scores saved successfully!");
+        // Refresh the data from the database
+        await fetchTestScores();
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccess(null), 3000);
+      }
+    } catch (error) {
+      console.error("Error saving test scores:", error);
+      setError("Failed to save test scores. Please try again.");
+      // Clear error message after 5 seconds
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -325,7 +352,7 @@ export const TestScores = () => {
         {/* Success/Error Messages */}
         {success && (
           <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
+            <Check className="h-5 w-5 text-green-600" />
             <span className="text-green-800">{success}</span>
             <Button
               variant="ghost"
@@ -353,49 +380,11 @@ export const TestScores = () => {
           </div>
         )}
 
-        <Tabs defaultValue="scores" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="scores">My Scores</TabsTrigger>
-            <TabsTrigger value="add">Add Score</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="scores" className="space-y-6">
-            {/* Add Score Button */}
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-semibold">Your Test Scores</h2>
-                {testScores.length > 0 && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {testScores.length} score
-                    {testScores.length !== 1 ? "s" : ""} saved
-                  </p>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={fetchTestScores}
-                  disabled={loading}
-                  className="flex items-center gap-2"
-                >
-                  {loading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                  ) : (
-                    <BookOpen className="h-4 w-4" />
-                  )}
-                  Refresh
-                </Button>
-                <Button
-                  onClick={handleAddScore}
-                  className="bg-primary hover:bg-primary/90"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Test Score
-                </Button>
-              </div>
-            </div>
-
-            {/* Test Scores List */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Test Scores</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
             {loading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
@@ -404,258 +393,217 @@ export const TestScores = () => {
                 </p>
               </div>
             ) : error && testScores.length === 0 ? (
-              <Card>
-                <CardContent className="text-center py-12">
-                  <AlertCircle className="h-12 w-12 mx-auto text-red-500 mb-4" />
-                  <h3 className="text-lg font-semibold mb-2 text-red-600">
-                    Error Loading Test Scores
-                  </h3>
-                  <p className="text-muted-foreground mb-4">{error}</p>
-                  <Button
-                    onClick={fetchTestScores}
-                    variant="outline"
-                    className="mr-2"
-                  >
-                    Try Again
-                  </Button>
-                  <Button
-                    onClick={handleAddScore}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Test Score
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : testScores.length === 0 ? (
-              <Card>
-                <CardContent className="text-center py-12">
-                  <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
-                    No Test Scores Yet
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    Start by adding your first test score to track your academic
-                    progress.
-                  </p>
-                  <Button
-                    onClick={handleAddScore}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Your First Score
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-4">
-                {testScores.map(score => {
-                  const percentage = getScorePercentage(
-                    score.score,
-                    score.maxScore
-                  );
-                  const validityStatus = getValidityStatus(score.validityDate);
-                  const ValidityIcon = validityStatus.icon;
-
-                  return (
-                    <Card
-                      key={score.id}
-                      className="hover:shadow-md transition-shadow"
-                    >
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                              <Award className="h-6 w-6 text-blue-600" />
-                            </div>
-                            <div>
-                              <h3 className="text-lg font-semibold">
-                                {score.examType}
-                              </h3>
-                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                <span>
-                                  Score: {score.score}/{score.maxScore}
-                                </span>
-                                <span>•</span>
-                                <span>{percentage}%</span>
-                                <span>•</span>
-                                <span className="flex items-center gap-1">
-                                  <Calendar className="h-3 w-3" />
-                                  {new Date(
-                                    score.testDate
-                                  ).toLocaleDateString()}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <div className="text-right">
-                              <div
-                                className={`text-2xl font-bold ${getScoreColor(percentage)}`}
-                              >
-                                {score.score}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                out of {score.maxScore}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {score.certified && (
-                                <Badge variant="default" className="text-xs">
-                                  <CheckCircle className="h-3 w-3 mr-1" />
-                                  Certified
-                                </Badge>
-                              )}
-                              <Badge
-                                variant="outline"
-                                className={`text-xs ${validityStatus.color}`}
-                              >
-                                <ValidityIcon className="h-3 w-3 mr-1" />
-                                {validityStatus.status}
-                              </Badge>
-                            </div>
-                            <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEditScore(score)}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteScore(score.id!)}
-                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+              <div className="text-center py-8">
+                <AlertCircle className="h-12 w-12 mx-auto text-red-500 mb-4" />
+                <h3 className="text-lg font-semibold mb-2 text-red-600">
+                  Error Loading Test Scores
+                </h3>
+                <p className="text-muted-foreground mb-4">{error}</p>
+                <Button
+                  onClick={fetchTestScores}
+                  variant="outline"
+                >
+                  Try Again
+                </Button>
               </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="add" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Add New Test Score</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="examType">Exam Type *</Label>
+            ) : testScores.length === 0 ? (
+              <div className="text-center py-8">
+                <Check className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">
+                  No Test Scores Yet
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Start by adding your first test score to track your academic progress.
+                </p>
+                <Button
+                  onClick={addTestScore}
+                  className="text-white hover:opacity-90"
+                  style={{ backgroundColor: "#00136A" }}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Score
+                </Button>
+              </div>
+            ) : (
+              <>
+                {testScores.map(score => (
+              <div
+                key={score.id}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 p-6 border border-gray-200 rounded-lg bg-white hover:shadow-sm transition-shadow items-center"
+              >
+                <div className="space-y-1">
+                  <Label
+                    htmlFor={`examType-${score.id}`}
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Exam Type
+                  </Label>
                     <Select
-                      value={formData.examType}
+                    value={score.examType}
                       onValueChange={value =>
-                        handleInputChange("examType", value)
+                      handleTestScoreChange(score.id, "examType", value)
                       }
                     >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select exam type" />
+                    <SelectTrigger className="h-10">
+                      <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {EXAM_TYPES.map(exam => (
-                          <SelectItem key={exam.value} value={exam.value}>
-                            {exam.label}
+                      {examTypes.map(type => (
+                        <SelectItem key={type} value={type}>
+                          {type}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="maxScore">Maximum Score *</Label>
+                <div className="space-y-1">
+                  <Label
+                    htmlFor={`score-${score.id}`}
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Your Score
+                  </Label>
                     <Input
-                      id="maxScore"
-                      value={formData.maxScore}
+                    id={`score-${score.id}`}
+                    value={score.score}
                       onChange={e =>
-                        handleInputChange("maxScore", e.target.value)
-                      }
-                      placeholder="e.g., 1600, 36, 9.0"
+                      handleTestScoreChange(
+                        score.id,
+                        "score",
+                        e.target.value
+                      )
+                    }
+                    placeholder="Enter score"
+                    className="h-10 text-base font-medium border-gray-300 focus:border-gray-500 focus:ring-gray-500"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="score">Your Score *</Label>
+                <div className="space-y-1">
+                  <Label
+                    htmlFor={`maxScore-${score.id}`}
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Max Score
+                  </Label>
                     <Input
-                      id="score"
-                      value={formData.score}
-                      onChange={e => handleInputChange("score", e.target.value)}
-                      placeholder="e.g., 1450, 32, 7.5"
+                    id={`maxScore-${score.id}`}
+                    value={score.maxScore}
+                    onChange={e =>
+                      handleTestScoreChange(
+                        score.id,
+                        "maxScore",
+                        e.target.value
+                      )
+                    }
+                    placeholder="Enter max score"
+                    className="h-10 text-base font-medium border-gray-300 focus:border-gray-500 focus:ring-gray-500"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="testDate">Test Date</Label>
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Test Date
+                  </Label>
                     <Input
-                      id="testDate"
                       type="date"
-                      value={formData.testDate}
+                    value={score.testDate}
                       onChange={e =>
-                        handleInputChange("testDate", e.target.value)
-                      }
+                      handleTestScoreChange(
+                        score.id,
+                        "testDate",
+                        e.target.value
+                      )
+                    }
+                    className="h-10 text-sm border-gray-300 focus:border-gray-500 focus:ring-gray-500"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="validityDate">Validity Date</Label>
-                    <Input
-                      id="validityDate"
-                      type="date"
-                      value={formData.validityDate}
-                      onChange={e =>
-                        handleInputChange("validityDate", e.target.value)
+                <div className="space-y-1">
+                  <div className="flex gap-2 mt-6">
+                    <Button
+                      variant={score.certified ? "default" : "outline"}
+                      size="sm"
+                      onClick={() =>
+                        handleTestScoreChange(score.id, "certified", true)
                       }
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={formData.certified}
-                        onChange={e =>
-                          handleInputChange("certified", e.target.checked)
-                        }
-                        className="rounded"
-                      />
-                      Officially Certified Score
-                    </Label>
+                      className={
+                        score.certified
+                          ? "text-white hover:opacity-90 h-10"
+                          : "border-gray-300 text-gray-700 hover:bg-gray-50 h-10"
+                      }
+                      style={
+                        score.certified
+                          ? { backgroundColor: "#00136A" }
+                          : {}
+                      }
+                    >
+                      <Check className="h-4 w-4 mr-1" />
+                      Certified
+                    </Button>
+                    <Button
+                      variant={!score.certified ? "default" : "outline"}
+                      size="sm"
+                      onClick={() =>
+                        handleTestScoreChange(score.id, "certified", false)
+                      }
+                      className={
+                        !score.certified
+                          ? "text-white hover:opacity-90 h-10"
+                          : "border-gray-300 text-gray-700 hover:bg-gray-50 h-10"
+                      }
+                      style={
+                        !score.certified
+                          ? { backgroundColor: "#00136A" }
+                          : {}
+                      }
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Not Certified
+                    </Button>
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-2">
+                <div className="flex items-center justify-end">
                   <Button
-                    variant="outline"
-                    onClick={resetForm}
-                    disabled={loading}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeTestScore(score.id)}
+                    className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 h-10 w-10"
                   >
-                    Reset
-                  </Button>
-                  <Button
-                    onClick={handleSaveScore}
-                    disabled={loading}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    {loading ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    ) : (
-                      <Save className="h-4 w-4 mr-2" />
-                    )}
-                    Save Test Score
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              </div>
+            ))}
+
+            <div className="flex gap-3">
+              <Button
+                onClick={addTestScore}
+                variant="outline"
+                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Test Score
+                  </Button>
+              <Button
+                onClick={saveTestScores}
+                disabled={loading}
+                className="text-white hover:opacity-90"
+                style={{ backgroundColor: "#00136A" }}
+              >
+                {loading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                ) : (
+                  <Check className="h-4 w-4 mr-2" />
+                )}
+                Save Test Scores
+              </Button>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
