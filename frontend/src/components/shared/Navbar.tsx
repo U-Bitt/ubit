@@ -48,6 +48,11 @@ const navigationMenus = [
     ],
   },
   {
+    name: "Suggest University",
+    href: "/ai-suggestions",
+    isDirectLink: true,
+  },
+  {
     name: "Prepare",
     items: [
       { name: "Exams", href: "/prepare/exams", icon: BookOpen },
@@ -55,12 +60,6 @@ const navigationMenus = [
       { name: "Documents", href: "/prepare/documents", icon: FileText },
       { name: "Trainings", href: "/prepare/trainings", icon: Users },
       { name: "Visa", href: "/prepare/visa", icon: Plane },
-    ],
-  },
-  {
-    name: "AI Assistant",
-    items: [
-      { name: "Suggest Universities", href: "/ai-suggestions", icon: Search },
     ],
   },
   {
@@ -89,49 +88,70 @@ export default function Navbar() {
             <Link href="/">
               <Button
                 variant={router.pathname === "/" ? "default" : "ghost"}
-                className={`flex items-center space-x-2 ${
+                className={`flex items-center ${
                   router.pathname === "/"
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <GraduationCap className="h-4 w-4" />
                 <span>Home</span>
               </Button>
             </Link>
 
-            {/* Dropdown Menus */}
-            {navigationMenus.map(menu => (
-              <DropdownMenu key={menu.name}>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center space-x-1 text-muted-foreground hover:text-foreground"
-                  >
-                    <span>{menu.name}</span>
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48">
-                  {menu.items.map(item => {
-                    const isActive = router.pathname === item.href;
-                    return (
-                      <DropdownMenuItem key={item.name} asChild>
-                        <Link
-                          href={item.href}
-                          className={`flex items-center space-x-2 w-full ${
-                            isActive ? "bg-primary/10 text-primary" : ""
-                          }`}
-                        >
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.name}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    );
-                  })}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ))}
+            {/* Navigation Menus */}
+            {navigationMenus.map(menu => {
+              // Handle direct links
+              if (menu.isDirectLink) {
+                const isActive = router.pathname === menu.href;
+                return (
+                  <Link key={menu.name} href={menu.href}>
+                    <Button
+                      variant={isActive ? "default" : "ghost"}
+                      className={`flex items-center ${
+                        isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <span>{menu.name}</span>
+                    </Button>
+                  </Link>
+                );
+              }
+
+              // Handle dropdown menus
+              return (
+                <DropdownMenu key={menu.name}>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="flex items-center space-x-1 text-muted-foreground hover:text-foreground"
+                    >
+                      <span>{menu.name}</span>
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    {menu.items.map(item => {
+                      const isActive = router.pathname === item.href;
+                      return (
+                        <DropdownMenuItem key={item.name} asChild>
+                          <Link
+                            href={item.href}
+                            className={`flex items-center space-x-2 w-full ${
+                              isActive ? "bg-primary/10 text-primary" : ""
+                            }`}
+                          >
+                            <item.icon className="h-4 w-4" />
+                            <span>{item.name}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              );
+            })}
           </div>
 
           {/* Right side buttons */}
@@ -180,43 +200,64 @@ export default function Navbar() {
               <Link href="/">
                 <Button
                   variant={router.pathname === "/" ? "default" : "ghost"}
-                  className={`w-full justify-start flex items-center space-x-2 ${
+                  className={`w-full justify-start flex items-center ${
                     router.pathname === "/"
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  <GraduationCap className="h-4 w-4" />
                   <span>Home</span>
                 </Button>
               </Link>
 
-              {/* Dropdown Menus for Mobile */}
-              {navigationMenus.map(menu => (
-                <div key={menu.name} className="space-y-1">
-                  <div className="px-3 py-2 text-sm font-medium text-muted-foreground">
-                    {menu.name}
+              {/* Navigation Menus for Mobile */}
+              {navigationMenus.map(menu => {
+                // Handle direct links
+                if (menu.isDirectLink) {
+                  const isActive = router.pathname === menu.href;
+                  return (
+                    <Link key={menu.name} href={menu.href}>
+                      <Button
+                        variant={isActive ? "default" : "ghost"}
+                        className={`w-full justify-start flex items-center ${
+                          isActive
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <span>{menu.name}</span>
+                      </Button>
+                    </Link>
+                  );
+                }
+
+                // Handle dropdown menus
+                return (
+                  <div key={menu.name} className="space-y-1">
+                    <div className="px-3 py-2 text-sm font-medium text-muted-foreground">
+                      {menu.name}
+                    </div>
+                    {menu.items.map(item => {
+                      const isActive = router.pathname === item.href;
+                      return (
+                        <Link key={item.name} href={item.href}>
+                          <Button
+                            variant={isActive ? "default" : "ghost"}
+                            className={`w-full justify-start flex items-center space-x-2 ml-4 ${
+                              isActive
+                                ? "bg-primary text-primary-foreground"
+                                : "text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            <item.icon className="h-4 w-4" />
+                            <span>{item.name}</span>
+                          </Button>
+                        </Link>
+                      );
+                    })}
                   </div>
-                  {menu.items.map(item => {
-                    const isActive = router.pathname === item.href;
-                    return (
-                      <Link key={item.name} href={item.href}>
-                        <Button
-                          variant={isActive ? "default" : "ghost"}
-                          className={`w-full justify-start flex items-center space-x-2 ml-4 ${
-                            isActive
-                              ? "bg-primary text-primary-foreground"
-                              : "text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.name}</span>
-                        </Button>
-                      </Link>
-                    );
-                  })}
-                </div>
-              ))}
+                );
+              })}
             </div>
             <div className="pt-4 pb-3 border-t border-gray-200">
               <div className="flex items-center px-3">

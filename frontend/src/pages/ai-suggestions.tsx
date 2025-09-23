@@ -64,7 +64,7 @@ export default function AISuggestionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-900">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -72,53 +72,53 @@ export default function AISuggestionsPage() {
             <Button
               variant="outline"
               onClick={() => router.back()}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700"
             >
               <ArrowLeft className="h-4 w-4" />
               Back
             </Button>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-white">
               AI Suggested Universities
             </h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-slate-300">
             AI recommended universities based on your academic information
           </p>
         </div>
 
         {/* User Profile Summary */}
-        <Card className="mb-8">
+        <Card className="mb-8 bg-slate-800 border-slate-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <GraduationCap className="h-5 w-5" />
               Your Academic Information
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">
+              <div className="text-center p-4 bg-slate-700 rounded-lg">
+                <div className="text-2xl font-bold text-blue-400">
                   {userData.gpa}
                 </div>
-                <div className="text-sm text-gray-600">GPA</div>
+                <div className="text-sm text-slate-300">GPA</div>
               </div>
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">
+              <div className="text-center p-4 bg-slate-700 rounded-lg">
+                <div className="text-2xl font-bold text-blue-400">
                   {userData.sat}
                 </div>
-                <div className="text-sm text-gray-600">SAT</div>
+                <div className="text-sm text-slate-300">SAT</div>
               </div>
-              <div className="text-center p-4 bg-purple-50 rounded-lg">
-                <div className="text-2xl font-bold text-purple-600">
+              <div className="text-center p-4 bg-slate-700 rounded-lg">
+                <div className="text-2xl font-bold text-blue-400">
                   {userData.toefl}
                 </div>
-                <div className="text-sm text-gray-600">TOEFL</div>
+                <div className="text-sm text-slate-300">TOEFL</div>
               </div>
-              <div className="text-center p-4 bg-orange-50 rounded-lg">
-                <div className="text-lg font-bold text-orange-600">
+              <div className="text-center p-4 bg-slate-700 rounded-lg">
+                <div className="text-lg font-bold text-blue-400">
                   {userData.major}
                 </div>
-                <div className="text-sm text-gray-600">Major</div>
+                <div className="text-sm text-slate-300">Major</div>
               </div>
             </div>
           </CardContent>
@@ -126,20 +126,24 @@ export default function AISuggestionsPage() {
 
         {/* Loading State */}
         {loading && (
-          <Card>
+          <Card className="bg-slate-800 border-slate-700">
             <CardContent className="p-8 text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-              <p className="text-gray-600">Preparing AI suggestions...</p>
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-400" />
+              <p className="text-slate-300">Preparing AI suggestions...</p>
             </CardContent>
           </Card>
         )}
 
         {/* Error State */}
         {error && (
-          <Card className="border-red-200 bg-red-50">
+          <Card className="border-red-500 bg-red-900/20">
             <CardContent className="p-6 text-center">
-              <p className="text-red-600 mb-4">Error occurred: {error}</p>
-              <Button onClick={handleGetSuggestions} variant="outline">
+              <p className="text-red-400 mb-4">Error occurred: {error}</p>
+              <Button
+                onClick={handleGetSuggestions}
+                variant="outline"
+                className="bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700"
+              >
                 Try Again
               </Button>
             </CardContent>
@@ -150,10 +154,14 @@ export default function AISuggestionsPage() {
         {result && result.length > 0 && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-white">
                 Suggested Universities ({result.length})
               </h2>
-              <Button onClick={handleGetSuggestions} variant="outline">
+              <Button
+                onClick={handleGetSuggestions}
+                variant="outline"
+                className="bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700"
+              >
                 Refresh
               </Button>
             </div>
@@ -162,7 +170,7 @@ export default function AISuggestionsPage() {
               {result.map(university => (
                 <Card
                   key={university.id}
-                  className="relative h-96 overflow-hidden rounded-2xl hover:shadow-xl transition-all duration-300 group"
+                  className="relative h-96 overflow-hidden rounded-2xl hover:shadow-xl transition-all duration-300 group bg-slate-800 border-slate-700"
                 >
                   {/* Background Image */}
                   <Image
@@ -175,8 +183,8 @@ export default function AISuggestionsPage() {
                     }}
                   />
 
-                  {/* 40% Opacity Shadow Overlay */}
-                  <div className="absolute inset-0 bg-black opacity-40"></div>
+                  {/* Dark Blue Overlay */}
+                  <div className="absolute inset-0 bg-slate-900/60"></div>
 
                   {/* Content Overlay */}
                   <div className="absolute inset-0 p-6 flex flex-col justify-between text-white">
@@ -239,7 +247,7 @@ export default function AISuggestionsPage() {
                       {/* University Info */}
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <h5 className="font-medium text-sm mb-2 text-green-300">
+                          <h5 className="font-medium text-sm mb-2 text-blue-300">
                             Programs:
                           </h5>
                           <div className="text-xs text-white/80">
@@ -273,13 +281,13 @@ export default function AISuggestionsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                          className="bg-blue-600/20 text-blue-300 border-blue-500/30 hover:bg-blue-600/30 hover:text-blue-200"
                         >
                           Apply Now
                         </Button>
                         <Button
                           size="sm"
-                          className="bg-white text-black hover:bg-white/90"
+                          className="bg-blue-600 text-white hover:bg-blue-700"
                         >
                           View Details
                           <ArrowRight className="ml-2 h-4 w-4" />
@@ -295,13 +303,17 @@ export default function AISuggestionsPage() {
 
         {/* No Results */}
         {result && result.length === 0 && (
-          <Card>
+          <Card className="bg-slate-800 border-slate-700">
             <CardContent className="p-8 text-center">
-              <GraduationCap className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg mb-4">
+              <GraduationCap className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+              <p className="text-slate-300 text-lg mb-4">
                 No universities found to suggest.
               </p>
-              <Button onClick={handleGetSuggestions} variant="outline">
+              <Button
+                onClick={handleGetSuggestions}
+                variant="outline"
+                className="bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700"
+              >
                 Try Again
               </Button>
             </CardContent>
