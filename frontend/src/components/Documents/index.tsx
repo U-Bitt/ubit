@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useUser } from "@/contexts/UserContext";
 import {
   Dialog,
   DialogContent,
@@ -31,20 +32,10 @@ import {
   Calendar,
   FileText,
   File,
-  X,
   Check,
 } from "lucide-react";
-import { testScoreApi, documentApi } from "@/utils/api";
+import { documentApi } from "@/utils/api";
 
-interface TestScore extends Record<string, unknown> {
-  id: string;
-  examType: string;
-  score: string;
-  maxScore: string;
-  certified: boolean;
-  testDate: string;
-  validityDate: string;
-}
 
 interface Document {
   id: string;
@@ -68,27 +59,7 @@ interface Document {
 }
 
 export const Documents = () => {
-  const [testScores, setTestScores] = useState<TestScore[]>([
-    {
-      id: "1",
-      examType: "SAT",
-      score: "1450",
-      maxScore: "1600",
-      certified: true,
-      testDate: "2024-10-15",
-      validityDate: "2026-10-15",
-    },
-    {
-      id: "2",
-      examType: "IELTS",
-      score: "7.5",
-      maxScore: "9.0",
-      certified: true,
-      testDate: "2024-09-20",
-      validityDate: "2026-09-20",
-    },
-  ]);
-
+  const { user } = useUser();
   const [documents, setDocuments] = useState<Document[]>([]);
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -194,11 +165,15 @@ export const Documents = () => {
 
   // Fetch documents from API on component mount
   const fetchDocuments = useCallback(async () => {
+    if (!user?.id) {
+      console.error("User not found. Please log in.");
+      return;
+    }
+
     try {
-      const userId = "user-123"; // In real app, get from auth context
       console.log("Attempting to fetch documents from API...");
 
-      const response = await documentApi.getAll(userId);
+      const response = await documentApi.getAll(user.id);
 
       console.log("API Response:", response);
 
@@ -258,7 +233,7 @@ export const Documents = () => {
       // If API fails, show sample documents
       setDocuments(getSampleDocuments());
     }
-  }, []);
+  }, [user?.id]);
 
   // Load documents on component mount
   useEffect(() => {
@@ -281,143 +256,6 @@ export const Documents = () => {
     "Other",
   ];
 
-  const examTypes = [
-    // English Language Tests
-    "IELTS",
-    "TOEFL iBT",
-    "TOEFL PBT",
-    "PTE Academic",
-    "Duolingo English Test",
-    "Cambridge English (C1 Advanced)",
-    "Cambridge English (C2 Proficiency)",
-
-    // US Standardized Tests
-    "SAT",
-    "ACT",
-    "SAT Subject Tests",
-    "AP Exams",
-
-    // Graduate Tests
-    "GRE General",
-    "GRE Subject Tests",
-    "GMAT",
-    "MCAT",
-    "LSAT",
-    "DAT",
-    "OAT",
-    "PCAT",
-
-    // UK Tests
-    "UCAT",
-    "BMAT",
-    "LNAT",
-    "TSA",
-    "STEP",
-
-    // Canadian Tests
-    "CAEL",
-    "CanTEST",
-
-    // Australian Tests
-    "OET",
-    "ISLPR",
-
-    // European Tests
-    "TestDaF",
-    "DSH",
-    "DELF",
-    "DALF",
-    "DELE",
-    "SIELE",
-    "CELI",
-    "CILS",
-    "PLIDA",
-
-    // Asian Tests
-    "JLPT",
-    "HSK",
-    "TOPIK",
-    "JPT",
-
-    // Other
-    "Other",
-  ];
-
-  const handleTestScoreChange = (
-    id: string,
-    field: keyof TestScore,
-    value: string | boolean
-  ) => {
-    setTestScores(prev =>
-      prev.map(score => {
-        if (score.id === id) {
-          const updatedScore = { ...score, [field]: value };
-          // Auto-update max score when exam type changes
-          if (field === "examType" && typeof value === "string") {
-            updatedScore.maxScore = getDefaultMaxScore(value);
-          }
-          return updatedScore;
-        }
-        return score;
-      })
-    );
-  };
-
-  const getDefaultMaxScore = (examType: string): string => {
-    const maxScores: Record<string, string> = {
-      SAT: "1600",
-      ACT: "36",
-      IELTS: "9.0",
-      "TOEFL iBT": "120",
-      "TOEFL PBT": "677",
-      "PTE Academic": "90",
-      "Duolingo English Test": "160",
-      "GRE General": "340",
-      GMAT: "800",
-      MCAT: "528",
-      LSAT: "180",
-      UCAT: "3600",
-      BMAT: "9.0",
-      LNAT: "42",
-      TSA: "100",
-      STEP: "120",
-      CAEL: "90",
-      CanTEST: "5.0",
-      OET: "500",
-      ISLPR: "4",
-      TestDaF: "5",
-      DSH: "3",
-      DELF: "100",
-      DALF: "100",
-      DELE: "100",
-      SIELE: "1000",
-      CELI: "100",
-      CILS: "100",
-      PLIDA: "100",
-      JLPT: "5",
-      HSK: "6",
-      TOPIK: "6",
-      JPT: "1000",
-    };
-    return maxScores[examType] || "";
-  };
-
-  const addTestScore = () => {
-    const newScore: TestScore = {
-      id: `temp-${Date.now()}`,
-      examType: "IELTS",
-      score: "",
-      maxScore: getDefaultMaxScore("IELTS"),
-      certified: false,
-      testDate: "",
-      validityDate: "",
-    };
-    setTestScores(prev => [...prev, newScore]);
-  };
-
-  const removeTestScore = (id: string) => {
-    setTestScores(prev => prev.filter(score => score.id !== id));
-  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -456,65 +294,14 @@ export const Documents = () => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const saveTestScores = async () => {
-    try {
-      const userId = "user-123"; // In real app, get from auth context
-      // Save each test score individually
-      for (const score of testScores) {
-        if (score.id.startsWith("temp-")) {
-          // New score - create
-          const newScore = {
-            examType: score.examType,
-            score: score.score,
-            maxScore: score.maxScore,
-            certified: score.certified,
-            testDate: score.testDate || new Date().toISOString().split("T")[0],
-            validityDate:
-              score.validityDate ||
-              new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000)
-                .toISOString()
-                .split("T")[0],
-          };
-          await testScoreApi.create(userId, newScore);
-        } else {
-          // Existing score - update
-          const updatedScore = {
-            examType: score.examType,
-            score: score.score,
-            maxScore: score.maxScore,
-            certified: score.certified,
-            testDate: score.testDate,
-            validityDate: score.validityDate,
-          };
-          await testScoreApi.update(userId, score.id, updatedScore);
-        }
-      }
-
-      // Update local state to remove temp IDs
-      setTestScores(prev =>
-        prev.map(score =>
-          score.id.startsWith("temp-")
-            ? {
-                ...score,
-                id:
-                  Date.now().toString() +
-                  Math.random().toString(36).substr(2, 9),
-              }
-            : score
-        )
-      );
-
-      console.log("Test scores saved successfully");
-      alert("Test scores saved successfully!");
-    } catch (error) {
-      console.error("Error saving test scores:", error);
-      alert("Error saving test scores. Please try again.");
-    }
-  };
 
   const saveDocuments = async () => {
+    if (!user?.id) {
+      console.error("User not found. Please log in.");
+      return;
+    }
+
     try {
-      const userId = "user-123"; // In real app, get from auth context
       const newDocuments: Document[] = [];
 
       // Upload each file to the server
@@ -527,7 +314,7 @@ export const Documents = () => {
         };
 
         const response = (await documentApi.upload(
-          userId,
+          user.id,
           file,
           documentData
         )) as { success: boolean; data: Record<string, unknown> };
@@ -644,7 +431,10 @@ export const Documents = () => {
   };
 
   const handleUploadNewVersion = async (file: File) => {
-    if (!selectedDocument) return;
+    if (!selectedDocument || !user?.id) {
+      console.error("Document or user not found.");
+      return;
+    }
 
     try {
       // Check if this is a hardcoded document (simple string ID)
@@ -655,10 +445,9 @@ export const Documents = () => {
         return;
       }
 
-      const userId = "user-123"; // In real app, get from auth context
       const response = (await documentApi.uploadNewVersion(
         selectedDocument.id,
-        userId,
+        user.id,
         file
       )) as { success: boolean; data: Record<string, unknown> };
 
@@ -769,197 +558,12 @@ export const Documents = () => {
             Document Management
           </h1>
           <p className="text-muted-foreground">
-            Manage your test scores and application documents
+            Manage your application documents and track their status
           </p>
         </div>
 
-        <Tabs defaultValue="test-scores" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="test-scores">Test Scores</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
-          </TabsList>
-
-          {/* Test Scores Tab */}
-          <TabsContent value="test-scores" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Test Scores</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {testScores.map(score => (
-                  <div
-                    key={score.id}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 p-6 border border-gray-200 rounded-lg bg-white hover:shadow-sm transition-shadow items-center"
-                  >
-                    <div className="space-y-1">
-                      <Label
-                        htmlFor={`examType-${score.id}`}
-                        className="text-sm font-medium text-gray-700"
-                      >
-                        Exam Type
-                      </Label>
-                      <Select
-                        value={score.examType}
-                        onValueChange={value =>
-                          handleTestScoreChange(score.id, "examType", value)
-                        }
-                      >
-                        <SelectTrigger className="h-10">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {examTypes.map(type => (
-                            <SelectItem key={type} value={type}>
-                              {type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label
-                        htmlFor={`score-${score.id}`}
-                        className="text-sm font-medium text-gray-700"
-                      >
-                        Your Score
-                      </Label>
-                      <Input
-                        id={`score-${score.id}`}
-                        value={score.score}
-                        onChange={e =>
-                          handleTestScoreChange(
-                            score.id,
-                            "score",
-                            e.target.value
-                          )
-                        }
-                        placeholder="Enter score"
-                        className="h-10 text-base font-medium border-gray-300 focus:border-gray-500 focus:ring-gray-500"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label
-                        htmlFor={`maxScore-${score.id}`}
-                        className="text-sm font-medium text-gray-700"
-                      >
-                        Max Score
-                      </Label>
-                      <Input
-                        id={`maxScore-${score.id}`}
-                        value={score.maxScore}
-                        onChange={e =>
-                          handleTestScoreChange(
-                            score.id,
-                            "maxScore",
-                            e.target.value
-                          )
-                        }
-                        placeholder="Enter max score"
-                        className="h-10 text-base font-medium border-gray-300 focus:border-gray-500 focus:ring-gray-500"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label className="text-sm font-medium text-gray-700">
-                        Test Date
-                      </Label>
-                      <Input
-                        type="date"
-                        value={score.testDate}
-                        onChange={e =>
-                          handleTestScoreChange(
-                            score.id,
-                            "testDate",
-                            e.target.value
-                          )
-                        }
-                        className="h-10 text-sm border-gray-300 focus:border-gray-500 focus:ring-gray-500"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex gap-2 mt-6">
-                        <Button
-                          variant={score.certified ? "default" : "outline"}
-                          size="sm"
-                          onClick={() =>
-                            handleTestScoreChange(score.id, "certified", true)
-                          }
-                          className={
-                            score.certified
-                              ? "text-white hover:opacity-90 h-10"
-                              : "border-gray-300 text-gray-700 hover:bg-gray-50 h-10"
-                          }
-                          style={
-                            score.certified
-                              ? { backgroundColor: "#00136A" }
-                              : {}
-                          }
-                        >
-                          <Check className="h-4 w-4 mr-1" />
-                          Certified
-                        </Button>
-                        <Button
-                          variant={!score.certified ? "default" : "outline"}
-                          size="sm"
-                          onClick={() =>
-                            handleTestScoreChange(score.id, "certified", false)
-                          }
-                          className={
-                            !score.certified
-                              ? "text-white hover:opacity-90 h-10"
-                              : "border-gray-300 text-gray-700 hover:bg-gray-50 h-10"
-                          }
-                          style={
-                            !score.certified
-                              ? { backgroundColor: "#00136A" }
-                              : {}
-                          }
-                        >
-                          <X className="h-4 w-4 mr-1" />
-                          Not Certified
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-end">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeTestScore(score.id)}
-                        className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 h-10 w-10"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-
-                <div className="flex gap-3">
-                  <Button
-                    onClick={addTestScore}
-                    variant="outline"
-                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Test Score
-                  </Button>
-                  <Button
-                    onClick={saveTestScores}
-                    className="text-white hover:opacity-90"
-                    style={{ backgroundColor: "#00136A" }}
-                  >
-                    Save Test Scores
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Documents Tab */}
-          <TabsContent value="documents" className="space-y-6">
+        {/* Documents Section */}
+        <div className="space-y-6">
             <div className="flex justify-between items-center">
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -1241,8 +845,7 @@ export const Documents = () => {
                 </Button>
               </div>
             )}
-          </TabsContent>
-        </Tabs>
+        </div>
 
         {/* View Document Modal - Simple Preview */}
         <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
