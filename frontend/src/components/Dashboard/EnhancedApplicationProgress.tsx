@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Application } from "./types";
 import { 
   Eye, 
-  Edit, 
   ExternalLink, 
   Calendar, 
   MapPin, 
@@ -175,14 +174,6 @@ export const EnhancedApplicationProgress = ({
                   >
                     <Eye className="h-4 w-4" />
                     View Details
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="gap-2"
-                  >
-                    <Edit className="h-4 w-4" />
-                    Edit
                   </Button>
                   <Button
                     size="sm"
