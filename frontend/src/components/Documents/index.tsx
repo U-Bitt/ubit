@@ -458,6 +458,7 @@ export const Documents = () => {
 
   const saveTestScores = async () => {
     try {
+      const userId = "user-123"; // In real app, get from auth context
       // Save each test score individually
       for (const score of testScores) {
         if (score.id.startsWith("temp-")) {
@@ -474,7 +475,7 @@ export const Documents = () => {
                 .toISOString()
                 .split("T")[0],
           };
-          await testScoreApi.create(newScore);
+          await testScoreApi.create(userId, newScore);
         } else {
           // Existing score - update
           const updatedScore = {
@@ -485,7 +486,7 @@ export const Documents = () => {
             testDate: score.testDate,
             validityDate: score.validityDate,
           };
-          await testScoreApi.update(score.id, updatedScore);
+          await testScoreApi.update(userId, score.id, updatedScore);
         }
       }
 

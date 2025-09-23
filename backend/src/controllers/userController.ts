@@ -909,20 +909,18 @@ export const getDocuments = async (
   try {
     const userId = req.headers["x-user-id"] as string || "user_1";
     
-    const user = await User.findById(userId).lean();
-
-    if (!user) {
-      res.status(404).json({
-        success: false,
-        data: [] as any[],
-        message: "User not found",
-      });
-      return;
-    }
+    // Import Document model
+    const Document = require("../models/Document").default;
+    
+    // Fetch documents from Document collection
+    const documents = await Document.find({
+      uploadedBy: userId,
+      isLatestVersion: true,
+    }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
-      data: user.documents || [],
+      data: documents,
       message: "Documents retrieved successfully",
     });
   } catch (error) {
@@ -948,32 +946,25 @@ export const addDocument = async (
     const userId = req.headers["x-user-id"] as string || "user_1";
     const documentData = req.body;
 
-    const newDocument = {
-      id: `doc_${Date.now()}`,
+    // Import Document model
+    const Document = require("../models/Document").default;
+
+    const newDocument = new Document({
       name: documentData.name,
       type: documentData.type,
-      url: documentData.url,
-      uploadedAt: new Date(),
-      status: "draft" as const,
-    };
-
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { 
-        $push: { documents: newDocument },
-        updatedAt: new Date()
+      university: "All",
+      status: "Draft",
+      uploadDate: new Date(),
+      size: "0 MB",
+      format: "URL",
+      filePath: documentData.url || "",
+      uploadedBy: userId,
+      metadata: {
+        description: documentData.url ? "External URL document" : "Draft document",
       },
-      { new: true }
-    );
+    });
 
-    if (!user) {
-      res.status(404).json({
-        success: false,
-        data: {} as any,
-        message: "User not found",
-      });
-      return;
-    }
+    await newDocument.save();
 
     res.status(201).json({
       success: true,
@@ -1005,36 +996,32 @@ export const updateDocument = async (
     const { docId } = req.params;
     const updates = req.body;
 
-    const updateData: any = {};
-    if (updates.name) updateData["documents.$.name"] = updates.name;
-    if (updates.type) updateData["documents.$.type"] = updates.type;
-    if (updates.url) updateData["documents.$.url"] = updates.url;
-    if (updates.status) updateData["documents.$.status"] = updates.status;
+    // Import Document model
+    const Document = require("../models/Document").default;
 
-    const user = await User.findOneAndUpdate(
+    const updateData: any = {};
+    if (updates.name) updateData.name = updates.name;
+    if (updates.type) updateData.type = updates.type;
+    if (updates.url) updateData.filePath = updates.url;
+    if (updates.status) updateData.status = updates.status;
+
+    const updatedDocument = await Document.findOneAndUpdate(
       { 
-        _id: userId, 
-        "documents.id": docId 
+        _id: docId,
+        uploadedBy: userId
       },
-      { 
-        $set: { 
-          ...updateData,
-          updatedAt: new Date()
-        }
-      },
+      updateData,
       { new: true }
     );
 
-    if (!user) {
+    if (!updatedDocument) {
       res.status(404).json({
         success: false,
         data: {} as any,
-        message: "User or document not found",
+        message: "Document not found",
       });
       return;
     }
-
-    const updatedDocument = user.documents?.find(doc => doc.id === docId);
 
     res.status(200).json({
       success: true,
@@ -1060,20 +1047,19 @@ export const deleteDocument = async (
     const userId = req.headers["x-user-id"] as string || "user_1";
     const { docId } = req.params;
 
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { 
-        $pull: { documents: { id: docId } },
-        updatedAt: new Date()
-      },
-      { new: true }
-    );
+    // Import Document model
+    const Document = require("../models/Document").default;
 
-    if (!user) {
+    const document = await Document.findOneAndDelete({
+      _id: docId,
+      uploadedBy: userId
+    });
+
+    if (!document) {
       res.status(404).json({
         success: false,
         data: {},
-        message: "User not found",
+        message: "Document not found",
       });
       return;
     }

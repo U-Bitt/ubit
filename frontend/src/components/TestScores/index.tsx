@@ -25,7 +25,7 @@ import {
   AlertCircle,
   BookOpen,
 } from "lucide-react";
-import { testScoresApi } from "@/utils/api";
+import { testScoreApi } from "@/utils/api";
 
 interface TestScore {
   id?: string;
@@ -108,13 +108,14 @@ export const TestScores = () => {
       setError(null);
       console.log("Fetching test scores...");
 
-      const response = await testScoresApi.getAll();
+      const userId = "user-123"; // In real app, get from auth context
+      const response = await testScoreApi.getAll(userId);
 
       console.log("Test scores API response:", response);
 
-      if (response && response.success) {
-        setTestScores((response.data || []) as unknown as TestScore[]);
-        console.log("Test scores loaded:", response.data);
+      if (Array.isArray(response)) {
+        setTestScores(response as unknown as TestScore[]);
+        console.log("Test scores loaded:", response);
       } else {
         console.error("Failed to fetch test scores:", response);
         setError("Failed to fetch test scores");
@@ -206,7 +207,9 @@ export const TestScores = () => {
 
       if (editingScore) {
         // Update existing score
-        const response = await testScoresApi.update(
+        const userId = "user-123"; // In real app, get from auth context
+        const response = await testScoreApi.update(
+          userId,
           editingScore.id!,
           scoreData
         );
@@ -227,7 +230,8 @@ export const TestScores = () => {
         }
       } else {
         // Create new score
-        const response = await testScoresApi.create(scoreData);
+        const userId = "user-123"; // In real app, get from auth context
+        const response = await testScoreApi.create(userId, scoreData);
 
         if (response.success) {
           setTestScores(prev => [
@@ -259,7 +263,8 @@ export const TestScores = () => {
 
     try {
       setLoading(true);
-      const response = await testScoresApi.delete(scoreId);
+      const userId = "user-123"; // In real app, get from auth context
+      const response = await testScoreApi.delete(userId, scoreId);
 
       if (response.success) {
         setTestScores(prev => prev.filter(score => score.id !== scoreId));
