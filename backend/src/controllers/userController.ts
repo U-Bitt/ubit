@@ -269,6 +269,28 @@ export const getUserById = async (
       nationality: user.nationality,
       phone: user.phone,
       avatar: user.avatar,
+      personalInfo: user.personalInfo ? {
+        ...user.personalInfo,
+        dateOfBirth: user.personalInfo.dateOfBirth?.toISOString(),
+      } : undefined,
+      academicInfo: user.academicInfo,
+      areasOfInterest: user.areasOfInterest,
+      testScores: user.testScores?.map(score => ({
+        id: score.id,
+        testName: score.examType,
+        score: score.score,
+        date: score.testDate,
+        maxScore: score.maxScore,
+        percentile: 0, // Default value since it's not in the model
+      })),
+      documents: user.documents?.map(doc => ({
+        ...doc,
+        uploadedAt: doc.uploadedAt.toISOString(),
+      })),
+      savedUniversities: user.savedUniversities?.map(saved => ({
+        ...saved,
+        savedAt: saved.savedAt.toISOString(),
+      })),
       preferences: user.preferences,
       applications: user.applications,
       createdAt: user.createdAt,
@@ -371,7 +393,7 @@ export const getUserProfile = async (
   try {
     // This would typically get user ID from JWT token
     // For now, we'll use a mock user ID
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     
     const user = await User.findById(userId).lean();
 
@@ -421,7 +443,7 @@ export const updateUserProfile = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const updates = req.body;
 
     // Remove fields that shouldn't be updated directly
@@ -528,7 +550,7 @@ export const getUserApplications = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     
     const user = await User.findById(userId).lean();
 
@@ -563,7 +585,7 @@ export const createApplication = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const applicationData = req.body;
 
     const newApplication: Application = {
@@ -616,7 +638,7 @@ export const updateApplication = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const { appId } = req.params;
     const updates = req.body;
 
@@ -667,7 +689,7 @@ export const deleteApplication = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const { appId } = req.params;
 
     const user = await User.findByIdAndUpdate(
@@ -710,7 +732,7 @@ export const getTestScores = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     
     const user = await User.findById(userId).lean();
 
@@ -750,7 +772,7 @@ export const addTestScore = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const testScoreData = req.body;
 
     const newTestScore = {
@@ -807,7 +829,7 @@ export const updateTestScore = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const { testId } = req.params;
     const updates = req.body;
 
@@ -864,7 +886,7 @@ export const deleteTestScore = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const { testId } = req.params;
 
     const user = await User.findByIdAndUpdate(
@@ -907,7 +929,7 @@ export const getDocuments = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     
     // Import Document model
     const Document = require("../models/Document").default;
@@ -943,7 +965,7 @@ export const addDocument = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const documentData = req.body;
 
     // Import Document model
@@ -992,7 +1014,7 @@ export const updateDocument = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const { docId } = req.params;
     const updates = req.body;
 
@@ -1044,7 +1066,7 @@ export const deleteDocument = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const { docId } = req.params;
 
     // Import Document model
@@ -1086,7 +1108,7 @@ export const getSavedUniversities = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     
     const user = await User.findById(userId).lean();
 
@@ -1124,7 +1146,7 @@ export const saveUniversity = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const universityData = req.body;
 
     const newSavedUniversity = {
@@ -1174,7 +1196,7 @@ export const unsaveUniversity = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const { savedId } = req.params;
 
     const user = await User.findByIdAndUpdate(
@@ -1224,7 +1246,7 @@ export const updatePersonalInfo = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const updates = req.body;
 
     const updateData: any = {};
@@ -1282,7 +1304,7 @@ export const updateAcademicInfo = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const updates = req.body;
 
     const updateData: any = {};
@@ -1335,7 +1357,7 @@ export const updateAreasOfInterest = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
     const { areasOfInterest } = req.body;
 
     const user = await User.findByIdAndUpdate(

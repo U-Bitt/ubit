@@ -254,6 +254,35 @@ export const userApi = {
       },
     });
   },
+  // Academic Information
+  updateAcademicInfo: async (userId: string, academicInfo: {
+    gpa?: number;
+    highSchoolName?: string;
+    graduationYear?: number;
+    intendedMajors?: string[];
+  }): Promise<any> => {
+    const response = await apiCall<{ success: boolean; data: any }>("/users/academic-info", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": userId,
+      },
+      body: JSON.stringify(academicInfo),
+    });
+    return response.data;
+  },
+  // Areas of Interest
+  updateAreasOfInterest: async (userId: string, areasOfInterest: string[]): Promise<string[]> => {
+    const response = await apiCall<{ success: boolean; data: string[] }>("/users/areas-of-interest", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": userId,
+      },
+      body: JSON.stringify({ areasOfInterest }),
+    });
+    return response.data;
+  },
   // Legacy functions for backward compatibility
   getProfile: (): Promise<Record<string, unknown>> =>
     apiCall<Record<string, unknown>>("/user/profile"),

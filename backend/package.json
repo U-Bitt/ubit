@@ -11,8 +11,10 @@
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "seed:users": "node seed-users.js",
+    "seed:users:force": "node seed-users-force.js",
     "seed:visas": "node seed-visas.js",
-    "seed:all": "node seed-all.js"
+    "seed:all": "node seed-all.js",
+    "seed:all:force": "node seed-all-force.js"
   },
   "keywords": [
     "education",
