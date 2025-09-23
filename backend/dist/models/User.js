@@ -161,31 +161,37 @@ const UserSchema = new mongoose_1.Schema({
     testScores: [{
             id: {
                 type: String,
-                required: true,
+                required: false,
             },
-            testName: {
+            examType: {
                 type: String,
                 required: true,
                 trim: true,
-                maxlength: [100, "Test name cannot be more than 100 characters"],
+                maxlength: [100, "Exam type cannot be more than 100 characters"],
             },
             score: {
                 type: String,
                 required: true,
                 trim: true,
             },
-            date: {
-                type: Date,
-                required: true,
-            },
             maxScore: {
                 type: String,
+                required: true,
                 trim: true,
             },
-            percentile: {
-                type: Number,
-                min: [0, "Percentile cannot be negative"],
-                max: [100, "Percentile cannot exceed 100"],
+            certified: {
+                type: Boolean,
+                default: false,
+            },
+            testDate: {
+                type: String,
+                required: true,
+                trim: true,
+            },
+            validityDate: {
+                type: String,
+                required: true,
+                trim: true,
             },
         }],
     documents: [{

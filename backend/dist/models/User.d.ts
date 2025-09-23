@@ -25,11 +25,12 @@ export interface IUser extends Document {
     areasOfInterest?: string[];
     testScores?: Array<{
         id: string;
-        testName: string;
+        examType: string;
         score: string;
-        date: Date;
-        maxScore?: string;
-        percentile?: number;
+        maxScore: string;
+        certified: boolean;
+        testDate: string;
+        validityDate: string;
     }>;
     documents?: Array<{
         id: string;
