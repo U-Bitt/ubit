@@ -212,3 +212,52 @@ export const searchScholarships = async (
     });
   }
 };
+
+// Create new scholarship
+export const createScholarship = async (
+  req: Request<{}, ApiResponse<Scholarship>, Scholarship>,
+  res: Response<ApiResponse<Scholarship>>,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const newScholarship = new ScholarshipModel(req.body);
+    const savedScholarship = await newScholarship.save();
+
+    const scholarshipData: Scholarship = {
+      id: (savedScholarship._id as any).toString(),
+      title: savedScholarship.title,
+      description: savedScholarship.description,
+      amount: savedScholarship.amount,
+      university: savedScholarship.university,
+      country: savedScholarship.country,
+      deadline: savedScholarship.deadline,
+      type: savedScholarship.type,
+      requirements: savedScholarship.requirements,
+      coverage: savedScholarship.coverage,
+      duration: savedScholarship.duration,
+      applicationProcess: savedScholarship.applicationProcess,
+      eligibility: savedScholarship.eligibility,
+      benefits: savedScholarship.benefits,
+      image: savedScholarship.image,
+      donor: savedScholarship.donor,
+      contactEmail: savedScholarship.contactEmail,
+      website: savedScholarship.website,
+      isActive: savedScholarship.isActive,
+      createdAt: savedScholarship.createdAt,
+      updatedAt: savedScholarship.updatedAt,
+    };
+
+    res.status(201).json({
+      success: true,
+      data: scholarshipData,
+      message: "Scholarship created successfully",
+    });
+  } catch (error) {
+    console.error("Error creating scholarship:", error);
+    res.status(500).json({
+      success: false,
+      data: {} as Scholarship,
+      message: "Internal server error",
+    });
+  }
+};

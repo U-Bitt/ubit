@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const scholarshipController_1 = require("../controllers/scholarshipController");
 const router = express_1.default.Router();
 router.get("/", scholarshipController_1.getAllScholarships);
+router.post("/", scholarshipController_1.createScholarship);
 router.get("/search", scholarshipController_1.searchScholarships);
 router.get("/:id", scholarshipController_1.getScholarshipById);
 exports.default = router;

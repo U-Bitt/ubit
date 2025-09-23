@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.searchScholarships = exports.getScholarshipById = exports.getAllScholarships = void 0;
+exports.createScholarship = exports.searchScholarships = exports.getScholarshipById = exports.getAllScholarships = void 0;
 const Scholarship_1 = __importDefault(require("../models/Scholarship"));
 const getAllScholarships = async (req, res, next) => {
     try {
@@ -181,4 +181,47 @@ const searchScholarships = async (req, res, next) => {
     }
 };
 exports.searchScholarships = searchScholarships;
+const createScholarship = async (req, res, next) => {
+    try {
+        const newScholarship = new Scholarship_1.default(req.body);
+        const savedScholarship = await newScholarship.save();
+        const scholarshipData = {
+            id: savedScholarship._id.toString(),
+            title: savedScholarship.title,
+            description: savedScholarship.description,
+            amount: savedScholarship.amount,
+            university: savedScholarship.university,
+            country: savedScholarship.country,
+            deadline: savedScholarship.deadline,
+            type: savedScholarship.type,
+            requirements: savedScholarship.requirements,
+            coverage: savedScholarship.coverage,
+            duration: savedScholarship.duration,
+            applicationProcess: savedScholarship.applicationProcess,
+            eligibility: savedScholarship.eligibility,
+            benefits: savedScholarship.benefits,
+            image: savedScholarship.image,
+            donor: savedScholarship.donor,
+            contactEmail: savedScholarship.contactEmail,
+            website: savedScholarship.website,
+            isActive: savedScholarship.isActive,
+            createdAt: savedScholarship.createdAt,
+            updatedAt: savedScholarship.updatedAt,
+        };
+        res.status(201).json({
+            success: true,
+            data: scholarshipData,
+            message: "Scholarship created successfully",
+        });
+    }
+    catch (error) {
+        console.error("Error creating scholarship:", error);
+        res.status(500).json({
+            success: false,
+            data: {},
+            message: "Internal server error",
+        });
+    }
+};
+exports.createScholarship = createScholarship;
 //# sourceMappingURL=scholarshipController.js.map
