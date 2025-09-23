@@ -71,8 +71,8 @@ export const UserProfile = () => {
   // State for profile switching
   const [isProfileSwitchOpen, setIsProfileSwitchOpen] = useState(false);
   const [currentProfileId, setCurrentProfileId] = useState(
-    "68d0e375f42237519f071445"
-  ); // John Doe's ID
+    user?.id || ""
+  ); // Current user's ID
   const [profiles, setProfiles] = useState<Record<string, unknown>[]>([]);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
 
@@ -129,6 +129,11 @@ export const UserProfile = () => {
 
       if (user.areasOfInterest) {
         setInterests(user.areasOfInterest);
+      }
+
+      // Update current profile ID when user changes
+      if (user.id) {
+        setCurrentProfileId(user.id);
       }
     }
   }, [user]);
