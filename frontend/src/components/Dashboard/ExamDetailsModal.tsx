@@ -116,9 +116,9 @@ export const ExamDetailsModal = ({
                     <span className="text-sm font-medium">
                       Overall Progress
                     </span>
-                    <span className="text-sm font-bold">{exam.progress}%</span>
+                    <span className="text-sm font-bold">{Math.round(exam.progress)}%</span>
                   </div>
-                  <Progress value={exam.progress} className="h-3" />
+                  <Progress value={Math.round(exam.progress)} className="h-3" />
                   <div className="grid grid-cols-2 gap-4 mt-4">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-green-600">
@@ -157,10 +157,10 @@ export const ExamDetailsModal = ({
                     <div className="flex justify-between items-center mb-2">
                       <h4 className="font-medium text-sm">{section.name}</h4>
                       <Badge variant="outline" className="text-xs">
-                        {section.progress}%
+                        {Math.round(section.progress)}%
                       </Badge>
                     </div>
-                    <Progress value={section.progress} className="h-2 mb-2" />
+                    <Progress value={Math.round(section.progress)} className="h-2 mb-2" />
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>Score: {section.score || "N/A"}</span>
                       <span>Target: {section.target}</span>

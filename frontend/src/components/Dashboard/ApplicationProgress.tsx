@@ -43,9 +43,9 @@ export const ApplicationProgress = ({
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Progress</span>
-                  <span>{app.progress}%</span>
+                  <span>{Math.round(app.progress)}%</span>
                 </div>
-                <Progress value={app.progress} className="h-2" />
+                <Progress value={Math.round(app.progress)} className="h-2" />
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-muted-foreground">

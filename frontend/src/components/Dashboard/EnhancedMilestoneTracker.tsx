@@ -76,10 +76,74 @@ export const EnhancedMilestoneTracker = ({
   onStepUncomplete,
   onMilestoneUncomplete
 }: EnhancedMilestoneTrackerProps) => {
+  // Load completed steps from localStorage
+  const loadCompletedStepsFromStorage = useCallback((): Set<string> => {
+    // Only run on client side
+    if (typeof window === 'undefined') {
+      return new Set<string>();
+    }
+    
+    try {
+      const saved = localStorage.getItem('milestoneCompletedSteps');
+      if (saved) {
+        const parsed: string[] = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          console.log('📚 Loaded completed steps from localStorage:', parsed);
+          return new Set(parsed);
+        } else {
+          console.warn('⚠️ Invalid completed steps data in localStorage');
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error loading completed steps from localStorage:', error);
+    }
+    return new Set<string>();
+  }, []);
+
+  // Load milestone progress from localStorage
+  const loadMilestonesFromStorage = useCallback((): EnhancedMilestone[] => {
+    // Only run on client side
+    if (typeof window === 'undefined') {
+      return milestones;
+    }
+    
+    try {
+      const saved = localStorage.getItem('milestoneProgress');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Ensure it's an array
+        if (Array.isArray(parsed)) {
+          console.log('🎯 Loaded milestone progress from localStorage:', parsed.length, 'milestones');
+          return parsed;
+        } else {
+          console.warn('⚠️ Invalid milestone data in localStorage, using default');
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error loading milestone progress from localStorage:', error);
+    }
+    return milestones;
+  }, [milestones]);
+
   const [expandedMilestones, setExpandedMilestones] = useState<Set<string>>(new Set());
   const [localMilestones, setLocalMilestones] = useState<EnhancedMilestone[]>(milestones);
   const [showTips, setShowTips] = useState<Set<string>>(new Set());
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+
+  // Load data from localStorage on client-side mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !isDataLoaded) {
+      const loadedMilestones = loadMilestonesFromStorage();
+      const loadedSteps = loadCompletedStepsFromStorage();
+      
+      setLocalMilestones(loadedMilestones);
+      setCompletedSteps(loadedSteps);
+      setIsDataLoaded(true);
+      
+      console.log('🔄 Milestone data loaded on client mount');
+    }
+  }, [isDataLoaded, loadMilestonesFromStorage, loadCompletedStepsFromStorage]);
 
   const toggleExpanded = (milestoneId: string) => {
     const newExpanded = new Set(expandedMilestones);
@@ -156,6 +220,31 @@ export const EnhancedMilestoneTracker = ({
       })
     );
   }, [completedSteps]);
+
+  // Save completed steps to localStorage
+  useEffect(() => {
+    if (isDataLoaded && typeof window !== 'undefined') {
+      try {
+        const stepsArray = Array.from(completedSteps);
+        localStorage.setItem('milestoneCompletedSteps', JSON.stringify(stepsArray));
+        console.log('💾 Saved completed steps to localStorage:', stepsArray.length, 'steps');
+      } catch (error) {
+        console.error('❌ Error saving completed steps to localStorage:', error);
+      }
+    }
+  }, [completedSteps, isDataLoaded]);
+
+  // Save milestone progress to localStorage
+  useEffect(() => {
+    if (isDataLoaded && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('milestoneProgress', JSON.stringify(localMilestones));
+        console.log('💾 Saved milestone progress to localStorage:', localMilestones.length, 'milestones');
+      } catch (error) {
+        console.error('❌ Error saving milestone progress to localStorage:', error);
+      }
+    }
+  }, [localMilestones, isDataLoaded]);
 
   // Update all milestone progress when completedSteps changes
   useEffect(() => {
@@ -331,7 +420,7 @@ export const EnhancedMilestoneTracker = ({
                           <span className="font-semibold text-slate-700 text-base">Progress</span>
                           <div className="text-right">
                             <div className="text-2xl font-bold text-slate-900">
-                              {milestone.progress}%
+                              {Math.round(milestone.progress)}%
                             </div>
                             <div className="text-sm text-slate-500">
                               {milestone.completedSteps}/{milestone.totalSteps} steps completed
@@ -342,13 +431,13 @@ export const EnhancedMilestoneTracker = ({
                           <Progress value={milestone.progress} className="h-4" />
                           <div className="absolute inset-0 flex items-center justify-center">
                             <span className="text-xs font-bold text-white drop-shadow-sm">
-                              {milestone.progress}%
+                              {Math.round(milestone.progress)}%
                             </span>
                           </div>
                         </div>
                         <div className="flex justify-between text-xs text-slate-500">
                           <span>Started</span>
-                          <span>{milestone.progress}% Complete</span>
+                          <span>{Math.round(milestone.progress)}% Complete</span>
                           <span>Finished</span>
                         </div>
                       </div>
@@ -428,7 +517,7 @@ export const EnhancedMilestoneTracker = ({
                     <CheckCircle className="h-4 w-4" />
                     <div>
                       <div className="font-medium">Completion</div>
-                      <div className="font-bold text-slate-900 text-lg">{milestone.progress}%</div>
+                      <div className="font-bold text-slate-900 text-lg">{Math.round(milestone.progress)}%</div>
                     </div>
                   </div>
                 </div>
@@ -489,7 +578,7 @@ export const EnhancedMilestoneTracker = ({
                                   <span className="font-medium text-slate-700 text-sm">Progress</span>
                                   <div className="text-right">
                                     <span className="text-lg font-bold text-slate-900">
-                                      {step.progress}%
+                                      {Math.round(step.progress)}%
                                     </span>
                                   </div>
                                 </div>
@@ -497,7 +586,7 @@ export const EnhancedMilestoneTracker = ({
                                   <Progress value={step.progress} className="h-3" />
                                   <div className="absolute inset-0 flex items-center justify-center">
                                     <span className="text-xs font-bold text-white drop-shadow-sm">
-                                      {step.progress}%
+                                      {Math.round(step.progress)}%
                                     </span>
                                   </div>
                                 </div>

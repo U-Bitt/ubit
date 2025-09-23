@@ -217,10 +217,29 @@ export const EnhancedDashboard = () => {
       "Technical University of Munich": 37
     };
 
-    // Try to find exact match or partial match
+    // Normalize university name for better matching
+    const normalizedName = universityName.toLowerCase().trim();
+    
+    // Try exact match first
     for (const [key, ranking] of Object.entries(rankingMap)) {
-      if (universityName.toLowerCase().includes(key.toLowerCase()) || 
-          key.toLowerCase().includes(universityName.toLowerCase())) {
+      const normalizedKey = key.toLowerCase();
+      if (normalizedName === normalizedKey) {
+        return ranking;
+      }
+    }
+    
+    // Try partial match - check if university name contains ranking key
+    for (const [key, ranking] of Object.entries(rankingMap)) {
+      const normalizedKey = key.toLowerCase();
+      if (normalizedName.includes(normalizedKey)) {
+        return ranking;
+      }
+    }
+    
+    // Try reverse match - check if ranking key contains university name
+    for (const [key, ranking] of Object.entries(rankingMap)) {
+      const normalizedKey = key.toLowerCase();
+      if (normalizedKey.includes(normalizedName)) {
         return ranking;
       }
     }

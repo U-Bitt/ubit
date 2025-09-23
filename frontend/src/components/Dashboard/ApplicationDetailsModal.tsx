@@ -126,12 +126,12 @@ export const ApplicationDetailsModal = ({
                       Overall Progress
                     </span>
                     <span className="text-sm font-bold">
-                      {application.progress}%
+                      {Math.round(application.progress)}%
                     </span>
                   </div>
-                  <Progress value={application.progress} className="h-3" />
+                  <Progress value={Math.round(application.progress)} className="h-3" />
                   <div className="text-xs text-muted-foreground">
-                    {application.progress}% complete
+                    {Math.round(application.progress)}% complete
                   </div>
                 </div>
               </CardContent>

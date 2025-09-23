@@ -28,7 +28,7 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
   const [university, setUniversity] = useState<University | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [linkedScholarships, setLinkedScholarships] = useState<any[]>([]);
+  const [linkedScholarships, setLinkedScholarships] = useState<unknown[]>([]);
   const [scholarshipsLoading, setScholarshipsLoading] = useState(false);
 
   // Fetch linked scholarships for the university
@@ -339,7 +339,9 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
                       Available Scholarships
                     </h3>
                     <div className="grid gap-6">
-                      {linkedScholarships.map((scholarship, index) => (
+                      {linkedScholarships.map((scholarship, index) => {
+                        const scholarshipData = scholarship as { id?: string; title?: string; amount?: string; type?: string; description?: string; deadline?: string; requirements?: string[] };
+                        return (
                         <Card
                           key={`linked-${index}`}
                           className="border-l-4 border-l-primary"
@@ -348,27 +350,27 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
                             <div className="flex justify-between items-start mb-4">
                               <div>
                                 <h3 className="text-xl font-bold mb-1">
-                                  {scholarship.title}
+                                  {scholarshipData.title || 'Scholarship'}
                                 </h3>
                                 <p className="text-muted-foreground">
-                                  {scholarship.amount} • {scholarship.type}
+                                  {scholarshipData.amount || 'Amount not specified'} • {scholarshipData.type || 'Type not specified'}
                                 </p>
-                                {scholarship.description && (
+                                {scholarshipData.description && (
                                   <p className="text-sm text-muted-foreground mt-2">
-                                    {scholarship.description}
+                                    {scholarshipData.description}
                                   </p>
                                 )}
                               </div>
                               <div className="flex flex-col items-end gap-2">
                                 <Badge variant="secondary">
-                                  {scholarship.deadline}
+                                  {scholarshipData.deadline || 'No deadline'}
                                 </Badge>
                                 <Button
                                   size="sm"
                                   variant="outline"
                                   onClick={() =>
                                     router.push(
-                                      `/scholarshipDetail/${scholarship.id}`
+                                      `/scholarshipDetail/${scholarshipData.id || 'unknown'}`
                                     )
                                   }
                                 >
@@ -376,14 +378,14 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
                                 </Button>
                               </div>
                             </div>
-                            {scholarship.requirements &&
-                              scholarship.requirements.length > 0 && (
+                            {scholarshipData.requirements &&
+                              scholarshipData.requirements.length > 0 && (
                                 <div>
                                   <h4 className="font-medium mb-2">
                                     Requirements:
                                   </h4>
                                   <ul className="space-y-1">
-                                    {scholarship.requirements.map(
+                                    {scholarshipData.requirements.map(
                                       (req: string, reqIndex: number) => (
                                         <li
                                           key={reqIndex}
@@ -398,7 +400,8 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
                               )}
                           </CardContent>
                         </Card>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -462,7 +465,7 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
                       currently available.
                     </p>
                     <p className="text-sm mt-2">
-                      Please check the university's official website for current
+                      Please check the university&apos;s official website for current
                       scholarship opportunities.
                     </p>
                   </div>
