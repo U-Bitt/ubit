@@ -52,11 +52,6 @@ const navigationMenus = [
     items: [
       { name: "Exams", href: "/prepare/exams", icon: BookOpen },
       { name: "Test Scores", href: "/test-scores", icon: BarChart3 },
-      {
-        name: "Recommendations",
-        href: "/prepare/recommendations",
-        icon: Lightbulb,
-      },
       { name: "Documents", href: "/prepare/documents", icon: FileText },
       { name: "Trainings", href: "/prepare/trainings", icon: Users },
       { name: "Visa", href: "/prepare/visa", icon: Plane },

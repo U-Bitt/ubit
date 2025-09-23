@@ -54,6 +54,12 @@ export const UserProfile = () => {
   // State for new interest input
   const [newInterest, setNewInterest] = useState("");
 
+  // Debug: Log when interests change
+  useEffect(() => {
+    console.log("Interests state changed:", interests);
+    console.log("Interests length:", interests.length);
+  }, [interests]);
+
   // State for editing
   const [isEditing, setIsEditing] = useState(false);
 
@@ -128,6 +134,7 @@ export const UserProfile = () => {
       }
 
       if (user.areasOfInterest) {
+        console.log("Loading areas of interest from user:", user.areasOfInterest);
         setInterests(user.areasOfInterest);
       }
 
@@ -389,6 +396,7 @@ export const UserProfile = () => {
       });
 
       // Update interests
+      console.log("Switching to user interests:", selectedUser.areasOfInterest);
       setInterests(selectedUser.areasOfInterest || []);
 
       // Update user context with selected profile
@@ -743,29 +751,29 @@ export const UserProfile = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">
-                    Areas of Interest
-                  </Label>
                   <div className="flex flex-wrap gap-2">
-                    {interests.map((interest, index) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="flex items-center gap-1"
-                      >
-                        {interest}
-                        {isEditing && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeInterest(interest)}
-                            className="h-4 w-4 p-0 text-red-600 hover:text-red-700"
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        )}
-                      </Badge>
-                    ))}
+                    {interests.map((interest, index) => {
+                      console.log("Rendering interest:", interest, "at index:", index);
+                      return (
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="flex items-center gap-1"
+                        >
+                          {interest}
+                          {isEditing && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeInterest(interest)}
+                              className="h-4 w-4 p-0 text-red-600 hover:text-red-700"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </Badge>
+                      );
+                    })}
                   </div>
                 </div>
                 {isEditing && (

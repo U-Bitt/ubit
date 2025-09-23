@@ -39,13 +39,12 @@ import {
   Briefcase,
   Target,
   Award,
+  X,
 } from "lucide-react";
 import { testScoreApi, documentApi } from "@/utils/api";
 import { CVAnalysis } from "@/components/CVAnalysis";
 import { CVTemplate } from "@/components/CVTemplate";
 import { generateCVAnalysis } from "@/utils/cvScoring";
-import { useUser } from "@/contexts/UserContext";
-import { documentApi } from "@/utils/api";
 
 
 interface Document {
@@ -112,93 +111,6 @@ export const Documents = () => {
   const [isAnalyzingCV, setIsAnalyzingCV] = useState(false);
   const itemsPerPage = 5;
 
-  // Get hardcoded sample documents
-  const getSampleDocuments = () => [
-    {
-      id: "1",
-      name: "High School Transcript",
-      type: "Transcript",
-      university: "MIT",
-      status: "Uploaded",
-      uploadDate: "2024-11-15",
-      size: "2.3 MB",
-      format: "PDF",
-      filePath:
-        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    },
-    {
-      id: "2",
-      name: "Personal Statement",
-      type: "Essay",
-      university: "Stanford",
-      status: "Draft",
-      uploadDate: "2024-11-20",
-      size: "0.5 MB",
-      format: "DOCX",
-      filePath:
-        "https://file-examples.com/storage/fe68c0b8a0b5b5b5b5b5b5b/sample.docx",
-    },
-    {
-      id: "3",
-      name: "Portfolio",
-      type: "Portfolio",
-      university: "All",
-      status: "Uploaded",
-      uploadDate: "2024-11-18",
-      size: "15.2 MB",
-      format: "ZIP",
-      filePath:
-        "https://file-examples.com/storage/fe68c0b8a0b5b5b5b5b5b5b/sample.zip",
-    },
-    {
-      id: "4",
-      name: "CV/Resume",
-      type: "CV/Resume",
-      university: "Harvard",
-      status: "Uploaded",
-      uploadDate: "2024-11-12",
-      size: "1.8 MB",
-      format: "PDF",
-      filePath:
-        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    },
-    {
-      id: "5",
-      name: "Recommendation Letter - Professor Smith",
-      type: "Recommendation Letter",
-      university: "Yale",
-      status: "Pending",
-      uploadDate: "2024-11-25",
-      size: "0.9 MB",
-      format: "PDF",
-      filePath:
-        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    },
-    {
-      id: "6",
-      name: "Research Paper - Machine Learning",
-      type: "Research Paper",
-      university: "Princeton",
-      status: "Uploaded",
-      uploadDate: "2024-11-08",
-      size: "3.2 MB",
-      format: "PDF",
-      filePath:
-        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    },
-    {
-      id: "7",
-      name: "Certificate - Data Science Course",
-      type: "Certificate",
-      university: "All",
-      status: "Uploaded",
-      uploadDate: "2024-11-30",
-      size: "0.7 MB",
-      format: "PDF",
-      filePath:
-        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    },
-  ];
 
   // Fetch documents from API on component mount
   const fetchDocuments = useCallback(async () => {
@@ -257,18 +169,18 @@ export const Documents = () => {
 
         console.log("Processed API Documents:", apiDocuments);
 
-        // Combine: uploaded documents first, then sample documents
-        setDocuments([...apiDocuments, ...getSampleDocuments()]);
+        // Set only API documents
+        setDocuments(apiDocuments);
       } else {
-        // If API fails or returns no data, show sample documents
-        console.log("No API documents found, showing sample documents");
-        setDocuments(getSampleDocuments());
+        // If API returns no data, show empty array
+        console.log("No API documents found");
+        setDocuments([]);
       }
     } catch (error) {
       console.error("Error fetching documents:", error);
-      console.log("Falling back to sample documents due to API error");
-      // If API fails, show sample documents
-      setDocuments(getSampleDocuments());
+      console.log("API error occurred, showing empty documents list");
+      // If API fails, show empty array
+      setDocuments([]);
     }
   }, [user?.id]);
 
@@ -283,7 +195,7 @@ export const Documents = () => {
   }, [fetchDocuments]);
 
   const documentTypes = [
-    "CV/Resume",
+    "Resume/CV",
     "Portfolio",
     "Transcript",
     "Personal Statement",
@@ -554,7 +466,7 @@ export const Documents = () => {
     }
   };
 
-  // CV Improvement Functions
+  // Document Improvement Functions
   const handleImproveCV = () => {
     setSelectedCVSections([]);
     setIsCVImproveModalOpen(true);
@@ -562,7 +474,7 @@ export const Documents = () => {
 
   const handleStartAnalysis = () => {
     if (selectedCVSections.length === 0) {
-      alert("Please select a CV file to improve");
+      alert("Please select a document to improve");
       return;
     }
 
@@ -577,12 +489,12 @@ export const Documents = () => {
         interests: user?.areasOfInterest || [],
       };
 
-      // Get the selected CV document
+      // Get the selected document
       const selectedDocument = documents.find(
         doc => selectedCVSections.includes(doc.id) && doc.type === "CV/Resume"
       );
 
-      // Generate analysis for the selected CV file
+      // Generate analysis for the selected document
       const analysis = generateCVAnalysis(userProfile);
       setCvAnalysis(analysis);
 
@@ -680,7 +592,7 @@ export const Documents = () => {
                   className="border-blue-300 text-blue-700 hover:bg-blue-50"
                 >
                   <FileCheck className="h-4 w-4 mr-2" />
-                  Improve CV
+                  Improve Document
                 </Button>
                 <Button
                   onClick={handleGenerateCVTemplate}
@@ -688,7 +600,7 @@ export const Documents = () => {
                   className="border-green-300 text-green-700 hover:bg-green-50"
                 >
                   <FileText className="h-4 w-4 mr-2" />
-                  CV Template
+                  Document Template
                 </Button>
                 <Dialog
                   open={isUploadModalOpen}
@@ -861,16 +773,16 @@ export const Documents = () => {
               </div>
             </div>
 
-            {/* CV Quick Actions */}
+            {/* Document Quick Actions */}
             <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                      CV Development
+                      Document Development
                     </h3>
                     <p className="text-blue-700 text-sm">
-                      Improve your CV with AI assistance and use templates
+                      Improve your documents with AI assistance and use templates
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -879,7 +791,7 @@ export const Documents = () => {
                       className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       <FileCheck className="h-4 w-4 mr-2" />
-                      Improve CV
+                      Improve Document
                     </Button>
                     <Button
                       onClick={handleGenerateCVTemplate}
@@ -947,7 +859,7 @@ export const Documents = () => {
                               variant="ghost"
                               size="sm"
                               onClick={handleImproveCV}
-                              title="Improve CV with AI"
+                              title="Improve Document with AI"
                               className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                             >
                               <FileCheck className="h-4 w-4" />
@@ -1456,7 +1368,7 @@ export const Documents = () => {
           </DialogContent>
         </Dialog>
 
-        {/* CV Improvement Modal */}
+        {/* Document Improvement Modal */}
         <Dialog
           open={isCVImproveModalOpen}
           onOpenChange={open => {
@@ -1472,20 +1384,20 @@ export const Documents = () => {
           <DialogContent className="max-w-6xl max-h-[95vh] flex flex-col">
             <DialogHeader className="flex-shrink-0">
               <DialogTitle className="text-2xl font-semibold text-gray-900">
-                Improve CV
+                Improve Document
               </DialogTitle>
               <DialogDescription className="text-gray-600">
-                Get AI-powered analysis and improvement suggestions for your CV
+                Get AI-powered analysis and improvement suggestions for your documents
               </DialogDescription>
             </DialogHeader>
 
             <div className="flex-1 overflow-y-auto">
               {!isAnalyzingCV && !cvAnalysis && (
                 <div className="space-y-6">
-                  {/* File Selection - Show uploaded CV files directly */}
+                  {/* File Selection - Show uploaded document files directly */}
                   <div>
                     <h3 className="text-lg font-semibold mb-4">
-                      Select CV File to Improve
+                      Select Document to Improve
                     </h3>
                     <div className="space-y-2">
                       {documents
@@ -1520,7 +1432,7 @@ export const Documents = () => {
                         .length === 0 && (
                         <div className="text-center py-8 text-gray-500">
                           <FileText className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-                          <p>No CV files found. Please upload a CV first.</p>
+                          <p>No document files found. Please upload a document first.</p>
                           <Button
                             onClick={() => {
                               setIsCVImproveModalOpen(false);
@@ -1529,7 +1441,7 @@ export const Documents = () => {
                             className="mt-4"
                           >
                             <Upload className="h-4 w-4 mr-2" />
-                            Upload CV
+                            Upload Document
                           </Button>
                         </div>
                       )}
@@ -1556,7 +1468,7 @@ export const Documents = () => {
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
                   <h2 className="text-xl font-semibold mb-2">
-                    AI is analyzing your CV...
+                    AI is analyzing your document...
                   </h2>
                   <p className="text-gray-600">
                     This will take a few minutes to generate personalized
@@ -1592,7 +1504,7 @@ export const Documents = () => {
           </DialogContent>
         </Dialog>
 
-        {/* CV Template Modal */}
+        {/* Document Template Modal */}
         <Dialog
           open={isCVTemplateModalOpen}
           onOpenChange={setIsCVTemplateModalOpen}
@@ -1600,10 +1512,10 @@ export const Documents = () => {
           <DialogContent className="max-w-6xl max-h-[95vh] flex flex-col">
             <DialogHeader className="flex-shrink-0">
               <DialogTitle className="text-2xl font-semibold text-gray-900">
-                CV Template
+                Document Template
               </DialogTitle>
               <DialogDescription className="text-gray-600">
-                Create a new CV using our template
+                Create a new document using our template
               </DialogDescription>
             </DialogHeader>
 
