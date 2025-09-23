@@ -12,6 +12,9 @@ export interface Visa {
   eligibility: string[];
   restrictions: string[];
   benefits: string[];
+  workRights?: string;
+  studyRights?: string;
+  familyRights?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

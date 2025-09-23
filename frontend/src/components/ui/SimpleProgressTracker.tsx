@@ -22,17 +22,17 @@ export const SimpleProgressTracker: React.FC = () => {
         : [];
 
     const hasVisited = (path: string) => visitedPages.includes(path);
-    const hasTestScores = () =>
-      !!user?.testScores && user.testScores.length > 0;
+    const hasTestScores = () => !!user?.academicInfo?.gpa;
     const hasApplications = () =>
-      !!user?.applications && user.applications.length > 0;
+      !!user?.savedUniversities && user.savedUniversities.length > 0;
 
     // Calculate progress for each phase
     const profileProgress = (() => {
       let points = 0;
       if (user?.firstName && user?.email) points += 10;
-      if (user?.gpa && user?.school) points += 5;
-      if (user?.interests && user.interests.length > 0) points += 5;
+      if (user?.academicInfo?.gpa && user?.academicInfo?.highSchoolName)
+        points += 5;
+      if (user?.areasOfInterest && user.areasOfInterest.length > 0) points += 5;
       return Math.round((points / 20) * 100);
     })();
 

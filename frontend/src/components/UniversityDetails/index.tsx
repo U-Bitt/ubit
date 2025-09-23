@@ -28,7 +28,17 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
   const [university, setUniversity] = useState<University | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [linkedScholarships, setLinkedScholarships] = useState<any[]>([]);
+  const [linkedScholarships, setLinkedScholarships] = useState<
+    {
+      id: string;
+      title: string;
+      amount: string;
+      type: string;
+      description?: string;
+      deadline: string;
+      requirements: string[];
+    }[]
+  >([]);
   const [scholarshipsLoading, setScholarshipsLoading] = useState(false);
 
   // Fetch linked scholarships for the university
@@ -36,7 +46,17 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
     try {
       setScholarshipsLoading(true);
       const scholarships = await scholarshipApi.getByUniversity(universityName);
-      setLinkedScholarships(scholarships);
+      setLinkedScholarships(
+        scholarships as {
+          id: string;
+          title: string;
+          amount: string;
+          type: string;
+          description?: string;
+          deadline: string;
+          requirements: string[];
+        }[]
+      );
     } catch (err) {
       console.error("Error fetching linked scholarships:", err);
       setLinkedScholarships([]);
@@ -462,8 +482,8 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
                       currently available.
                     </p>
                     <p className="text-sm mt-2">
-                      Please check the university's official website for current
-                      scholarship opportunities.
+                      Please check the university&apos;s official website for
+                      current scholarship opportunities.
                     </p>
                   </div>
                 </CardContent>
