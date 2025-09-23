@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { UniversitySlideshow } from "@/components/ui/UniversitySlideshow";
 import { AnimatedText } from "@/components/ui/AnimatedText";
 import { AutoScrollingFeatures } from "@/components/ui/AutoScrollingFeatures";
-import { ApplicationProcessDiagram } from "@/components/ui/ApplicationProcessDiagram";
+import { SimpleProgressTracker } from "@/components/ui/SimpleProgressTracker";
 import { GlobeSection } from "@/components/ui/GlobeSection";
 import { NewsSection } from "@/components/ui/NewsSection";
 import { ArrowRight } from "lucide-react";
@@ -79,17 +79,8 @@ export default function Home() {
         <GlobeSection />
 
         {/* Application Process Tracking Section */}
-        <section className="py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-foreground mb-12">
-                Application Process Tracking & List Management
-              </h2>
-
-              {/* Process Diagram */}
-              <ApplicationProcessDiagram />
-            </div>
-          </div>
+        <section className="py-20 bg-gray-50">
+          <SimpleProgressTracker />
         </section>
       </main>
     </div>

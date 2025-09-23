@@ -11,7 +11,7 @@ export function GlobeSection() {
       university: "Harvard University",
       program: "Computer Science",
       message:
-        "The application process was so smooth thanks to this platform. I'm now studying Computer Science at Harvard!",
+        "Би ганцаараа биш гэдгээ ойлгосон. Энэ замаар олон хүн явдаг, бид бүгд амжилттай давж чаддаг .",
       avatar: "B",
       country: "USA",
     },
@@ -20,7 +20,7 @@ export function GlobeSection() {
       university: "MIT",
       program: "Engineering PhD",
       message:
-        "This platform helped me discover MIT's amazing programs. I'm pursuing my PhD in Engineering now.",
+        "Их сургуулийн шаардлагуудыг харьцуулахад их цаг ордог. Манай платформ чамд тэр харьцуулалтыг хялбархан харуулна.",
       avatar: "E",
       country: "USA",
     },
@@ -29,7 +29,7 @@ export function GlobeSection() {
       university: "Stanford University",
       program: "Business Administration",
       message:
-        "The exam preparation resources were incredible. I aced my SAT and got accepted to Stanford!",
+        "Тэтгэлэг хайхдаа зөвхөн том сургуулиудыг биш, жижиг хотын их сургуулиудыг ч шалгаарай. Ихэнхдээ илүү дэмжлэг өгдөг шүү.",
       avatar: "S",
       country: "USA",
     },
@@ -38,7 +38,7 @@ export function GlobeSection() {
       university: "Oxford University",
       program: "Economics",
       message:
-        "The scholarship information was a game-changer. I'm studying Economics at Oxford with full funding.",
+        "Мэдээллээ тарамдуулж хайх бус, энд нэг дор төвлөрүүлж харах нь илүү үр дүнтэй.",
       avatar: "N",
       country: "UK",
     },
@@ -47,7 +47,7 @@ export function GlobeSection() {
       university: "University of Toronto",
       program: "Business Administration",
       message:
-        "The step-by-step guidance made everything clear. I'm now in Canada studying Business Administration.",
+        "Тэтгэлгийн ихэнх нь зөвхөн дүн бус, эссэ болон хичээлээс гадуурх үйл ажиллагааг хардаг. Бэлтгэхдээ энэ тал дээрээ анхаарах нь илүү үр дүнтэй.",
       avatar: "T",
       country: "Canada",
     },
@@ -56,7 +56,7 @@ export function GlobeSection() {
       university: "University of Melbourne",
       program: "Medicine",
       message:
-        "The platform connected me with the perfect university. I'm loving my studies in Australia!",
+        "Бичиг баримт илгээхдээ хамгийн сүүлийн хувилбараа шалга. Жижиг алдаа ч өргөдлийг хүчингүй болгох эрсдэлтэй.",
       avatar: "O",
       country: "Australia",
     },
@@ -108,8 +108,7 @@ export function GlobeSection() {
 
                       {/* Testimonial Message */}
                       <p className="text-base font-bold text-gray-900 leading-relaxed">
-                        successful students who are abroads messages or their
-                        experiecne messages
+                        {card.message}
                       </p>
                     </div>
                   </div>
@@ -129,8 +128,7 @@ export function GlobeSection() {
 
                       {/* Testimonial Message */}
                       <p className="text-base font-bold text-gray-900 leading-relaxed">
-                        successful students who are abroads messages or their
-                        experiecne messages
+                        {card.message}
                       </p>
                     </div>
                   </div>
