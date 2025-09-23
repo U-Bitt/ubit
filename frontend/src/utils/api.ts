@@ -108,9 +108,21 @@ export interface UniversitySuggestion {
   deadline: string;
 }
 
+// Rate limiting protection
+let lastApiCall = 0;
+const MIN_API_INTERVAL = 100; // Minimum 100ms between API calls
+
 // Generic API call function
 async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
+
+  // Rate limiting protection
+  const now = Date.now();
+  const timeSinceLastCall = now - lastApiCall;
+  if (timeSinceLastCall < MIN_API_INTERVAL) {
+    await new Promise(resolve => setTimeout(resolve, MIN_API_INTERVAL - timeSinceLastCall));
+  }
+  lastApiCall = Date.now();
 
   console.log("Making API call to:", url);
   console.log("API_BASE_URL:", API_BASE_URL);
@@ -131,6 +143,11 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
     );
 
     if (!response.ok) {
+      if (response.status === 429) {
+        throw new Error(
+          "Rate limit exceeded. Please wait a moment before trying again."
+        );
+      }
       throw new Error(
         `API call failed: ${response.status} ${response.statusText}`
       );

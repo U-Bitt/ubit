@@ -32,7 +32,6 @@ const navigation = [
   { name: "Countries", href: "/countries", icon: MapPin },
   { name: "Exams", href: "/exams", icon: BookOpen },
   { name: "Documents", href: "/documents", icon: FileText },
-  { name: "Recommendations", href: "/recommendations", icon: Lightbulb },
 ];
 
 export const Navigation = () => {

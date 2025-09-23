@@ -20,27 +20,46 @@ export const useSavedUniversities = () => {
 
   // Load saved universities from backend on mount
   useEffect(() => {
+    console.log("useSavedUniversities: User changed to:", user?.id);
+    
+    // Always clear saved universities first when user changes
+    console.log("useSavedUniversities: Clearing saved universities immediately");
+    setSavedUniversities([]);
+    setError(null);
+    
     if (user?.id) {
+      // Load saved universities without delay to avoid rate limiting
       loadSavedUniversities();
+    } else {
+      // Clear saved universities when no user is logged in
+      console.log("useSavedUniversities: Clearing saved universities - no user");
     }
   }, [user?.id]);
 
   const loadSavedUniversities = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.log("useSavedUniversities: No user ID, skipping load");
+      return;
+    }
 
     try {
+      console.log("useSavedUniversities: Loading saved universities for user:", user.id);
+      console.log("useSavedUniversities: User object:", user);
       setLoading(true);
       setError(null);
       const saved = await userApi.getSavedUniversities(user.id);
-      setSavedUniversities(
-        (saved || []).map(item => ({
-          id: item.id as string,
-          universityId: item.universityId as string,
-          universityName: item.universityName as string,
-          savedAt: item.savedAt as string,
-          notes: item.notes as string | undefined,
-        }))
-      );
+      console.log("useSavedUniversities: API returned:", saved);
+      console.log("useSavedUniversities: API returned length:", saved?.length || 0);
+      const mappedSaved = (saved || []).map(item => ({
+        id: item.id as string,
+        universityId: item.universityId as string,
+        universityName: item.universityName as string,
+        savedAt: item.savedAt as string,
+        notes: item.notes as string | undefined,
+      }));
+      console.log("useSavedUniversities: Mapped saved universities:", mappedSaved);
+      console.log("useSavedUniversities: Setting savedUniversities to:", mappedSaved);
+      setSavedUniversities(mappedSaved);
     } catch (err) {
       console.error("Error loading saved universities:", err);
       setError("Failed to load saved universities");
@@ -120,6 +139,11 @@ export const useSavedUniversities = () => {
     }
   };
 
+  const clearState = () => {
+    setSavedUniversities([]);
+    setError(null);
+  };
+
   return {
     savedUniversities,
     loading,
@@ -128,6 +152,7 @@ export const useSavedUniversities = () => {
     isSaved,
     getSavedUniversity,
     clearAll,
+    clearState,
     refresh: loadSavedUniversities,
   };
 };

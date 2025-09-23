@@ -16,9 +16,11 @@ import {
 } from "lucide-react";
 import { useSavedUniversities } from "@/hooks/useSavedUniversities";
 import { universityApi, University } from "@/utils/api";
+import { useUser } from "@/contexts/UserContext";
 
 export const Universities = () => {
   const router = useRouter();
+  const { user } = useUser();
 
   // State for search and filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,6 +30,20 @@ export const Universities = () => {
 
   // Saved universities hook
   const { savedUniversities, toggleSave, isSaved } = useSavedUniversities();
+
+  // Debug: Log user changes
+  useEffect(() => {
+    console.log("Universities component: User changed to:", user?.id);
+  }, [user?.id]);
+
+  // Debug: Log saved universities when they change
+  useEffect(() => {
+    console.log("Universities component: savedUniversities changed:", savedUniversities);
+    console.log("Universities component: savedUniversities.length:", savedUniversities.length);
+  }, [savedUniversities]);
+
+  // Note: Removed force refresh to avoid rate limiting
+  // The useSavedUniversities hook will handle user changes automatically
 
   // Load universities from API
   useEffect(() => {
