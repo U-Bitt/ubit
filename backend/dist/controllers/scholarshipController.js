@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createScholarship = exports.searchScholarships = exports.getScholarshipById = exports.getAllScholarships = void 0;
+exports.deleteScholarship = exports.createScholarship = exports.searchScholarships = exports.getScholarshipById = exports.getAllScholarships = void 0;
 const Scholarship_1 = __importDefault(require("../models/Scholarship"));
 const getAllScholarships = async (req, res, next) => {
     try {
@@ -224,4 +224,40 @@ const createScholarship = async (req, res, next) => {
     }
 };
 exports.createScholarship = createScholarship;
+const deleteScholarship = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            res.status(400).json({
+                success: false,
+                data: {},
+                message: "Invalid scholarship ID format",
+            });
+            return;
+        }
+        const deletedScholarship = await Scholarship_1.default.findByIdAndDelete(id);
+        if (!deletedScholarship) {
+            res.status(404).json({
+                success: false,
+                data: {},
+                message: "Scholarship not found",
+            });
+            return;
+        }
+        res.status(200).json({
+            success: true,
+            data: {},
+            message: "Scholarship deleted successfully",
+        });
+    }
+    catch (error) {
+        console.error("Error deleting scholarship:", error);
+        res.status(500).json({
+            success: false,
+            data: {},
+            message: "Internal server error",
+        });
+    }
+};
+exports.deleteScholarship = deleteScholarship;
 //# sourceMappingURL=scholarshipController.js.map

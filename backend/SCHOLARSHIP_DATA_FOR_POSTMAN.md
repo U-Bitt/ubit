@@ -1,7 +1,21 @@
 # Complete Scholarship Data for Postman API Testing
 
-## API Endpoint
+## API Endpoints
+
+### Create Scholarship
 **POST** `http://localhost:5001/api/scholarships`
+
+### Get All Scholarships
+**GET** `http://localhost:5001/api/scholarships`
+
+### Get Scholarship by ID
+**GET** `http://localhost:5001/api/scholarships/{id}`
+
+### Delete Scholarship
+**DELETE** `http://localhost:5001/api/scholarships/{id}`
+
+### Search Scholarships
+**GET** `http://localhost:5001/api/scholarships/search?q={query}`
 
 ## Headers
 ```
@@ -10,7 +24,9 @@ Content-Type: application/json
 
 ---
 
-## 1. MIT Presidential Scholarship (Original)
+## Scholarships for Universities in Our Database
+
+### 1. MIT Presidential Scholarship (Original)
 ```json
 {
   "title": "MIT Presidential Scholarship",
@@ -26,11 +42,14 @@ Content-Type: application/json
   "applicationProcess": "Online application with essays and recommendations",
   "eligibility": "International students with exceptional academic records",
   "benefits": ["Full tuition coverage", "Research opportunities", "Mentorship program"],
-  "image": "/mit-campus-aerial.png"
+  "image": "/mit-campus-aerial.png",
+  "donor": "MIT Office of the President",
+  "contactEmail": "presidential-scholarship@mit.edu",
+  "website": "https://web.mit.edu/finaid/scholarships/presidential.html"
 }
 ```
 
-## 2. Stanford Knight-Hennessy Scholars (Original)
+### 2. Stanford Knight-Hennessy Scholars (Original)
 ```json
 {
   "title": "Stanford Knight-Hennessy Scholars",
@@ -46,51 +65,14 @@ Content-Type: application/json
   "applicationProcess": "Multi-stage application with interviews",
   "eligibility": "Graduate students from any country",
   "benefits": ["Full funding", "Leadership development", "Global network"],
-  "image": "/stanford-campus.jpg"
+  "image": "/stanford-campus.jpg",
+  "donor": "Knight-Hennessy Scholars Program",
+  "contactEmail": "knight-hennessy@stanford.edu",
+  "website": "https://knight-hennessy.stanford.edu"
 }
 ```
 
-## 3. Oxford Clarendon Scholarship (Original)
-```json
-{
-  "title": "Oxford Clarendon Scholarship",
-  "description": "Fully-funded graduate scholarship at Oxford University",
-  "amount": "£15,000",
-  "university": "University of Oxford",
-  "country": "United Kingdom",
-  "deadline": "2025-01-20",
-  "requirements": ["First-class degree", "Research potential", "Academic excellence"],
-  "type": "Merit-based",
-  "coverage": "Full funding",
-  "duration": "3-4 years",
-  "applicationProcess": "Departmental application with research proposal",
-  "eligibility": "Graduate students worldwide",
-  "benefits": ["Full funding", "Research support", "Academic community"],
-  "image": "/oxford-university-campus.jpg"
-}
-```
-
-## 4. Cambridge Gates Scholarship (Original)
-```json
-{
-  "title": "Cambridge Gates Scholarship",
-  "description": "Full-cost scholarship for graduate study at Cambridge",
-  "amount": "£20,000",
-  "university": "University of Cambridge",
-  "country": "United Kingdom",
-  "deadline": "2025-10-15",
-  "requirements": ["Academic excellence", "Leadership potential", "Social commitment"],
-  "type": "Merit-based",
-  "coverage": "Full funding",
-  "duration": "1-3 years",
-  "applicationProcess": "University application plus Gates application",
-  "eligibility": "Graduate students from outside the UK",
-  "benefits": ["Full funding", "Leadership development", "Global community"],
-  "image": "/cambridge-university-campus.jpg"
-}
-```
-
-## 5. Harvard Presidential Scholarship (Original)
+### 3. Harvard Presidential Scholarship (Original)
 ```json
 {
   "title": "Harvard Presidential Scholarship",
@@ -106,53 +88,18 @@ Content-Type: application/json
   "applicationProcess": "Standard Harvard application",
   "eligibility": "International undergraduate applicants",
   "benefits": ["Full tuition", "Research opportunities", "Alumni network"],
-  "image": "/harvard-campus.jpg"
-}
-```
-
-## 6. Lester B. Pearson International Scholarship (Original)
-```json
-{
-  "title": "Lester B. Pearson International Scholarship",
-  "description": "Fully-funded undergraduate scholarship for international students at University of Toronto, covering tuition, living expenses, and books for up to 4 years. This prestigious scholarship recognizes academic excellence, leadership potential, and community involvement.",
-  "amount": "Full funding",
-  "university": "University of Toronto",
-  "country": "Canada",
-  "deadline": "2025-11-30",
-  "requirements": [
-    "High school graduate entering undergraduate",
-    "International (non-Canadian) student",
-    "Minimum GPA 3.7",
-    "English proficiency (IELTS 7.0+, TOEFL 100+, Duolingo 120+)",
-    "Personal Essay/Statement",
-    "Recommendation Letters",
-    "Official Transcript",
-    "Proof of English Proficiency"
-  ],
-  "type": "Merit-based",
-  "coverage": "100% tuition, living expenses, books and supplies",
-  "duration": "Up to 4 years",
-  "applicationProcess": "Nominated by high school and apply through university. Multi-stage application with essays, recommendations, and academic records.",
-  "eligibility": "International (non-Canadian) high school graduates entering undergraduate studies. Must demonstrate academic excellence, leadership potential, community involvement, and innovation.",
-  "benefits": [
-    "100% tuition coverage",
-    "Living expenses covered",
-    "Books and supplies covered",
-    "Leadership development opportunities",
-    "Global community access",
-    "Research opportunities",
-    "Mentorship program"
-  ],
-  "image": "/university-of-toronto-campus.png",
-  "donor": "University of Toronto",
-  "contactEmail": "international.admissions@utoronto.ca",
-  "website": "https://future.utoronto.ca/pearson/about/"
+  "image": "/harvard-campus.jpg",
+  "donor": "Harvard Office of the President",
+  "contactEmail": "presidential-scholarship@harvard.edu",
+  "website": "https://college.harvard.edu/financial-aid/scholarships"
 }
 ```
 
 ---
 
-## 7. MIT Presidential Scholarship (University-Specific)
+## University-Specific Scholarships
+
+### 4. MIT Presidential Scholarship (University-Specific)
 ```json
 {
   "title": "MIT Presidential Scholarship",
@@ -191,7 +138,7 @@ Content-Type: application/json
 }
 ```
 
-## 8. MIT Engineering Excellence Scholarship
+### 5. MIT Engineering Excellence Scholarship
 ```json
 {
   "title": "MIT Engineering Excellence Scholarship",
@@ -227,7 +174,7 @@ Content-Type: application/json
 }
 ```
 
-## 9. Stanford Knight-Hennessy Scholars (University-Specific)
+### 6. Stanford Knight-Hennessy Scholars (University-Specific)
 ```json
 {
   "title": "Stanford Knight-Hennessy Scholars",
@@ -264,7 +211,7 @@ Content-Type: application/json
 }
 ```
 
-## 10. Stanford Computer Science Innovation Award
+### 7. Stanford Computer Science Innovation Award
 ```json
 {
   "title": "Stanford Computer Science Innovation Award",
@@ -299,7 +246,7 @@ Content-Type: application/json
 }
 ```
 
-## 11. Harvard Presidential Scholarship (University-Specific)
+### 8. Harvard Presidential Scholarship (University-Specific)
 ```json
 {
   "title": "Harvard Presidential Scholarship",
@@ -337,7 +284,7 @@ Content-Type: application/json
 }
 ```
 
-## 12. Harvard Business School Alumni Fellowship
+### 9. Harvard Business School Alumni Fellowship
 ```json
 {
   "title": "Harvard Business School Alumni Fellowship",
@@ -373,7 +320,7 @@ Content-Type: application/json
 }
 ```
 
-## 13. UCD Global Excellence Scholarship
+### 10. UCD Global Excellence Scholarship
 ```json
 {
   "title": "UCD Global Excellence Scholarship",
@@ -409,7 +356,7 @@ Content-Type: application/json
 }
 ```
 
-## 14. Paris-Saclay Excellence Scholarship
+### 11. Paris-Saclay Excellence Scholarship
 ```json
 {
   "title": "Paris-Saclay Excellence Scholarship",
@@ -445,7 +392,7 @@ Content-Type: application/json
 }
 ```
 
-## 15. Fudan International Student Scholarship
+### 12. Fudan International Student Scholarship
 ```json
 {
   "title": "Fudan International Student Scholarship",
@@ -481,7 +428,7 @@ Content-Type: application/json
 }
 ```
 
-## 16. UCL Global Undergraduate Scholarship
+### 13. UCL Global Undergraduate Scholarship
 ```json
 {
   "title": "UCL Global Undergraduate Scholarship",
@@ -517,7 +464,7 @@ Content-Type: application/json
 }
 ```
 
-## 17. Imperial Engineering Excellence Scholarship
+### 14. Imperial Engineering Excellence Scholarship
 ```json
 {
   "title": "Imperial Engineering Excellence Scholarship",
@@ -555,16 +502,55 @@ Content-Type: application/json
 
 ---
 
+## DELETE Scholarship Examples
+
+### Delete Scholarship by ID
+**DELETE** `http://localhost:5001/api/scholarships/{scholarship_id}`
+
+**Example:**
+```
+DELETE http://localhost:5001/api/scholarships/507f1f77bcf86cd799439011
+```
+
+**Response (Success):**
+```json
+{
+  "success": true,
+  "data": {},
+  "message": "Scholarship deleted successfully"
+}
+```
+
+**Response (Not Found):**
+```json
+{
+  "success": false,
+  "data": {},
+  "message": "Scholarship not found"
+}
+```
+
+**Response (Invalid ID):**
+```json
+{
+  "success": false,
+  "data": {},
+  "message": "Invalid scholarship ID format"
+}
+```
+
+---
+
 ## Summary
-- **Total Scholarships**: 17
-- **Universities Covered**: 8 (MIT, Stanford, Harvard, UCD, Paris-Saclay, Fudan, UCL, Imperial)
-- **Countries Covered**: 5 (USA, Ireland, France, China, UK)
-- **Scholarship Types**: Merit-based (13), Leadership-based (1), Need-based (1)
-- **Coverage Types**: Full funding (6), Partial funding (11)
+- **Total Scholarships**: 14 (only for universities in our database)
+- **Universities Covered**: 8 (all universities in our database)
+- **API Endpoints**: POST, GET, DELETE, SEARCH
+- **All scholarships include**: donor, contactEmail, website fields
+- **Removed**: Oxford, Cambridge, and Toronto scholarships (universities not in database)
 
 ## Usage Instructions
-1. Copy each JSON object above
-2. Set up Postman with POST request to `http://localhost:5001/api/scholarships`
-3. Set Content-Type header to `application/json`
-4. Paste each scholarship JSON in the request body
-5. Send the request to add each scholarship to the database
+1. **Create**: Copy each JSON object and POST to `/api/scholarships`
+2. **Read**: GET `/api/scholarships` to retrieve all scholarships
+3. **Delete**: DELETE `/api/scholarships/{id}` to remove a scholarship
+4. **Search**: GET `/api/scholarships/search?q={query}` to search scholarships
+5. **Headers**: Always include `Content-Type: application/json`
