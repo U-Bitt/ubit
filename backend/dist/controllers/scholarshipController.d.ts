@@ -7,4 +7,8 @@ export declare const getScholarshipById: (req: Request<{
 export declare const searchScholarships: (req: Request<{}, ApiResponse<Scholarship[]>, {}, {
     q: string;
 }>, res: Response<ApiResponse<Scholarship[]>>, next: NextFunction) => Promise<void>;
+export declare const createScholarship: (req: Request<{}, ApiResponse<Scholarship>, Scholarship>, res: Response<ApiResponse<Scholarship>>, next: NextFunction) => Promise<void>;
+export declare const deleteScholarship: (req: Request<{
+    id: string;
+}>, res: Response<ApiResponse<{}>>, next: NextFunction) => Promise<void>;
 //# sourceMappingURL=scholarshipController.d.ts.map

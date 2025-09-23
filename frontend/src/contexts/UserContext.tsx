@@ -64,40 +64,47 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
   // Load user data from localStorage on mount
   useEffect(() => {
-    const loadUser = () => {
+    const loadUser = async () => {
       try {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-        } else {
-          // Set default user for demo purposes
-          const defaultUser: User = {
-            id: '68d0e375f42237519f071445', // John Doe's ID from backend
-            email: 'john.doe@example.com',
+        const currentUserId = localStorage.getItem('currentUserId');
+        if (currentUserId) {
+          const storedUser = localStorage.getItem(`user_${currentUserId}`);
+          if (storedUser) {
+            setUser(JSON.parse(storedUser));
+            setIsLoading(false);
+            return;
+          }
+        }
+        
+        // Fallback to default user
+        const defaultUser: User = {
+          id: '68d24c510a783721f2e82368', // John Doe's ID from backend
+          email: 'john.doe@example.com',
+          firstName: 'John',
+          lastName: 'Doe',
+          phone: '+97612345678',
+          dateOfBirth: '1995-01-15',
+          nationality: 'Mongolian',
+          personalInfo: {
             firstName: 'John',
             lastName: 'Doe',
+            email: 'john.doe@example.com',
             phone: '+97612345678',
             dateOfBirth: '1995-01-15',
             nationality: 'Mongolian',
-            personalInfo: {
-              firstName: 'John',
-              lastName: 'Doe',
-              email: 'john.doe@example.com',
-              phone: '+97612345678',
-              dateOfBirth: '1995-01-15',
-              nationality: 'Mongolian',
-            },
-            academicInfo: {
-              gpa: 3.8,
-              highSchoolName: 'Ulaanbaatar International School',
-              graduationYear: 2024,
-              intendedMajors: ['Computer Science'],
-            },
-            areasOfInterest: ['Programming', 'Machine Learning', 'Web Development', 'Mobile Apps'],
-          };
-          setUser(defaultUser);
-          localStorage.setItem('user', JSON.stringify(defaultUser));
-        }
+          },
+          academicInfo: {
+            gpa: 3.8,
+            highSchoolName: 'Ulaanbaatar International School',
+            graduationYear: 2024,
+            intendedMajors: ['Computer Science'],
+          },
+          areasOfInterest: ['Programming', 'Machine Learning', 'Web Development', 'Mobile Apps'],
+        };
+        setUser(defaultUser);
+        localStorage.setItem('currentUserId', defaultUser.id);
+        localStorage.setItem(`user_${defaultUser.id}`, JSON.stringify(defaultUser));
+
       } catch (error) {
         console.error('Error loading user data:', error);
       } finally {
@@ -111,7 +118,8 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   // Save user data to localStorage whenever it changes
   useEffect(() => {
     if (user) {
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('currentUserId', user.id);
+      localStorage.setItem(`user_${user.id}`, JSON.stringify(user));
     }
   }, [user]);
 
@@ -127,7 +135,8 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       setIsLoading(true);
       const apiUser = await userApi.getById(userId);
       setUser(apiUser);
-      localStorage.setItem('user', JSON.stringify(apiUser));
+      localStorage.setItem('currentUserId', userId);
+      localStorage.setItem(`user_${userId}`, JSON.stringify(apiUser));
     } catch (error) {
       console.error('Error loading user:', error);
     } finally {

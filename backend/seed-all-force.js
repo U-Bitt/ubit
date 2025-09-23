@@ -2,9 +2,8 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 // Import the seed functions
-const { seedUsers } = require('./dist/utils/userSeedData');
+const { seedUsersForce } = require('./dist/utils/userSeedData');
 const { seedVisas } = require('./dist/utils/visaSeedData');
-const { seedAllData } = require('./dist/utils/seedData');
 
 // Connect to MongoDB
 const connectDB = async () => {
@@ -22,24 +21,21 @@ const main = async () => {
   try {
     await connectDB();
     
-    console.log('🌱 Starting database seeding...');
+    console.log('🌱 Starting FORCE database seeding...');
+    console.log('⚠️  WARNING: This will delete ALL existing users!');
     
-    // Seed users
-    console.log('👥 Seeding users...');
-    await seedUsers();
+    // Force seed users (this will delete all existing users)
+    console.log('👥 Force seeding users...');
+    await seedUsersForce();
     
     // Seed visas
     console.log('🛂 Seeding visas...');
     await seedVisas();
     
-    // Seed universities and scholarships
-    console.log('🏫 Seeding universities and scholarships...');
-    await seedAllData();
-    
-    console.log('🎉 All seeding completed successfully!');
+    console.log('🎉 All force seeding completed successfully!');
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error during seeding:', error);
+    console.error('❌ Error during force seeding:', error);
     process.exit(1);
   }
 };

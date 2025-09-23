@@ -8,6 +8,9 @@ const userController_1 = require("../controllers/userController");
 const router = express_1.default.Router();
 router.post("/register", userController_1.registerUser);
 router.post("/login", userController_1.loginUser);
+router.put("/personal-info", userController_1.updatePersonalInfo);
+router.put("/academic-info", userController_1.updateAcademicInfo);
+router.put("/areas-of-interest", userController_1.updateAreasOfInterest);
 router.get("/", userController_1.getAllUsers);
 router.get("/:id", userController_1.getUserById);
 router.put("/:id", userController_1.updateUserById);
@@ -29,8 +32,5 @@ router.delete("/documents/:docId", userController_1.deleteDocument);
 router.get("/saved-universities/me", userController_1.getSavedUniversities);
 router.post("/saved-universities", userController_1.saveUniversity);
 router.delete("/saved-universities/:savedId", userController_1.unsaveUniversity);
-router.put("/personal-info", userController_1.updatePersonalInfo);
-router.put("/academic-info", userController_1.updateAcademicInfo);
-router.put("/areas-of-interest", userController_1.updateAreasOfInterest);
 exports.default = router;
 //# sourceMappingURL=users.js.map

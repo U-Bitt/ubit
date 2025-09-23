@@ -1,7 +1,7 @@
 // API utility functions for the Ubit education platform
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+  process.env.NEXT_PUBLIC_API_URL || "/api";
 
 console.log("Environment variables:", {
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
@@ -109,10 +109,7 @@ export interface UniversitySuggestion {
 }
 
 // Generic API call function
-export async function apiCall<T>(
-  endpoint: string,
-  options?: RequestInit
-): Promise<T> {
+async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
 
   console.log("Making API call to:", url);
@@ -144,12 +141,6 @@ export async function apiCall<T>(
     return data;
   } catch (error) {
     console.error("API call error:", error);
-    console.error("Error details:", {
-      name: (error as Error)?.name,
-      message: (error as Error)?.message,
-      stack: (error as Error)?.stack,
-    });
-
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new Error(
         "Network error: Unable to connect to the server. Please check if the backend is running."
@@ -166,42 +157,6 @@ export const universityApi = {
       "/universities"
     );
     return response.data;
-  },
-  getAllPaginated: async (): Promise<University[]> => {
-    const allUniversities: University[] = [];
-    let page = 1;
-    let hasMore = true;
-    const limit = 50; // Increased limit per page
-
-    while (hasMore) {
-      try {
-        const response = await apiCall<{
-          success: boolean;
-          data: University[];
-          pagination: {
-            page: number;
-            limit: number;
-            total: number;
-            pages: number;
-          };
-        }>(`/universities?page=${page}&limit=${limit}`);
-
-        if (response.success && response.data) {
-          allUniversities.push(...response.data);
-
-          // Check if there are more pages
-          hasMore = page < response.pagination.pages;
-          page++;
-        } else {
-          hasMore = false;
-        }
-      } catch (error) {
-        console.error(`Error fetching page ${page}:`, error);
-        hasMore = false;
-      }
-    }
-
-    return allUniversities;
   },
   getById: async (id: string): Promise<University> => {
     const response = await apiCall<{ success: boolean; data: University }>(
@@ -283,29 +238,22 @@ export interface User {
 
 export const userApi = {
   getAll: async (): Promise<User[]> => {
-    const response = await apiCall<{ success: boolean; data: User[] }>(
-      "/users"
-    );
+    const response = await apiCall<{ success: boolean; data: User[] }>("/users");
     return response.data;
   },
   getById: async (id: string): Promise<User> => {
-    const response = await apiCall<{ success: boolean; data: User }>(
-      `/users/${id}`
-    );
+    const response = await apiCall<{ success: boolean; data: User }>(`/users/${id}`);
     return response.data;
   },
   update: async (id: string, userData: Partial<User>): Promise<User> => {
     console.log("API update call - ID:", id, "Data:", userData);
-    const response = await apiCall<{ success: boolean; data: User }>(
-      `/users/${id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
-      }
-    );
+    const response = await apiCall<{ success: boolean; data: User }>(`/users/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    });
     return response.data;
   },
   create: async (userData: Partial<User>): Promise<User> => {
@@ -319,29 +267,16 @@ export const userApi = {
     return response.data;
   },
   // Saved Universities
-  getSavedUniversities: async (
-    userId: string
-  ): Promise<Record<string, unknown>[]> => {
-    const response = await apiCall<{
-      success: boolean;
-      data: Record<string, unknown>[];
-    }>("/users/saved-universities/me", {
+  getSavedUniversities: async (userId: string): Promise<any[]> => {
+    const response = await apiCall<{ success: boolean; data: any[] }>("/users/saved-universities/me", {
       headers: {
         "x-user-id": userId,
       },
     });
     return response.data;
   },
-  saveUniversity: async (
-    userId: string,
-    universityId: string,
-    universityName: string,
-    notes?: string
-  ): Promise<Record<string, unknown>> => {
-    const response = await apiCall<{
-      success: boolean;
-      data: Record<string, unknown>;
-    }>("/users/saved-universities", {
+  saveUniversity: async (userId: string, universityId: string, universityName: string, notes?: string): Promise<any> => {
+    const response = await apiCall<{ success: boolean; data: any }>("/users/saved-universities", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -356,15 +291,41 @@ export const userApi = {
     return response.data;
   },
   unsaveUniversity: async (userId: string, savedId: string): Promise<void> => {
-    await apiCall<{ success: boolean; data: Record<string, unknown> }>(
-      `/users/saved-universities/${savedId}`,
-      {
-        method: "DELETE",
-        headers: {
-          "x-user-id": userId,
-        },
-      }
-    );
+    await apiCall<{ success: boolean; data: any }>(`/users/saved-universities/${savedId}`, {
+      method: "DELETE",
+      headers: {
+        "x-user-id": userId,
+      },
+    });
+  },
+  // Academic Information
+  updateAcademicInfo: async (userId: string, academicInfo: {
+    gpa?: number;
+    highSchoolName?: string;
+    graduationYear?: number;
+    intendedMajors?: string[];
+  }): Promise<any> => {
+    const response = await apiCall<{ success: boolean; data: any }>("/users/academic-info", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": userId,
+      },
+      body: JSON.stringify(academicInfo),
+    });
+    return response.data;
+  },
+  // Areas of Interest
+  updateAreasOfInterest: async (userId: string, areasOfInterest: string[]): Promise<string[]> => {
+    const response = await apiCall<{ success: boolean; data: string[] }>("/users/areas-of-interest", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": userId,
+      },
+      body: JSON.stringify({ areasOfInterest }),
+    });
+    return response.data;
   },
   // Legacy functions for backward compatibility
   getProfile: (): Promise<Record<string, unknown>> =>
@@ -389,110 +350,139 @@ export const userApi = {
 
 // Test Scores API functions
 export const testScoreApi = {
-  getAll: (): Promise<Record<string, unknown>[]> =>
-    apiCall<Record<string, unknown>[]>("/test-scores"),
-  create: (data: Record<string, unknown>): Promise<Record<string, unknown>> =>
-    apiCall<Record<string, unknown>>("/test-scores", {
+  getAll: async (userId: string): Promise<Record<string, unknown>[]> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>("/test-scores", {
+      headers: {
+        "user-id": userId,
+      },
+    });
+    return response.data;
+  },
+  create: async (userId: string, data: Record<string, unknown>): Promise<Record<string, unknown>> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown> }>("/test-scores", {
       method: "POST",
+      headers: {
+        "user-id": userId,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(data),
-    }),
-  update: (
+    });
+    return response.data;
+  },
+  update: async (
+    userId: string,
     id: string,
     data: Record<string, unknown>
-  ): Promise<Record<string, unknown>> =>
-    apiCall<Record<string, unknown>>(`/test-scores/${id}`, {
+  ): Promise<Record<string, unknown>> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown> }>(`/test-scores/${id}`, {
       method: "PUT",
+      headers: {
+        "user-id": userId,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(data),
-    }),
-  delete: (id: string): Promise<Record<string, unknown>> =>
-    apiCall<Record<string, unknown>>(`/test-scores/${id}`, {
+    });
+    return response.data;
+  },
+  delete: async (userId: string, id: string): Promise<Record<string, unknown>> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown> }>(`/test-scores/${id}`, {
       method: "DELETE",
-    }),
+      headers: {
+        "user-id": userId,
+      },
+    });
+    return response.data;
+  },
 };
 
 // Documents API functions
 export const documentApi = {
-  getAll: (userId: string): Promise<Record<string, unknown>[]> =>
-    apiCall<Record<string, unknown>[]>(`/documents/user/${userId}`),
-  getById: (id: string): Promise<Record<string, unknown>> =>
-    apiCall<Record<string, unknown>>(`/documents/${id}`),
-  getVersions: (
-    id: string
-  ): Promise<{ success: boolean; data: Record<string, unknown>[] }> =>
-    apiCall<{ success: boolean; data: Record<string, unknown>[] }>(
-      `/documents/${id}/versions`
-    ),
-  upload: async (
-    userId: string,
-    file: File,
-    documentData: {
-      name: string;
-      type: string;
-      university?: string;
-      description?: string;
-    }
+  getAll: async (userId: string): Promise<Record<string, unknown>[]> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>("/users/documents/me", {
+      headers: {
+        "x-user-id": userId,
+      },
+    });
+    return response.data;
+  },
+  create: async (userId: string, data: Record<string, unknown>): Promise<Record<string, unknown>> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown> }>("/users/documents", {
+      method: "POST",
+      headers: {
+        "x-user-id": userId,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    return response.data;
+  },
+  update: async (
+    id: string,
+    data: Record<string, unknown>
   ): Promise<Record<string, unknown>> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown> }>(`/users/documents/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    return response.data;
+  },
+  delete: async (userId: string, id: string): Promise<Record<string, unknown>> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown> }>(`/users/documents/${id}`, {
+      method: "DELETE",
+      headers: {
+        "x-user-id": userId,
+      },
+    });
+    return response.data;
+  },
+  upload: async (userId: string, file: File, documentData: Record<string, unknown>): Promise<Record<string, unknown>> => {
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("name", documentData.name);
-    formData.append("type", documentData.type);
-    formData.append("university", documentData.university || "All");
-    if (documentData.description) {
-      formData.append("description", documentData.description);
-    }
+    formData.append('file', file);
+    formData.append('name', documentData.name as string);
+    formData.append('type', documentData.type as string);
+    formData.append('university', documentData.university as string || 'All');
+    formData.append('description', documentData.description as string || '');
 
     const response = await fetch(`${API_BASE_URL}/documents/upload/${userId}`, {
       method: "POST",
+      headers: {
+        "x-user-id": userId,
+      },
       body: formData,
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Upload failed");
+      throw new Error(`API call failed: ${response.status} ${response.statusText}`);
     }
 
-    return response.json();
+    return await response.json();
   },
-  uploadNewVersion: async (
-    documentId: string,
-    userId: string,
-    file: File
-  ): Promise<Record<string, unknown>> => {
+  getVersions: async (id: string): Promise<Record<string, unknown>> => {
+    const response = await apiCall<{ success: boolean; data: Record<string, unknown>[] }>(`/documents/${id}/versions`);
+    return response;
+  },
+  uploadNewVersion: async (id: string, userId: string, file: File): Promise<Record<string, unknown>> => {
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("userId", userId);
+    formData.append('file', file);
+    formData.append('userId', userId);
 
-    const response = await fetch(
-      `${API_BASE_URL}/documents/${documentId}/version`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
+    const response = await fetch(`${API_BASE_URL}/documents/${id}/version`, {
+      method: "POST",
+      headers: {
+        "x-user-id": userId,
+      },
+      body: formData,
+    });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Version upload failed");
+      throw new Error(`API call failed: ${response.status} ${response.statusText}`);
     }
 
-    return response.json();
+    return await response.json();
   },
-  update: (
-    id: string,
-    data: Record<string, unknown>
-  ): Promise<Record<string, unknown>> =>
-    apiCall<Record<string, unknown>>(`/documents/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(data),
-    }),
-  delete: (
-    id: string,
-    deleteAllVersions = false
-  ): Promise<Record<string, unknown>> =>
-    apiCall<Record<string, unknown>>(`/documents/${id}`, {
-      method: "DELETE",
-      body: JSON.stringify({ deleteAllVersions }),
-    }),
 };
 
 // Scholarship API functions

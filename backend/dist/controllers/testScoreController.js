@@ -1,39 +1,28 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.testScoreController = void 0;
-let testScores = [
-    {
-        id: "1",
-        examType: "SAT",
-        score: "1450",
-        maxScore: "1600",
-        certified: true,
-        testDate: "2024-10-15",
-        validityDate: "2026-10-15",
-        userId: "user1",
-    },
-    {
-        id: "2",
-        examType: "IELTS",
-        score: "7.5",
-        maxScore: "9.0",
-        certified: true,
-        testDate: "2024-09-20",
-        validityDate: "2026-09-20",
-        userId: "user1",
-    },
-];
+const User_1 = __importDefault(require("../models/User"));
 exports.testScoreController = {
     getAllTestScores: async (req, res) => {
         try {
-            const userId = req.headers["user-id"] || "user1";
-            const userTestScores = testScores.filter((score) => score.userId === userId);
+            const userId = req.headers["user-id"] || "user-123";
+            const user = await User_1.default.findById(userId).select("testScores");
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: "User not found",
+                });
+            }
             res.status(200).json({
                 success: true,
-                data: userTestScores,
+                data: user.testScores || [],
             });
         }
         catch (error) {
+            console.error("Error fetching test scores:", error);
             res.status(500).json({
                 success: false,
                 message: "Failed to fetch test scores",
@@ -50,6 +39,7 @@ exports.testScoreController = {
                     message: "Exam type, score, and max score are required",
                 });
             }
+            const userId = req.headers["user-id"] || "user-123";
             const newTestScore = {
                 id: Date.now().toString(),
                 examType,
@@ -61,9 +51,19 @@ exports.testScoreController = {
                     new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000)
                         .toISOString()
                         .split("T")[0],
-                userId: req.headers["user-id"] || "user1",
             };
-            testScores.push(newTestScore);
+            const user = await User_1.default.findById(userId);
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: "User not found",
+                });
+            }
+            if (!user.testScores) {
+                user.testScores = [];
+            }
+            user.testScores.push(newTestScore);
+            await user.save();
             res.status(201).json({
                 success: true,
                 data: newTestScore,
@@ -71,6 +71,7 @@ exports.testScoreController = {
             });
         }
         catch (error) {
+            console.error("Error creating test score:", error);
             res.status(500).json({
                 success: false,
                 message: "Failed to create test score",
@@ -82,21 +83,39 @@ exports.testScoreController = {
         try {
             const { id } = req.params;
             const updates = req.body;
-            const scoreIndex = testScores.findIndex((score) => score.id === id);
-            if (scoreIndex === -1) {
+            const userId = req.headers["user-id"] || "user-123";
+            const user = await User_1.default.findById(userId);
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: "User not found",
+                });
+            }
+            const scoreIndex = user.testScores?.findIndex((score) => score.id === id || score._id?.toString() === id);
+            if (scoreIndex === -1 || scoreIndex === undefined) {
                 return res.status(404).json({
                     success: false,
                     message: "Test score not found",
                 });
             }
-            testScores[scoreIndex] = { ...testScores[scoreIndex], ...updates };
-            res.status(200).json({
-                success: true,
-                data: testScores[scoreIndex],
-                message: "Test score updated successfully",
-            });
+            if (user.testScores && user.testScores[scoreIndex]) {
+                user.testScores[scoreIndex] = { ...user.testScores[scoreIndex], ...updates };
+                await user.save();
+                res.status(200).json({
+                    success: true,
+                    data: user.testScores[scoreIndex],
+                    message: "Test score updated successfully",
+                });
+            }
+            else {
+                return res.status(404).json({
+                    success: false,
+                    message: "Test score not found",
+                });
+            }
         }
         catch (error) {
+            console.error("Error updating test score:", error);
             res.status(500).json({
                 success: false,
                 message: "Failed to update test score",
@@ -107,20 +126,32 @@ exports.testScoreController = {
     deleteTestScore: async (req, res) => {
         try {
             const { id } = req.params;
-            const scoreIndex = testScores.findIndex((score) => score.id === id);
-            if (scoreIndex === -1) {
+            const userId = req.headers["user-id"] || "user-123";
+            const user = await User_1.default.findById(userId);
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: "User not found",
+                });
+            }
+            const scoreIndex = user.testScores?.findIndex((score) => score.id === id || score._id?.toString() === id);
+            if (scoreIndex === -1 || scoreIndex === undefined) {
                 return res.status(404).json({
                     success: false,
                     message: "Test score not found",
                 });
             }
-            testScores.splice(scoreIndex, 1);
+            if (user.testScores) {
+                user.testScores.splice(scoreIndex, 1);
+                await user.save();
+            }
             res.status(200).json({
                 success: true,
                 message: "Test score deleted successfully",
             });
         }
         catch (error) {
+            console.error("Error deleting test score:", error);
             res.status(500).json({
                 success: false,
                 message: "Failed to delete test score",

@@ -592,14 +592,30 @@ export const userSeedData = [
 
 export const seedUsers = async () => {
   try {
-    // Clear existing users
-    await User.deleteMany({});
+    // Check if users already exist
+    const existingUsers = await User.countDocuments();
+    if (existingUsers > 0) {
+      console.log(`⚠️  ${existingUsers} users already exist. Skipping user seeding to preserve existing data.`);
+      console.log("💡 Use seedUsersForce() if you want to replace all users.");
+      return;
+    }
     
-    // Insert seed data
+    // Insert seed data only if no users exist
     await User.insertMany(userSeedData);
-    
     console.log("✅ User seed data inserted successfully");
   } catch (error) {
     console.error("❌ Error seeding user data:", error);
+  }
+};
+
+// Force seeding function that deletes and recreates all users
+export const seedUsersForce = async () => {
+  try {
+    console.log("⚠️  Force seeding: This will delete ALL existing users!");
+    await User.deleteMany({});
+    await User.insertMany(userSeedData);
+    console.log("✅ User seed data force-inserted successfully");
+  } catch (error) {
+    console.error("❌ Error force-seeding user data:", error);
   }
 };
