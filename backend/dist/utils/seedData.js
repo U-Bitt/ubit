@@ -3,8 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.seedAllData = exports.seedUniversities = exports.scholarshipData = void 0;
+exports.seedAllData = exports.seedScholarships = exports.seedUniversities = exports.scholarshipData = void 0;
 const University_1 = __importDefault(require("../models/University"));
+const Scholarship_1 = __importDefault(require("../models/Scholarship"));
 exports.scholarshipData = [
     {
         id: "1",
@@ -90,6 +91,43 @@ exports.scholarshipData = [
         eligibility: "International undergraduate applicants",
         benefits: ["Full tuition", "Research opportunities", "Alumni network"],
         image: "/harvard-campus.jpg"
+    },
+    {
+        id: "6",
+        title: "Lester B. Pearson International Scholarship",
+        description: "Fully-funded undergraduate scholarship for international students at University of Toronto, covering tuition, living expenses, and books for up to 4 years. This prestigious scholarship recognizes academic excellence, leadership potential, and community involvement.",
+        amount: "Full funding",
+        university: "University of Toronto",
+        country: "Canada",
+        deadline: "2025-11-30",
+        requirements: [
+            "High school graduate entering undergraduate",
+            "International (non-Canadian) student",
+            "Minimum GPA 3.7",
+            "English proficiency (IELTS 7.0+, TOEFL 100+, Duolingo 120+)",
+            "Personal Essay/Statement",
+            "Recommendation Letters",
+            "Official Transcript",
+            "Proof of English Proficiency"
+        ],
+        type: "Merit-based",
+        coverage: "100% tuition, living expenses, books and supplies",
+        duration: "Up to 4 years",
+        applicationProcess: "Nominated by high school and apply through university. Multi-stage application with essays, recommendations, and academic records.",
+        eligibility: "International (non-Canadian) high school graduates entering undergraduate studies. Must demonstrate academic excellence, leadership potential, community involvement, and innovation.",
+        benefits: [
+            "100% tuition coverage",
+            "Living expenses covered",
+            "Books and supplies covered",
+            "Leadership development opportunities",
+            "Global community access",
+            "Research opportunities",
+            "Mentorship program"
+        ],
+        image: "/university-of-toronto-campus.png",
+        donor: "University of Toronto",
+        contactEmail: "international.admissions@utoronto.ca",
+        website: "https://future.utoronto.ca/pearson/about/"
     }
 ];
 const sampleUniversities = [
@@ -536,9 +574,44 @@ const seedUniversities = async () => {
     }
 };
 exports.seedUniversities = seedUniversities;
+const seedScholarships = async () => {
+    try {
+        console.log("🎓 Seeding scholarships...");
+        await Scholarship_1.default.deleteMany({});
+        console.log("🗑️ Cleared existing scholarships");
+        const scholarshipsToInsert = exports.scholarshipData.map(scholarship => ({
+            title: scholarship.title,
+            description: scholarship.description,
+            amount: scholarship.amount,
+            university: scholarship.university,
+            country: scholarship.country,
+            deadline: scholarship.deadline,
+            type: scholarship.type,
+            requirements: scholarship.requirements,
+            coverage: scholarship.coverage,
+            duration: scholarship.duration,
+            applicationProcess: scholarship.applicationProcess,
+            eligibility: scholarship.eligibility,
+            benefits: scholarship.benefits,
+            image: scholarship.image,
+            donor: scholarship.donor,
+            contactEmail: scholarship.contactEmail,
+            website: scholarship.website,
+            isActive: true,
+        }));
+        await Scholarship_1.default.insertMany(scholarshipsToInsert);
+        console.log(`✅ Seeded ${scholarshipsToInsert.length} scholarships`);
+    }
+    catch (error) {
+        console.error("❌ Error seeding scholarships:", error);
+        throw error;
+    }
+};
+exports.seedScholarships = seedScholarships;
 const seedAllData = async () => {
     try {
         await (0, exports.seedUniversities)();
+        await (0, exports.seedScholarships)();
         console.log("🎉 All data seeded successfully!");
     }
     catch (error) {

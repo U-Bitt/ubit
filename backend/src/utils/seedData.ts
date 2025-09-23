@@ -1,4 +1,5 @@
 import UniversityModel from "../models/University";
+import ScholarshipModel from "../models/Scholarship";
 
 // Sample scholarship data for seeding
 export const scholarshipData = [
@@ -86,6 +87,43 @@ export const scholarshipData = [
     eligibility: "International undergraduate applicants",
     benefits: ["Full tuition", "Research opportunities", "Alumni network"],
     image: "/harvard-campus.jpg"
+  },
+  {
+    id: "6",
+    title: "Lester B. Pearson International Scholarship",
+    description: "Fully-funded undergraduate scholarship for international students at University of Toronto, covering tuition, living expenses, and books for up to 4 years. This prestigious scholarship recognizes academic excellence, leadership potential, and community involvement.",
+    amount: "Full funding",
+    university: "University of Toronto",
+    country: "Canada",
+    deadline: "2025-11-30",
+    requirements: [
+      "High school graduate entering undergraduate",
+      "International (non-Canadian) student",
+      "Minimum GPA 3.7",
+      "English proficiency (IELTS 7.0+, TOEFL 100+, Duolingo 120+)",
+      "Personal Essay/Statement",
+      "Recommendation Letters",
+      "Official Transcript",
+      "Proof of English Proficiency"
+    ],
+    type: "Merit-based",
+    coverage: "100% tuition, living expenses, books and supplies",
+    duration: "Up to 4 years",
+    applicationProcess: "Nominated by high school and apply through university. Multi-stage application with essays, recommendations, and academic records.",
+    eligibility: "International (non-Canadian) high school graduates entering undergraduate studies. Must demonstrate academic excellence, leadership potential, community involvement, and innovation.",
+    benefits: [
+      "100% tuition coverage",
+      "Living expenses covered",
+      "Books and supplies covered",
+      "Leadership development opportunities",
+      "Global community access",
+      "Research opportunities",
+      "Mentorship program"
+    ],
+    image: "/university-of-toronto-campus.png",
+    donor: "University of Toronto",
+    contactEmail: "international.admissions@utoronto.ca",
+    website: "https://future.utoronto.ca/pearson/about/"
   }
 ];
 
@@ -544,13 +582,50 @@ export const seedUniversities = async (): Promise<void> => {
   }
 };
 
-// Scholarship and country seeding functions removed as models don't exist
-// The scholarshipData is exported for use in controllers
+// Seed scholarships function
+export const seedScholarships = async (): Promise<void> => {
+  try {
+    console.log("🎓 Seeding scholarships...");
+    
+    // Clear existing scholarships
+    await ScholarshipModel.deleteMany({});
+    console.log("🗑️ Cleared existing scholarships");
+    
+    // Insert new scholarships
+    const scholarshipsToInsert = scholarshipData.map(scholarship => ({
+      title: scholarship.title,
+      description: scholarship.description,
+      amount: scholarship.amount,
+      university: scholarship.university,
+      country: scholarship.country,
+      deadline: scholarship.deadline,
+      type: scholarship.type,
+      requirements: scholarship.requirements,
+      coverage: scholarship.coverage,
+      duration: scholarship.duration,
+      applicationProcess: scholarship.applicationProcess,
+      eligibility: scholarship.eligibility,
+      benefits: scholarship.benefits,
+      image: scholarship.image,
+      donor: scholarship.donor,
+      contactEmail: scholarship.contactEmail,
+      website: scholarship.website,
+      isActive: true,
+    }));
+    
+    await ScholarshipModel.insertMany(scholarshipsToInsert);
+    console.log(`✅ Seeded ${scholarshipsToInsert.length} scholarships`);
+  } catch (error) {
+    console.error("❌ Error seeding scholarships:", error);
+    throw error;
+  }
+};
 
 // Main seeding function that seeds all data
 export const seedAllData = async (): Promise<void> => {
   try {
     await seedUniversities();
+    await seedScholarships();
     console.log("🎉 All data seeded successfully!");
   } catch (error) {
     console.error("❌ Error seeding data:", error);

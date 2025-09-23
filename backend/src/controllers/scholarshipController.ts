@@ -9,23 +9,18 @@ export const getAllScholarships = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { page = 1, limit = 10, sort = "deadline", order = "asc" } = req.query;
+    const { sort = "deadline", order = "asc" } = req.query;
 
     // Build sort object for MongoDB
     const sortObj: any = {};
     sortObj[sort] = order === "asc" ? 1 : -1;
 
-    // Calculate pagination
-    const skip = (page - 1) * limit;
-
-    // Get scholarships from MongoDB
+    // Get all scholarships from MongoDB
     const scholarships = await ScholarshipModel.find({ isActive: true })
       .sort(sortObj)
-      .skip(skip)
-      .limit(limit)
       .lean();
 
-    // Get total count for pagination
+    // Get total count
     const total = await ScholarshipModel.countDocuments({ isActive: true });
 
     // Convert MongoDB documents to Scholarship interface
@@ -58,10 +53,10 @@ export const getAllScholarships = async (
       data: scholarshipData,
       message: "Scholarships retrieved successfully",
       pagination: {
-        page: Number(page),
-        limit: Number(limit),
+        page: 1,
+        limit: total,
         total,
-        pages: Math.ceil(total / Number(limit)),
+        pages: 1,
       },
     });
   } catch (error) {

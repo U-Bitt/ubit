@@ -7,14 +7,11 @@ exports.searchScholarships = exports.getScholarshipById = exports.getAllScholars
 const Scholarship_1 = __importDefault(require("../models/Scholarship"));
 const getAllScholarships = async (req, res, next) => {
     try {
-        const { page = 1, limit = 10, sort = "deadline", order = "asc" } = req.query;
+        const { sort = "deadline", order = "asc" } = req.query;
         const sortObj = {};
         sortObj[sort] = order === "asc" ? 1 : -1;
-        const skip = (page - 1) * limit;
         const scholarships = await Scholarship_1.default.find({ isActive: true })
             .sort(sortObj)
-            .skip(skip)
-            .limit(limit)
             .lean();
         const total = await Scholarship_1.default.countDocuments({ isActive: true });
         const scholarshipData = scholarships.map((scholarship) => ({
@@ -45,10 +42,10 @@ const getAllScholarships = async (req, res, next) => {
             data: scholarshipData,
             message: "Scholarships retrieved successfully",
             pagination: {
-                page: Number(page),
-                limit: Number(limit),
+                page: 1,
+                limit: total,
                 total,
-                pages: Math.ceil(total / Number(limit)),
+                pages: 1,
             },
         });
     }

@@ -1,4 +1,4 @@
-export declare const scholarshipData: {
+export declare const scholarshipData: ({
     id: string;
     title: string;
     description: string;
@@ -14,8 +14,31 @@ export declare const scholarshipData: {
     eligibility: string;
     benefits: string[];
     image: string;
-}[];
+    donor?: undefined;
+    contactEmail?: undefined;
+    website?: undefined;
+} | {
+    id: string;
+    title: string;
+    description: string;
+    amount: string;
+    university: string;
+    country: string;
+    deadline: string;
+    requirements: string[];
+    type: string;
+    coverage: string;
+    duration: string;
+    applicationProcess: string;
+    eligibility: string;
+    benefits: string[];
+    image: string;
+    donor: string;
+    contactEmail: string;
+    website: string;
+})[];
 export declare const seedUniversities: () => Promise<void>;
+export declare const seedScholarships: () => Promise<void>;
 export declare const seedAllData: () => Promise<void>;
 export default seedAllData;
 //# sourceMappingURL=seedData.d.ts.map
