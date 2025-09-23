@@ -31,9 +31,7 @@ import {
   ChevronDown,
   Users,
   Plane,
-  Bot,
   Search,
-  FileCheck,
 } from "lucide-react";
 
 const navigationMenus = [
@@ -68,7 +66,6 @@ const navigationMenus = [
     name: "AI Assistant",
     items: [
       { name: "Suggest Universities", href: "/ai-suggestions", icon: Search },
-      { name: "Improve CV", href: "/ai/improve-cv", icon: FileCheck },
     ],
   },
   {
@@ -238,7 +235,9 @@ export default function Navbar() {
                     {isLoading ? "Loading..." : user?.firstName || "User"}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {isLoading ? "Loading..." : user?.email || "user@example.com"}
+                    {isLoading
+                      ? "Loading..."
+                      : user?.email || "user@example.com"}
                   </div>
                 </div>
               </div>

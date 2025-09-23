@@ -91,6 +91,23 @@ export interface DocumentVersion {
   uploadedBy: string;
 }
 
+export interface UniversitySuggestion {
+  id: string;
+  name: string;
+  location: string;
+  ranking: number;
+  rating: number;
+  tuition: string;
+  acceptance: string;
+  students: string;
+  image: string;
+  programs: string[];
+  highlights: string[];
+  matchScore: number;
+  reason: string;
+  deadline: string;
+}
+
 // Generic API call function
 export async function apiCall<T>(
   endpoint: string,
@@ -601,6 +618,25 @@ export const handleApiError = (error: unknown): never => {
     500,
     "Internal Server Error"
   );
+};
+
+// AI API
+export const aiApi = {
+  suggestUniversities: async (userData: {
+    gpa: string;
+    sat: string;
+    toefl: string;
+    major: string;
+  }) => {
+    return apiCall<{
+      success: boolean;
+      message: string;
+      data: UniversitySuggestion[];
+    }>("/ai/suggest", {
+      method: "POST",
+      body: JSON.stringify(userData),
+    });
+  },
 };
 
 // Test Scores API

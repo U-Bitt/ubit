@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
+import { aiApi, UniversitySuggestion } from "@/utils/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -15,23 +16,6 @@ import {
   DollarSign,
   ArrowRight,
 } from "lucide-react";
-
-interface UniversitySuggestion {
-  id: string;
-  name: string;
-  location: string;
-  ranking: number;
-  rating: number;
-  tuition: string;
-  acceptance: string;
-  students: string;
-  image: string;
-  programs: string[];
-  highlights: string[];
-  matchScore: number;
-  reason: string;
-  deadline: string;
-}
 
 export default function AISuggestionsPage() {
   const router = useRouter();
@@ -70,20 +54,10 @@ export default function AISuggestionsPage() {
     setError(null);
 
     try {
-      const res = await fetch("http://localhost:5000/api/ai/suggest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      });
-
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-
-      const data = await res.json();
-      setResult(data.data || []);
+      const response = await aiApi.suggestUniversities(userData);
+      setResult(response.data || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Алдаа гарлаа");
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -101,14 +75,14 @@ export default function AISuggestionsPage() {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Буцах
+              Back
             </Button>
             <h1 className="text-3xl font-bold text-gray-900">
-              AI санал болгосон их сургуулууд
+              AI Suggested Universities
             </h1>
           </div>
           <p className="text-gray-600">
-            Таны академик мэдээлэлд тулгуурлан AI санал болгосон их сургуулууд
+            AI recommended universities based on your academic information
           </p>
         </div>
 
@@ -117,7 +91,7 @@ export default function AISuggestionsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <GraduationCap className="h-5 w-5" />
-              Таны академик мэдээлэл
+              Your Academic Information
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -144,7 +118,7 @@ export default function AISuggestionsPage() {
                 <div className="text-lg font-bold text-orange-600">
                   {userData.major}
                 </div>
-                <div className="text-sm text-gray-600">Мэргэжил</div>
+                <div className="text-sm text-gray-600">Major</div>
               </div>
             </div>
           </CardContent>
@@ -155,7 +129,7 @@ export default function AISuggestionsPage() {
           <Card>
             <CardContent className="p-8 text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-              <p className="text-gray-600">AI санал бэлтгэж байна...</p>
+              <p className="text-gray-600">Preparing AI suggestions...</p>
             </CardContent>
           </Card>
         )}
@@ -164,9 +138,9 @@ export default function AISuggestionsPage() {
         {error && (
           <Card className="border-red-200 bg-red-50">
             <CardContent className="p-6 text-center">
-              <p className="text-red-600 mb-4">Алдаа гарлаа: {error}</p>
+              <p className="text-red-600 mb-4">Error occurred: {error}</p>
               <Button onClick={handleGetSuggestions} variant="outline">
-                Дахин оролдох
+                Try Again
               </Button>
             </CardContent>
           </Card>
@@ -177,174 +151,143 @@ export default function AISuggestionsPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900">
-                Санал болгосон их сургуулууд ({result.length})
+                Suggested Universities ({result.length})
               </h2>
               <Button onClick={handleGetSuggestions} variant="outline">
-                Шинэчлэх
+                Refresh
               </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {result.map(university => (
-                <div key={university.id} className="relative group">
-                  {/* Background Image with Overlay */}
-                  <div className="relative h-80 rounded-2xl overflow-hidden shadow-xl">
-                    <Image
-                      src={university.image}
-                      alt={university.name}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      onError={e => {
-                        e.currentTarget.src = "/placeholder-logo.svg";
-                      }}
-                    />
+                <Card
+                  key={university.id}
+                  className="relative h-96 overflow-hidden rounded-2xl hover:shadow-xl transition-all duration-300 group"
+                >
+                  {/* Background Image */}
+                  <Image
+                    src={university.image}
+                    alt={university.name}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    onError={e => {
+                      e.currentTarget.src = "/placeholder-logo.svg";
+                    }}
+                  />
 
-                    {/* Dark Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  {/* 40% Opacity Shadow Overlay */}
+                  <div className="absolute inset-0 bg-black opacity-40"></div>
 
-                    {/* Content Overlay */}
-                    <div className="absolute inset-0 p-8 flex flex-col justify-between text-white">
-                      {/* Top Section */}
+                  {/* Content Overlay */}
+                  <div className="absolute inset-0 p-6 flex flex-col justify-between text-white">
+                    {/* Top Section - University Info */}
+                    <div className="space-y-3">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <h3 className="text-2xl font-bold mb-2 leading-tight">
+                          <h3 className="text-2xl font-bold mb-2 line-clamp-2">
                             {university.name}
                           </h3>
-                          <div className="flex items-center gap-2 text-white/80 mb-3">
+                          <div className="flex items-center gap-2 text-white/90 mb-2">
                             <MapPin className="h-4 w-4" />
-                            <span className="text-sm">
-                              {university.location}
-                            </span>
+                            <span>{university.location}</span>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-white/80">
+                            <div className="flex items-center gap-1">
+                              <Star className="h-4 w-4" />
+                              <span>#{university.ranking}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Users className="h-4 w-4" />
+                              <span>{university.students}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <DollarSign className="h-4 w-4" />
+                              <span>{university.tuition}</span>
+                            </div>
                           </div>
                         </div>
-
-                        {/* Match Score Badge */}
-                        <div className="bg-white/20 backdrop-blur-sm rounded-2xl px-4 py-3 text-center">
-                          <div className="text-2xl font-bold">
+                        <div className="text-right">
+                          <div className="text-3xl font-bold text-white mb-1">
                             {university.matchScore}%
                           </div>
+                          <div className="text-sm text-white/80">
+                            Match Score
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Why it was matched for you */}
+                      <div>
+                        <h4 className="font-semibold mb-2 text-white">
+                          Why it was matched for you:
+                        </h4>
+                        <div className="text-sm text-white/90">
+                          <Check className="h-4 w-4 text-white inline mr-2" />
+                          {university.reason}
+                        </div>
+                        {university.highlights &&
+                          university.highlights.length > 0 && (
+                            <div className="mt-2">
+                              <div className="text-xs text-white/80">
+                                Highlights:{" "}
+                                {university.highlights.slice(0, 2).join(", ")}
+                              </div>
+                            </div>
+                          )}
+                      </div>
+
+                      {/* University Info */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <h5 className="font-medium text-sm mb-2 text-green-300">
+                            Programs:
+                          </h5>
                           <div className="text-xs text-white/80">
-                            Тохиролцоо
+                            {university.programs
+                              ? university.programs.slice(0, 2).join(", ")
+                              : "Various programs available"}
+                          </div>
+                        </div>
+                        <div>
+                          <h5 className="font-medium text-sm mb-2 text-blue-300">
+                            Deadline:
+                          </h5>
+                          <div className="text-xs text-white/80 flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {university.deadline || "Check website"}
                           </div>
                         </div>
                       </div>
+                    </div>
 
-                      {/* Middle Section - Stats */}
-                      <div className="flex items-center gap-6 mb-4">
-                        <div className="flex items-center gap-2">
-                          <Star className="h-5 w-5 text-yellow-400" />
-                          <span className="font-semibold">
-                            #{university.ranking}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Users className="h-5 w-5" />
-                          <span className="font-semibold">
-                            {university.students}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="h-5 w-5" />
-                          <span className="font-semibold">
-                            {university.tuition}
-                          </span>
-                        </div>
+                    {/* Bottom Section - Actions and Deadline */}
+                    <div className="space-y-4">
+                      <div className="text-sm text-white/90">
+                        <span>Application Deadline: </span>
+                        <span className="font-medium text-white">
+                          {university.deadline}
+                        </span>
                       </div>
 
-                      {/* Match Reason */}
-                      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-4">
-                        <div className="flex items-start gap-3">
-                          <Check className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="text-sm font-medium mb-1">
-                              Яагаад танд тохирсон:
-                            </p>
-                            <p className="text-sm text-white/90">
-                              {university.reason}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Programs and Deadline */}
-                      <div className="mb-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <p className="text-sm font-medium mb-1">
-                              Онолын чиглэлүүд:
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {university.programs
-                                .slice(0, 2)
-                                .map((program, idx) => (
-                                  <span
-                                    key={idx}
-                                    className="px-2 py-1 bg-white/20 backdrop-blur-sm text-white text-xs rounded-full"
-                                  >
-                                    {program}
-                                  </span>
-                                ))}
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm font-medium mb-1">Хугацаа:</p>
-                            <div className="flex items-center gap-1 text-white/90">
-                              <Calendar className="h-3 w-3" />
-                              <span className="text-xs">
-                                {university.deadline}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-xs text-white/80">
-                          Өргөдлийн хугацаа: {university.deadline}
-                        </div>
-                      </div>
-
-                      {/* Bottom Section - Action Buttons */}
-                      <div className="flex gap-3">
-                        <Button
-                          className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 rounded-xl"
-                          size="lg"
-                        >
-                          Одоо өргөдөл гаргах
-                        </Button>
+                      <div className="flex gap-2">
                         <Button
                           variant="outline"
-                          className="bg-white hover:bg-gray-100 text-gray-800 border-white font-semibold py-3 px-6 rounded-xl"
-                          size="lg"
+                          size="sm"
+                          className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
                         >
-                          Дэлгэрэнгүй
-                          <ArrowRight className="h-4 w-4 ml-2" />
+                          Apply Now
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-white text-black hover:bg-white/90"
+                        >
+                          View Details
+                          <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                   </div>
-
-                  {/* Additional Info Card */}
-                  <div className="mt-4 bg-white rounded-xl p-4 shadow-lg">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-gray-500" />
-                        <div>
-                          <div className="text-gray-500">Хураамж</div>
-                          <div className="font-semibold">
-                            {university.tuition}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-gray-500" />
-                        <div>
-                          <div className="text-gray-500">Хүлээн авалт</div>
-                          <div className="font-semibold">
-                            {university.acceptance}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                </Card>
               ))}
             </div>
           </div>
@@ -356,10 +299,10 @@ export default function AISuggestionsPage() {
             <CardContent className="p-8 text-center">
               <GraduationCap className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500 text-lg mb-4">
-                Санал болгох их сургууль олдсонгүй.
+                No universities found to suggest.
               </p>
               <Button onClick={handleGetSuggestions} variant="outline">
-                Дахин оролдох
+                Try Again
               </Button>
             </CardContent>
           </Card>
