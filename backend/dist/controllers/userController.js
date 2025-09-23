@@ -842,9 +842,19 @@ const deleteDocument = async (req, res, next) => {
 exports.deleteDocument = deleteDocument;
 const getSavedUniversities = async (req, res, next) => {
     try {
-        const userId = req.headers["x-user-id"] || "user_1";
+        const userId = req.headers["x-user-id"];
+        console.log("Fetching saved universities for user:", userId);
+        if (!userId) {
+            res.status(400).json({
+                success: false,
+                data: [],
+                message: "User ID is required",
+            });
+            return;
+        }
         const user = await User_1.default.findById(userId).lean();
         if (!user) {
+            console.log("User not found:", userId);
             res.status(404).json({
                 success: false,
                 data: [],
@@ -852,6 +862,7 @@ const getSavedUniversities = async (req, res, next) => {
             });
             return;
         }
+        console.log("User found, savedUniversities:", user.savedUniversities);
         res.status(200).json({
             success: true,
             data: user.savedUniversities || [],

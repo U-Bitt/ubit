@@ -1100,11 +1100,23 @@ export const getSavedUniversities = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "user_1";
+    const userId = req.headers["x-user-id"] as string;
+    
+    console.log("Fetching saved universities for user:", userId);
+    
+    if (!userId) {
+      res.status(400).json({
+        success: false,
+        data: [] as any[],
+        message: "User ID is required",
+      });
+      return;
+    }
     
     const user = await User.findById(userId).lean();
 
     if (!user) {
+      console.log("User not found:", userId);
       res.status(404).json({
         success: false,
         data: [] as any[],
@@ -1112,6 +1124,8 @@ export const getSavedUniversities = async (
       });
       return;
     }
+
+    console.log("User found, savedUniversities:", user.savedUniversities);
 
     res.status(200).json({
       success: true,

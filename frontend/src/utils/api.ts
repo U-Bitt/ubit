@@ -308,7 +308,7 @@ export const userApi = {
     const response = await apiCall<{
       success: boolean;
       data: Record<string, unknown>[];
-    }>("/saved-universities/me", {
+    }>("/users/saved-universities/me", {
       headers: {
         "x-user-id": userId,
       },
@@ -324,7 +324,7 @@ export const userApi = {
     const response = await apiCall<{
       success: boolean;
       data: Record<string, unknown>;
-    }>("/saved-universities", {
+    }>("/users/saved-universities", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -340,7 +340,7 @@ export const userApi = {
   },
   unsaveUniversity: async (userId: string, savedId: string): Promise<void> => {
     await apiCall<{ success: boolean; data: Record<string, unknown> }>(
-      `/saved-universities/${savedId}`,
+      `/users/saved-universities/${savedId}`,
       {
         method: "DELETE",
         headers: {

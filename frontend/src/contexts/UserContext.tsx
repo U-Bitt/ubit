@@ -64,39 +64,86 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
   // Load user data from localStorage on mount
   useEffect(() => {
-    const loadUser = () => {
+    const loadUser = async () => {
       try {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
           setUser(JSON.parse(storedUser));
         } else {
-          // Set default user for demo purposes
-          const defaultUser: User = {
-            id: '68d0e375f42237519f071445', // John Doe's ID from backend
-            email: 'john.doe@example.com',
-            firstName: 'John',
-            lastName: 'Doe',
-            phone: '+97612345678',
-            dateOfBirth: '1995-01-15',
-            nationality: 'Mongolian',
-            personalInfo: {
+          // Try to get the first user from the database
+          try {
+            const users = await userApi.getAll();
+            if (users && users.length > 0) {
+              const firstUser = users[0];
+              // Ensure the user has a valid ID
+              if (firstUser.id) {
+                setUser(firstUser);
+                localStorage.setItem('user', JSON.stringify(firstUser));
+              } else {
+                // If user doesn't have ID, use the first user's ID
+                const userWithId = { ...firstUser, id: (firstUser as { _id?: string; id?: string })._id || firstUser.id };
+                setUser(userWithId);
+                localStorage.setItem('user', JSON.stringify(userWithId));
+              }
+            } else {
+              // Fallback to default user if no users in database
+              const defaultUser: User = {
+                id: 'default_user_id',
+                email: 'john.doe@example.com',
+                firstName: 'John',
+                lastName: 'Doe',
+                phone: '+97612345678',
+                dateOfBirth: '1995-01-15',
+                nationality: 'Mongolian',
+                personalInfo: {
+                  firstName: 'John',
+                  lastName: 'Doe',
+                  email: 'john.doe@example.com',
+                  phone: '+97612345678',
+                  dateOfBirth: '1995-01-15',
+                  nationality: 'Mongolian',
+                },
+                academicInfo: {
+                  gpa: 3.8,
+                  highSchoolName: 'Ulaanbaatar International School',
+                  graduationYear: 2024,
+                  intendedMajors: ['Computer Science'],
+                },
+                areasOfInterest: ['Programming', 'Machine Learning', 'Web Development', 'Mobile Apps'],
+              };
+              setUser(defaultUser);
+              localStorage.setItem('user', JSON.stringify(defaultUser));
+            }
+          } catch (error) {
+            console.error('Error loading user from API:', error);
+            // Fallback to default user
+            const defaultUser: User = {
+              id: 'default_user_id',
+              email: 'john.doe@example.com',
               firstName: 'John',
               lastName: 'Doe',
-              email: 'john.doe@example.com',
               phone: '+97612345678',
               dateOfBirth: '1995-01-15',
               nationality: 'Mongolian',
-            },
-            academicInfo: {
-              gpa: 3.8,
-              highSchoolName: 'Ulaanbaatar International School',
-              graduationYear: 2024,
-              intendedMajors: ['Computer Science'],
-            },
-            areasOfInterest: ['Programming', 'Machine Learning', 'Web Development', 'Mobile Apps'],
-          };
-          setUser(defaultUser);
-          localStorage.setItem('user', JSON.stringify(defaultUser));
+              personalInfo: {
+                firstName: 'John',
+                lastName: 'Doe',
+                email: 'john.doe@example.com',
+                phone: '+97612345678',
+                dateOfBirth: '1995-01-15',
+                nationality: 'Mongolian',
+              },
+              academicInfo: {
+                gpa: 3.8,
+                highSchoolName: 'Ulaanbaatar International School',
+                graduationYear: 2024,
+                intendedMajors: ['Computer Science'],
+              },
+              areasOfInterest: ['Programming', 'Machine Learning', 'Web Development', 'Mobile Apps'],
+            };
+            setUser(defaultUser);
+            localStorage.setItem('user', JSON.stringify(defaultUser));
+          }
         }
       } catch (error) {
         console.error('Error loading user data:', error);
