@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,14 +99,7 @@ export const TestScores = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Fetch test scores on component mount and when user changes
-  useEffect(() => {
-    if (user?.id) {
-      fetchTestScores();
-    }
-  }, [user?.id]);
-
-  const fetchTestScores = async () => {
+  const fetchTestScores = useCallback(async () => {
     if (!user?.id) {
       setError("User not found. Please log in.");
       return;
@@ -123,13 +116,13 @@ export const TestScores = () => {
 
       if (Array.isArray(response)) {
         // Transform the data from the old format to the new format
-        const transformedScores = response.map((score: any) => ({
+        const transformedScores = response.map((score: Record<string, unknown>) => ({
           id: score.id || score._id,
-          examType: score.testName || score.examType || "Unknown",
+          examType: score.examType || score.testName || "IELTS",
           score: score.score || "",
           maxScore: score.maxScore || "",
-          certified: score.certified || false,
-          testDate: score.date ? new Date(score.date).toISOString().split('T')[0] : (score.testDate || ""),
+          certified: Boolean(score.certified),
+          testDate: score.testDate || (score.date && typeof score.date === 'string' ? new Date(score.date).toISOString().split('T')[0] : ""),
           validityDate: score.validityDate || new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         }));
         setTestScores(transformedScores as unknown as TestScore[]);
@@ -146,20 +139,30 @@ export const TestScores = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  // Fetch test scores on component mount and when user changes
+  useEffect(() => {
+    if (user?.id) {
+      fetchTestScores();
+    }
+  }, [user?.id, fetchTestScores]);
 
   const handleTestScoreChange = (
     id: string,
     field: keyof TestScore,
     value: string | boolean
   ) => {
+    console.log(`Updating field ${field} to value:`, value, "for score ID:", id);
     setTestScores(prev =>
       prev.map(score => {
         if (score.id === id) {
           const updatedScore = { ...score, [field]: value };
+          console.log("Updated score:", updatedScore);
           // Auto-update max score when exam type changes
           if (field === "examType" && typeof value === "string") {
             updatedScore.maxScore = getDefaultMaxScore(value);
+            console.log("Auto-updated max score to:", updatedScore.maxScore);
           }
           return updatedScore;
         }
@@ -273,7 +276,9 @@ export const TestScores = () => {
       let hasChanges = false;
 
       // Save each test score individually
+      console.log("Saving test scores:", testScores);
       for (const score of testScores) {
+        console.log("Processing score:", score);
         if (score.id.startsWith("temp-")) {
           // New score - create
           const newScore = {
@@ -282,14 +287,13 @@ export const TestScores = () => {
             maxScore: score.maxScore,
             certified: score.certified,
             testDate: score.testDate || new Date().toISOString().split("T")[0],
-        validityDate:
-              score.validityDate ||
-          new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split("T")[0],
-      };
+            validityDate: score.validityDate || new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+          };
 
+          console.log("Creating new score with data:", newScore);
+          console.log("Certified value being sent:", newScore.certified, "Type:", typeof newScore.certified);
           const response = await testScoreApi.create(user.id, newScore);
+          console.log("Create response:", response);
           
           if (response && typeof response === 'object' && 'id' in response) {
             // Update the local state with the new ID from the database
@@ -311,7 +315,10 @@ export const TestScores = () => {
             validityDate: score.validityDate,
           };
 
+          console.log("Updating score with data:", updatedScore);
+          console.log("Certified value being sent:", updatedScore.certified, "Type:", typeof updatedScore.certified);
           const response = await testScoreApi.update(user.id, score.id, updatedScore);
+          console.log("Update response:", response);
           
           if (response) {
             hasChanges = true;
@@ -321,8 +328,6 @@ export const TestScores = () => {
 
       if (hasChanges) {
         setSuccess("Test scores saved successfully!");
-        // Refresh the data from the database
-        await fetchTestScores();
         // Clear success message after 3 seconds
         setTimeout(() => setSuccess(null), 3000);
       }
@@ -439,13 +444,13 @@ export const TestScores = () => {
                     Exam Type
                   </Label>
                     <Select
-                    value={score.examType}
+                      value={score.examType || ""}
                       onValueChange={value =>
-                      handleTestScoreChange(score.id, "examType", value)
+                        handleTestScoreChange(score.id, "examType", value)
                       }
                     >
-                    <SelectTrigger className="h-10">
-                      <SelectValue />
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder="Select exam type" />
                       </SelectTrigger>
                       <SelectContent>
                       {examTypes.map(type => (
@@ -520,20 +525,25 @@ export const TestScores = () => {
                   </div>
 
                 <div className="space-y-1">
-                  <div className="flex gap-2 mt-6">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Certification Status
+                  </Label>
+                  <div className="flex gap-2 mt-2">
                     <Button
-                      variant={score.certified ? "default" : "outline"}
+                      type="button"
+                      variant={score.certified === true ? "default" : "outline"}
                       size="sm"
-                      onClick={() =>
-                        handleTestScoreChange(score.id, "certified", true)
-                      }
+                      onClick={() => {
+                        console.log("Setting certified to true for score:", score.id, "Current value:", score.certified);
+                        handleTestScoreChange(score.id, "certified", true);
+                      }}
                       className={
-                        score.certified
+                        score.certified === true
                           ? "text-white hover:opacity-90 h-10"
                           : "border-gray-300 text-gray-700 hover:bg-gray-50 h-10"
                       }
                       style={
-                        score.certified
+                        score.certified === true
                           ? { backgroundColor: "#00136A" }
                           : {}
                       }
@@ -542,18 +552,20 @@ export const TestScores = () => {
                       Certified
                     </Button>
                     <Button
-                      variant={!score.certified ? "default" : "outline"}
+                      type="button"
+                      variant={score.certified === false ? "default" : "outline"}
                       size="sm"
-                      onClick={() =>
-                        handleTestScoreChange(score.id, "certified", false)
-                      }
+                      onClick={() => {
+                        console.log("Setting certified to false for score:", score.id, "Current value:", score.certified);
+                        handleTestScoreChange(score.id, "certified", false);
+                      }}
                       className={
-                        !score.certified
+                        score.certified === false
                           ? "text-white hover:opacity-90 h-10"
                           : "border-gray-300 text-gray-700 hover:bg-gray-50 h-10"
                       }
                       style={
-                        !score.certified
+                        score.certified === false
                           ? { backgroundColor: "#00136A" }
                           : {}
                       }

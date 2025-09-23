@@ -58,8 +58,8 @@ router.delete("/applications/:appId", deleteApplication); // Delete application
 // Test Scores routes
 router.get("/test-scores/me", getTestScores); // Get user test scores
 router.post("/test-scores", addTestScore); // Add test score
-router.put("/test-scores/:testId", updateTestScore); // Update test score
-router.delete("/test-scores/:testId", deleteTestScore); // Delete test score
+router.put("/test-scores/:id", updateTestScore); // Update test score
+router.delete("/test-scores/:id", deleteTestScore); // Delete test score
 
 // Documents routes
 router.get("/documents/me", getDocuments); // Get user documents
