@@ -1,9 +1,9 @@
-import { Dashboard } from "@/components/Dashboard";
+import { EnhancedDashboard } from "@/components/Dashboard";
 
 const DashboardPage = () => {
   return (
     <div className="w-full min-h-screen">
-      <Dashboard />
+      <EnhancedDashboard />
     </div>
   );
 };
