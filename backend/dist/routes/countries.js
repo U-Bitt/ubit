@@ -9,5 +9,7 @@ const router = express_1.default.Router();
 router.get("/", countryController_1.getAllCountries);
 router.get("/search", countryController_1.searchCountries);
 router.get("/:id", countryController_1.getCountryById);
+router.post("/", countryController_1.createCountry);
+router.delete("/:id", countryController_1.deleteCountry);
 exports.default = router;
 //# sourceMappingURL=countries.js.map

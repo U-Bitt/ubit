@@ -7,14 +7,11 @@ exports.deleteUniversity = exports.updateUniversity = exports.createUniversity =
 const University_1 = __importDefault(require("../models/University"));
 const getAllUniversities = async (req, res, next) => {
     try {
-        const { page = 1, limit = 10, sort = "ranking", order = "asc" } = req.query;
+        const { sort = "ranking", order = "asc" } = req.query;
         const sortObj = {};
         sortObj[sort] = order === "asc" ? 1 : -1;
-        const skip = (page - 1) * limit;
         const universities = await University_1.default.find()
             .sort(sortObj)
-            .skip(skip)
-            .limit(limit)
             .lean();
         const total = await University_1.default.countDocuments();
         const universityData = universities.map((uni) => ({
@@ -42,10 +39,10 @@ const getAllUniversities = async (req, res, next) => {
             success: true,
             data: universityData,
             pagination: {
-                page,
-                limit,
+                page: 1,
+                limit: total,
                 total,
-                pages: Math.ceil(total / limit),
+                pages: 1,
             },
         };
         res.status(200).json(response);

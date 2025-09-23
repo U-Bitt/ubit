@@ -68,7 +68,7 @@ export interface User {
   dateOfBirth?: string;
   nationality?: string;
   avatar?: string;
-  
+
   // Personal Information
   personalInfo?: {
     firstName: string;
@@ -78,7 +78,7 @@ export interface User {
     dateOfBirth?: string;
     nationality?: string;
   };
-  
+
   // Academic Information
   academicInfo?: {
     gpa: number; // GPA out of 4
@@ -86,10 +86,10 @@ export interface User {
     graduationYear: number;
     intendedMajors: string[];
   };
-  
+
   // Areas of Interest
   areasOfInterest?: string[];
-  
+
   // Test Scores
   testScores?: Array<{
     id: string;
@@ -99,7 +99,7 @@ export interface User {
     maxScore?: string;
     percentile?: number;
   }>;
-  
+
   // Documents
   documents?: Array<{
     id: string;
@@ -109,7 +109,7 @@ export interface User {
     uploadedAt: string;
     status: "draft" | "uploaded" | "verified" | "rejected";
   }>;
-  
+
   // Saved Universities
   savedUniversities?: Array<{
     id: string;
@@ -118,7 +118,7 @@ export interface User {
     savedAt: string;
     notes?: string;
   }>;
-  
+
   // Legacy fields for backward compatibility
   preferences?: UserPreferences;
   applications?: Application[];

@@ -3,18 +3,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.searchCountries = exports.getCountryById = exports.getAllCountries = void 0;
+exports.deleteCountry = exports.createCountry = exports.searchCountries = exports.getCountryById = exports.getAllCountries = void 0;
 const Country_1 = __importDefault(require("../models/Country"));
 const getAllCountries = async (req, res, next) => {
     try {
-        const { page = 1, limit = 10, sort = "name", order = "asc" } = req.query;
+        const { sort = "name", order = "asc" } = req.query;
         const sortObj = {};
         sortObj[sort] = order === "asc" ? 1 : -1;
-        const skip = (page - 1) * limit;
         const countries = await Country_1.default.find()
             .sort(sortObj)
-            .skip(skip)
-            .limit(limit)
             .lean();
         const total = await Country_1.default.countDocuments();
         const countryData = countries.map((country) => ({
@@ -42,10 +39,10 @@ const getAllCountries = async (req, res, next) => {
             data: countryData,
             message: "Countries retrieved successfully",
             pagination: {
-                page: Number(page),
-                limit: Number(limit),
+                page: 1,
+                limit: total,
                 total,
-                pages: Math.ceil(total / Number(limit)),
+                pages: 1,
             },
         });
     }
@@ -173,4 +170,77 @@ const searchCountries = async (req, res, next) => {
     }
 };
 exports.searchCountries = searchCountries;
+const createCountry = async (req, res, next) => {
+    try {
+        const newCountry = new Country_1.default(req.body);
+        const savedCountry = await newCountry.save();
+        const countryData = {
+            id: savedCountry._id.toString(),
+            name: savedCountry.name,
+            flag: savedCountry.flag,
+            popularCities: savedCountry.popularCities,
+            rating: savedCountry.rating,
+            description: savedCountry.description,
+            visaType: savedCountry.visaType,
+            workRights: savedCountry.workRights,
+            avgTuition: savedCountry.avgTuition,
+            livingCost: savedCountry.livingCost,
+            currency: savedCountry.currency,
+            language: savedCountry.language,
+            climate: savedCountry.climate,
+            isEnglishSpeaking: savedCountry.isEnglishSpeaking,
+            isLowCost: savedCountry.isLowCost,
+            hasWorkRights: savedCountry.hasWorkRights,
+            createdAt: savedCountry.createdAt,
+            updatedAt: savedCountry.updatedAt,
+        };
+        const response = {
+            success: true,
+            data: countryData,
+            message: "Country created successfully",
+        };
+        res.status(201).json(response);
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.createCountry = createCountry;
+const deleteCountry = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            res.status(400).json({
+                success: false,
+                data: {},
+                message: "Invalid country ID format",
+            });
+            return;
+        }
+        const deletedCountry = await Country_1.default.findByIdAndDelete(id);
+        if (!deletedCountry) {
+            res.status(404).json({
+                success: false,
+                data: {},
+                message: "Country not found",
+            });
+            return;
+        }
+        const response = {
+            success: true,
+            data: {},
+            message: "Country deleted successfully",
+        };
+        res.status(200).json(response);
+    }
+    catch (error) {
+        console.error("Error deleting country:", error);
+        res.status(500).json({
+            success: false,
+            data: {},
+            message: "Internal server error",
+        });
+    }
+};
+exports.deleteCountry = deleteCountry;
 //# sourceMappingURL=countryController.js.map
