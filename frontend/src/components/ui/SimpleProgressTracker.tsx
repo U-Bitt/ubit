@@ -22,8 +22,7 @@ export const SimpleProgressTracker: React.FC = () => {
         : [];
 
     const hasVisited = (path: string) => visitedPages.includes(path);
-    const hasTestScores = () =>
-      !!user?.academicInfo?.gpa;
+    const hasTestScores = () => !!user?.academicInfo?.gpa;
     const hasApplications = () =>
       !!user?.savedUniversities && user.savedUniversities.length > 0;
 
@@ -31,7 +30,8 @@ export const SimpleProgressTracker: React.FC = () => {
     const profileProgress = (() => {
       let points = 0;
       if (user?.firstName && user?.email) points += 10;
-      if (user?.academicInfo?.gpa && user?.academicInfo?.highSchoolName) points += 5;
+      if (user?.academicInfo?.gpa && user?.academicInfo?.highSchoolName)
+        points += 5;
       if (user?.areasOfInterest && user.areasOfInterest.length > 0) points += 5;
       return Math.round((points / 20) * 100);
     })();
