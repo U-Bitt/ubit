@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.seedAllData = exports.seedScholarships = exports.seedUniversities = exports.scholarshipData = void 0;
 const University_1 = __importDefault(require("../models/University"));
 const Scholarship_1 = __importDefault(require("../models/Scholarship"));
+const universityScholarships_1 = require("./universityScholarships");
 exports.scholarshipData = [
     {
         id: "1",
@@ -579,7 +580,8 @@ const seedScholarships = async () => {
         console.log("🎓 Seeding scholarships...");
         await Scholarship_1.default.deleteMany({});
         console.log("🗑️ Cleared existing scholarships");
-        const scholarshipsToInsert = exports.scholarshipData.map(scholarship => ({
+        const allScholarships = [...exports.scholarshipData, ...universityScholarships_1.universityScholarships];
+        const scholarshipsToInsert = allScholarships.map(scholarship => ({
             title: scholarship.title,
             description: scholarship.description,
             amount: scholarship.amount,

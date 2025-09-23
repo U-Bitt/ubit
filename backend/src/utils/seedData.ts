@@ -1,5 +1,6 @@
 import UniversityModel from "../models/University";
 import ScholarshipModel from "../models/Scholarship";
+import { universityScholarships } from "./universityScholarships";
 
 // Sample scholarship data for seeding
 export const scholarshipData = [
@@ -591,8 +592,11 @@ export const seedScholarships = async (): Promise<void> => {
     await ScholarshipModel.deleteMany({});
     console.log("🗑️ Cleared existing scholarships");
     
+    // Combine existing scholarships with university-specific scholarships
+    const allScholarships = [...scholarshipData, ...universityScholarships];
+    
     // Insert new scholarships
-    const scholarshipsToInsert = scholarshipData.map(scholarship => ({
+    const scholarshipsToInsert = allScholarships.map(scholarship => ({
       title: scholarship.title,
       description: scholarship.description,
       amount: scholarship.amount,
