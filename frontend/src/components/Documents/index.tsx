@@ -546,7 +546,7 @@ export const Documents = () => {
             format: docData.format as string,
             filePath: (docData.filePath as string).startsWith("/uploads/")
               ? `http://localhost:5001${docData.filePath}`
-              : docData.filePath as string,
+              : (docData.filePath as string),
             version: docData.version as number,
             isLatestVersion: docData.isLatestVersion as boolean,
           });

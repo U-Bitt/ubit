@@ -25,7 +25,7 @@ import {
   AlertCircle,
   BookOpen,
 } from "lucide-react";
-import { apiCall } from "@/utils/api";
+import { testScoresApi } from "@/utils/api";
 
 interface TestScore {
   id?: string;
@@ -67,7 +67,9 @@ const EXAM_TYPES = [
 
 export const TestScores = () => {
   const [testScores, setTestScores] = useState<TestScore[]>([]);
-  // Modal states removed as they're not being used in current implementation
+  // Modal states
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingScore, setEditingScore] = useState<TestScore | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,17 +108,12 @@ export const TestScores = () => {
       setError(null);
       console.log("Fetching test scores...");
 
-      const response = await apiCall("/test-scores", {
-        method: "GET",
-        headers: {
-          "user-id": "user-123", // In real app, get from auth context
-        },
-      });
+      const response = await testScoresApi.getAll();
 
       console.log("Test scores API response:", response);
 
       if (response && response.success) {
-        setTestScores(response.data || []);
+        setTestScores((response.data || []) as unknown as TestScore[]);
         console.log("Test scores loaded:", response.data);
       } else {
         console.error("Failed to fetch test scores:", response);
@@ -209,14 +206,10 @@ export const TestScores = () => {
 
       if (editingScore) {
         // Update existing score
-        const response = await apiCall(`/test-scores/${editingScore.id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "user-id": "user-123",
-          },
-          body: JSON.stringify(scoreData),
-        });
+        const response = await testScoresApi.update(
+          editingScore.id!,
+          scoreData
+        );
 
         if (response.success) {
           setTestScores(prev =>
@@ -230,27 +223,23 @@ export const TestScores = () => {
           // Clear success message after 3 seconds
           setTimeout(() => setSuccess(null), 3000);
         } else {
-          setError(response.message || "Failed to update test score");
+          setError("Failed to update test score");
         }
       } else {
         // Create new score
-        const response = await apiCall("/test-scores", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "user-id": "user-123",
-          },
-          body: JSON.stringify(scoreData),
-        });
+        const response = await testScoresApi.create(scoreData);
 
         if (response.success) {
-          setTestScores(prev => [...prev, response.data]);
+          setTestScores(prev => [
+            ...prev,
+            response.data as unknown as TestScore,
+          ]);
           setSuccess("Test score saved successfully!");
           setIsAddModalOpen(false);
           // Clear success message after 3 seconds
           setTimeout(() => setSuccess(null), 3000);
         } else {
-          setError(response.message || "Failed to save test score");
+          setError("Failed to save test score");
         }
       }
 
@@ -270,12 +259,7 @@ export const TestScores = () => {
 
     try {
       setLoading(true);
-      const response = await apiCall(`/test-scores/${scoreId}`, {
-        method: "DELETE",
-        headers: {
-          "user-id": "user-123",
-        },
-      });
+      const response = await testScoresApi.delete(scoreId);
 
       if (response.success) {
         setTestScores(prev => prev.filter(score => score.id !== scoreId));
@@ -283,7 +267,7 @@ export const TestScores = () => {
         // Clear success message after 3 seconds
         setTimeout(() => setSuccess(null), 3000);
       } else {
-        setError(response.message || "Failed to delete test score");
+        setError("Failed to delete test score");
       }
     } catch (error) {
       console.error("Error deleting test score:", error);

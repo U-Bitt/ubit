@@ -92,7 +92,10 @@ export interface DocumentVersion {
 }
 
 // Generic API call function
-async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
+export async function apiCall<T>(
+  endpoint: string,
+  options?: RequestInit
+): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
 
   console.log("Making API call to:", url);
@@ -155,8 +158,8 @@ export const universityApi = {
 
     while (hasMore) {
       try {
-        const response = await apiCall<{ 
-          success: boolean; 
+        const response = await apiCall<{
+          success: boolean;
           data: University[];
           pagination: {
             page: number;
@@ -165,10 +168,10 @@ export const universityApi = {
             pages: number;
           };
         }>(`/universities?page=${page}&limit=${limit}`);
-        
+
         if (response.success && response.data) {
           allUniversities.push(...response.data);
-          
+
           // Check if there are more pages
           hasMore = page < response.pagination.pages;
           page++;
@@ -263,22 +266,29 @@ export interface User {
 
 export const userApi = {
   getAll: async (): Promise<User[]> => {
-    const response = await apiCall<{ success: boolean; data: User[] }>("/users");
+    const response = await apiCall<{ success: boolean; data: User[] }>(
+      "/users"
+    );
     return response.data;
   },
   getById: async (id: string): Promise<User> => {
-    const response = await apiCall<{ success: boolean; data: User }>(`/users/${id}`);
+    const response = await apiCall<{ success: boolean; data: User }>(
+      `/users/${id}`
+    );
     return response.data;
   },
   update: async (id: string, userData: Partial<User>): Promise<User> => {
     console.log("API update call - ID:", id, "Data:", userData);
-    const response = await apiCall<{ success: boolean; data: User }>(`/users/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(userData),
-    });
+    const response = await apiCall<{ success: boolean; data: User }>(
+      `/users/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      }
+    );
     return response.data;
   },
   create: async (userData: Partial<User>): Promise<User> => {
@@ -292,16 +302,29 @@ export const userApi = {
     return response.data;
   },
   // Saved Universities
-  getSavedUniversities: async (userId: string): Promise<any[]> => {
-    const response = await apiCall<{ success: boolean; data: any[] }>("/users/saved-universities/me", {
+  getSavedUniversities: async (
+    userId: string
+  ): Promise<Record<string, unknown>[]> => {
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>[];
+    }>("/users/saved-universities/me", {
       headers: {
         "x-user-id": userId,
       },
     });
     return response.data;
   },
-  saveUniversity: async (userId: string, universityId: string, universityName: string, notes?: string): Promise<any> => {
-    const response = await apiCall<{ success: boolean; data: any }>("/users/saved-universities", {
+  saveUniversity: async (
+    userId: string,
+    universityId: string,
+    universityName: string,
+    notes?: string
+  ): Promise<Record<string, unknown>> => {
+    const response = await apiCall<{
+      success: boolean;
+      data: Record<string, unknown>;
+    }>("/users/saved-universities", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -316,12 +339,15 @@ export const userApi = {
     return response.data;
   },
   unsaveUniversity: async (userId: string, savedId: string): Promise<void> => {
-    await apiCall<{ success: boolean; data: any }>(`/users/saved-universities/${savedId}`, {
-      method: "DELETE",
-      headers: {
-        "x-user-id": userId,
-      },
-    });
+    await apiCall<{ success: boolean; data: Record<string, unknown> }>(
+      `/users/saved-universities/${savedId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "x-user-id": userId,
+        },
+      }
+    );
   },
   // Legacy functions for backward compatibility
   getProfile: (): Promise<Record<string, unknown>> =>
