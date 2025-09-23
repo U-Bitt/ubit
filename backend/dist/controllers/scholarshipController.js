@@ -3,18 +3,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.searchScholarships = exports.getScholarshipById = exports.getAllScholarships = void 0;
+exports.deleteScholarship = exports.createScholarship = exports.searchScholarships = exports.getScholarshipById = exports.getAllScholarships = void 0;
 const Scholarship_1 = __importDefault(require("../models/Scholarship"));
 const getAllScholarships = async (req, res, next) => {
     try {
-        const { page = 1, limit = 10, sort = "deadline", order = "asc" } = req.query;
+        const { sort = "deadline", order = "asc" } = req.query;
         const sortObj = {};
         sortObj[sort] = order === "asc" ? 1 : -1;
-        const skip = (page - 1) * limit;
         const scholarships = await Scholarship_1.default.find({ isActive: true })
             .sort(sortObj)
-            .skip(skip)
-            .limit(limit)
             .lean();
         const total = await Scholarship_1.default.countDocuments({ isActive: true });
         const scholarshipData = scholarships.map((scholarship) => ({
@@ -45,10 +42,10 @@ const getAllScholarships = async (req, res, next) => {
             data: scholarshipData,
             message: "Scholarships retrieved successfully",
             pagination: {
-                page: Number(page),
-                limit: Number(limit),
+                page: 1,
+                limit: total,
                 total,
-                pages: Math.ceil(total / Number(limit)),
+                pages: 1,
             },
         });
     }
@@ -184,4 +181,83 @@ const searchScholarships = async (req, res, next) => {
     }
 };
 exports.searchScholarships = searchScholarships;
+const createScholarship = async (req, res, next) => {
+    try {
+        const newScholarship = new Scholarship_1.default(req.body);
+        const savedScholarship = await newScholarship.save();
+        const scholarshipData = {
+            id: savedScholarship._id.toString(),
+            title: savedScholarship.title,
+            description: savedScholarship.description,
+            amount: savedScholarship.amount,
+            university: savedScholarship.university,
+            country: savedScholarship.country,
+            deadline: savedScholarship.deadline,
+            type: savedScholarship.type,
+            requirements: savedScholarship.requirements,
+            coverage: savedScholarship.coverage,
+            duration: savedScholarship.duration,
+            applicationProcess: savedScholarship.applicationProcess,
+            eligibility: savedScholarship.eligibility,
+            benefits: savedScholarship.benefits,
+            image: savedScholarship.image,
+            donor: savedScholarship.donor,
+            contactEmail: savedScholarship.contactEmail,
+            website: savedScholarship.website,
+            isActive: savedScholarship.isActive,
+            createdAt: savedScholarship.createdAt,
+            updatedAt: savedScholarship.updatedAt,
+        };
+        res.status(201).json({
+            success: true,
+            data: scholarshipData,
+            message: "Scholarship created successfully",
+        });
+    }
+    catch (error) {
+        console.error("Error creating scholarship:", error);
+        res.status(500).json({
+            success: false,
+            data: {},
+            message: "Internal server error",
+        });
+    }
+};
+exports.createScholarship = createScholarship;
+const deleteScholarship = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            res.status(400).json({
+                success: false,
+                data: {},
+                message: "Invalid scholarship ID format",
+            });
+            return;
+        }
+        const deletedScholarship = await Scholarship_1.default.findByIdAndDelete(id);
+        if (!deletedScholarship) {
+            res.status(404).json({
+                success: false,
+                data: {},
+                message: "Scholarship not found",
+            });
+            return;
+        }
+        res.status(200).json({
+            success: true,
+            data: {},
+            message: "Scholarship deleted successfully",
+        });
+    }
+    catch (error) {
+        console.error("Error deleting scholarship:", error);
+        res.status(500).json({
+            success: false,
+            data: {},
+            message: "Internal server error",
+        });
+    }
+};
+exports.deleteScholarship = deleteScholarship;
 //# sourceMappingURL=scholarshipController.js.map

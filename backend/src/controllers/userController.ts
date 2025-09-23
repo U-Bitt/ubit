@@ -1108,11 +1108,14 @@ export const getSavedUniversities = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+
     const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
+
     
     const user = await User.findById(userId).lean();
 
     if (!user) {
+      console.log("User not found:", userId);
       res.status(404).json({
         success: false,
         data: [] as any[],
@@ -1120,6 +1123,8 @@ export const getSavedUniversities = async (
       });
       return;
     }
+
+    console.log("User found, savedUniversities:", user.savedUniversities);
 
     res.status(200).json({
       success: true,

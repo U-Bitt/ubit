@@ -64,7 +64,7 @@ const ScholarshipSchema = new Schema<IScholarship>(
     type: {
       type: String,
       required: [true, "Scholarship type is required"],
-      enum: ["Merit-based", "Leadership-based", "Need-based", "Athletic", "Academic", "Research"],
+      enum: ["Merit-based", "Leadership-based", "Need-based", "Athletic", "Academic", "Research", "Government-funded"],
       trim: true,
     },
     requirements: [

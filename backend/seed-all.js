@@ -4,6 +4,7 @@ require('dotenv').config();
 // Import the seed functions
 const { seedUsers } = require('./dist/utils/userSeedData');
 const { seedVisas } = require('./dist/utils/visaSeedData');
+const { seedAllData } = require('./dist/utils/seedData');
 
 // Connect to MongoDB
 const connectDB = async () => {
@@ -30,6 +31,10 @@ const main = async () => {
     // Seed visas
     console.log('🛂 Seeding visas...');
     await seedVisas();
+    
+    // Seed universities and scholarships
+    console.log('🏫 Seeding universities and scholarships...');
+    await seedAllData();
     
     console.log('🎉 All seeding completed successfully!');
     process.exit(0);

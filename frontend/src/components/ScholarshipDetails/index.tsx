@@ -16,7 +16,7 @@ import {
   Clock,
   CheckCircle,
 } from "lucide-react";
-import { scholarshipApi } from "@/utils/api";
+import { scholarshipApi, universityApi } from "@/utils/api";
 
 interface Scholarship {
   id: string;
@@ -50,6 +50,29 @@ export const ScholarshipDetails = ({ scholarshipId }: ScholarshipDetailsProps) =
   const [scholarship, setScholarship] = useState<Scholarship | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Function to navigate to university detail page
+  const handleViewUniversity = async () => {
+    if (!scholarship?.university) return;
+    
+    try {
+      // Get all universities and find the one matching the scholarship's university name
+      const universities = await universityApi.getAll();
+      const university = universities.find(uni => 
+        uni.name.toLowerCase() === scholarship.university.toLowerCase()
+      );
+      
+      if (university) {
+        router.push(`/universityDetail/${university.id}`);
+      } else {
+        // If university not found, show an alert or fallback to external search
+        alert(`University "${scholarship.university}" not found in our database.`);
+      }
+    } catch (error) {
+      console.error("Error finding university:", error);
+      alert("Error finding university details.");
+    }
+  };
 
   // Fetch scholarship data
   useEffect(() => {
@@ -354,7 +377,7 @@ export const ScholarshipDetails = ({ scholarshipId }: ScholarshipDetailsProps) =
                     variant="outline" 
                     size="sm" 
                     className="flex-1"
-                    onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(scholarship.university || '')}`, '_blank')}
+                    onClick={handleViewUniversity}
                   >
                     <ExternalLink className="h-3 w-3 mr-1" />
                     Learn More
@@ -372,10 +395,10 @@ export const ScholarshipDetails = ({ scholarshipId }: ScholarshipDetailsProps) =
               <Button 
                 variant="outline" 
                 className="w-full"
-                onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(scholarship.university || '')}`, '_blank')}
+                onClick={handleViewUniversity}
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
-                View University Website
+                View University Details
               </Button>
             </div>
           </div>

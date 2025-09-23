@@ -1,4 +1,6 @@
 import UniversityModel from "../models/University";
+import ScholarshipModel from "../models/Scholarship";
+import { universityScholarships } from "./universityScholarships";
 
 // Sample scholarship data for seeding
 export const scholarshipData = [
@@ -17,7 +19,10 @@ export const scholarshipData = [
     applicationProcess: "Online application with essays and recommendations",
     eligibility: "International students with exceptional academic records",
     benefits: ["Full tuition coverage", "Research opportunities", "Mentorship program"],
-    image: "/mit-campus-aerial.png"
+    image: "/mit-campus-aerial.png",
+    donor: "MIT Office of the President",
+    contactEmail: "presidential-scholarship@mit.edu",
+    website: "https://web.mit.edu/finaid/scholarships/presidential.html"
   },
   {
     id: "2",
@@ -34,44 +39,13 @@ export const scholarshipData = [
     applicationProcess: "Multi-stage application with interviews",
     eligibility: "Graduate students from any country",
     benefits: ["Full funding", "Leadership development", "Global network"],
-    image: "/stanford-campus.jpg"
+    image: "/stanford-campus.jpg",
+    donor: "Knight-Hennessy Scholars Program",
+    contactEmail: "knight-hennessy@stanford.edu",
+    website: "https://knight-hennessy.stanford.edu"
   },
   {
     id: "3",
-    title: "Oxford Clarendon Scholarship",
-    description: "Fully-funded graduate scholarship at Oxford University",
-    amount: "£15,000",
-    university: "University of Oxford",
-    country: "United Kingdom",
-    deadline: "2025-01-20",
-    requirements: ["First-class degree", "Research potential", "Academic excellence"],
-    type: "Merit-based",
-    coverage: "Full funding",
-    duration: "3-4 years",
-    applicationProcess: "Departmental application with research proposal",
-    eligibility: "Graduate students worldwide",
-    benefits: ["Full funding", "Research support", "Academic community"],
-    image: "/oxford-university-campus.jpg"
-  },
-  {
-    id: "4",
-    title: "Cambridge Gates Scholarship",
-    description: "Full-cost scholarship for graduate study at Cambridge",
-    amount: "£20,000",
-    university: "University of Cambridge",
-    country: "United Kingdom",
-    deadline: "2025-10-15",
-    requirements: ["Academic excellence", "Leadership potential", "Social commitment"],
-    type: "Merit-based",
-    coverage: "Full funding",
-    duration: "1-3 years",
-    applicationProcess: "University application plus Gates application",
-    eligibility: "Graduate students from outside the UK",
-    benefits: ["Full funding", "Leadership development", "Global community"],
-    image: "/cambridge-university-campus.jpg"
-  },
-  {
-    id: "5",
     title: "Harvard Presidential Scholarship",
     description: "Undergraduate scholarship for exceptional international students",
     amount: "$54,269",
@@ -85,8 +59,11 @@ export const scholarshipData = [
     applicationProcess: "Standard Harvard application",
     eligibility: "International undergraduate applicants",
     benefits: ["Full tuition", "Research opportunities", "Alumni network"],
-    image: "/harvard-campus.jpg"
-  }
+    image: "/harvard-campus.jpg",
+    donor: "Harvard Office of the President",
+    contactEmail: "presidential-scholarship@harvard.edu",
+    website: "https://college.harvard.edu/financial-aid/scholarships"
+  },
 ];
 
 // Sample university data for seeding
@@ -544,13 +521,53 @@ export const seedUniversities = async (): Promise<void> => {
   }
 };
 
-// Scholarship and country seeding functions removed as models don't exist
-// The scholarshipData is exported for use in controllers
+// Seed scholarships function
+export const seedScholarships = async (): Promise<void> => {
+  try {
+    console.log("🎓 Seeding scholarships...");
+    
+    // Clear existing scholarships
+    await ScholarshipModel.deleteMany({});
+    console.log("🗑️ Cleared existing scholarships");
+    
+    // Combine existing scholarships with university-specific scholarships
+    const allScholarships = [...scholarshipData, ...universityScholarships];
+    
+    // Insert new scholarships
+    const scholarshipsToInsert = allScholarships.map(scholarship => ({
+      title: scholarship.title,
+      description: scholarship.description,
+      amount: scholarship.amount,
+      university: scholarship.university,
+      country: scholarship.country,
+      deadline: scholarship.deadline,
+      type: scholarship.type,
+      requirements: scholarship.requirements,
+      coverage: scholarship.coverage,
+      duration: scholarship.duration,
+      applicationProcess: scholarship.applicationProcess,
+      eligibility: scholarship.eligibility,
+      benefits: scholarship.benefits,
+      image: scholarship.image,
+      donor: scholarship.donor,
+      contactEmail: scholarship.contactEmail,
+      website: scholarship.website,
+      isActive: true,
+    }));
+    
+    await ScholarshipModel.insertMany(scholarshipsToInsert);
+    console.log(`✅ Seeded ${scholarshipsToInsert.length} scholarships`);
+  } catch (error) {
+    console.error("❌ Error seeding scholarships:", error);
+    throw error;
+  }
+};
 
 // Main seeding function that seeds all data
 export const seedAllData = async (): Promise<void> => {
   try {
     await seedUniversities();
+    await seedScholarships();
     console.log("🎉 All data seeded successfully!");
   } catch (error) {
     console.error("❌ Error seeding data:", error);

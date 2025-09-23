@@ -64,9 +64,8 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
   // Load user data from localStorage on mount
   useEffect(() => {
-    const loadUser = () => {
+    const loadUser = async () => {
       try {
-        // Try to get the current user ID from a global key
         const currentUserId = localStorage.getItem('currentUserId');
         if (currentUserId) {
           const storedUser = localStorage.getItem(`user_${currentUserId}`);
@@ -105,6 +104,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         setUser(defaultUser);
         localStorage.setItem('currentUserId', defaultUser.id);
         localStorage.setItem(`user_${defaultUser.id}`, JSON.stringify(defaultUser));
+
       } catch (error) {
         console.error('Error loading user data:', error);
       } finally {
