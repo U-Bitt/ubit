@@ -62,9 +62,11 @@ const navigationMenus = [
       { name: "Visa", href: "/prepare/visa", icon: Plane },
     ],
   },
+
   {
-    name: "Manage",
-    items: [{ name: "Dashboard", href: "/manage/dashboard", icon: BarChart3 }],
+    name: "Dashboard",
+    href: "/manage/dashboard",
+    isDirectLink: true,
   },
 ];
 
