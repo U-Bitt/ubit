@@ -65,109 +65,141 @@ export const EnhancedApplicationProgress = ({
             </CardTitle>
             <div className="flex items-center gap-2 text-sm text-slate-600">
               <TrendingUp className="h-4 w-4" />
-              <span>2 of 3 applications in progress</span>
+              <span>
+                {applications.length === 0
+                  ? "Ready to start your applications"
+                  : `${applications.length} application${applications.length !== 1 ? "s" : ""} in progress`}
+              </span>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {applications.map((app, index) => (
-            <div
-              key={index}
-              className="group p-6 rounded-xl border border-slate-200 hover:border-primary/30 hover:shadow-lg transition-all duration-300 bg-white/50 hover:bg-white/80"
-            >
-              {/* Header */}
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white font-bold text-lg">
-                    {app.university.charAt(0)}
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-lg text-slate-900 group-hover:text-primary transition-colors duration-300">
-                      {app.university}
-                    </h4>
-                    <p className="text-sm text-slate-600 font-medium">
-                      {app.program}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <MapPin className="h-3 w-3 text-slate-400" />
-                      <span className="text-xs text-slate-500">
-                        {app.location}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${getStatusColor(app.status)} flex items-center gap-1`}
-                  >
-                    {getStatusIcon(app.status)}
-                    {app.status}
-                  </Badge>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    onClick={() => onViewDetails(app)}
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
-                    View
-                  </Button>
-                </div>
+          {applications.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                <Target className="h-8 w-8 text-slate-400" />
               </div>
-
-              {/* Progress Section */}
-              <div className="space-y-3 mb-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-slate-700">
-                    Progress
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-slate-900">
-                      {Math.round(app.progress)}%
-                    </span>
-                    <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500"
-                        style={{ width: `${Math.round(app.progress)}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-                <Progress value={Math.round(app.progress)} className="h-2" />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-2"
-                    onClick={() => onViewDetails(app)}
-                  >
-                    <Eye className="h-4 w-4" />
-                    View Details
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="gap-2"
-                    onClick={() => window.open(app.website, "_blank")}
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    Website
-                  </Button>
-                </div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                No Applied Universities
+              </h3>
+              <p className="text-slate-600 mb-6 max-w-md mx-auto">
+                Start your university application journey by exploring and
+                applying to universities that match your interests and goals.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button className="bg-primary hover:bg-primary/90 text-white">
+                  <Target className="h-4 w-4 mr-2" />
+                  Start Applying
+                </Button>
                 <Button
-                  size="sm"
-                  variant="ghost"
-                  className="group-hover:bg-primary/5 transition-colors duration-300"
+                  variant="outline"
+                  className="border-slate-300 text-slate-700 hover:bg-slate-50"
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Explore Universities
                 </Button>
               </div>
             </div>
-          ))}
+          ) : (
+            applications.map((app, index) => (
+              <div
+                key={index}
+                className="group p-6 rounded-xl border border-slate-200 hover:border-primary/30 hover:shadow-lg transition-all duration-300 bg-white/50 hover:bg-white/80"
+              >
+                {/* Header */}
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white font-bold text-lg">
+                      {app.university.charAt(0)}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-lg text-slate-900 group-hover:text-primary transition-colors duration-300">
+                        {app.university}
+                      </h4>
+                      <p className="text-sm text-slate-600 font-medium">
+                        {app.program}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <MapPin className="h-3 w-3 text-slate-400" />
+                        <span className="text-xs text-slate-500">
+                          {app.location}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      className={`${getStatusColor(app.status)} flex items-center gap-1`}
+                    >
+                      {getStatusIcon(app.status)}
+                      {app.status}
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      onClick={() => onViewDetails(app)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      View
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Progress Section */}
+                <div className="space-y-3 mb-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-slate-700">
+                      Progress
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-slate-900">
+                        {Math.round(app.progress)}%
+                      </span>
+                      <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500"
+                          style={{ width: `${Math.round(app.progress)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                  <Progress value={Math.round(app.progress)} className="h-2" />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-2"
+                      onClick={() => onViewDetails(app)}
+                    >
+                      <Eye className="h-4 w-4" />
+                      View Details
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="gap-2"
+                      onClick={() => window.open(app.website, "_blank")}
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Website
+                    </Button>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="group-hover:bg-primary/5 transition-colors duration-300"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
         </CardContent>
       </Card>
     </div>
