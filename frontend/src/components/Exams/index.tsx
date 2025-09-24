@@ -1,21 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  BookOpen,
-  Calendar,
-  Target,
-  TrendingUp,
-  CheckCircle,
-  Download,
-  Play,
-  Globe,
-} from "lucide-react";
+import { BookOpen, Target, TrendingUp, Play, Globe } from "lucide-react";
 import {
   getRealisticTestDate,
   isRegistrationOpen,
-  TestDateInfo,
 } from "@/utils/testDateService";
 
 // Enhanced exam interface with additional fields
@@ -265,85 +254,6 @@ export const Exams = () => {
     },
   ];
 
-  const myExams = [
-    {
-      name: "SAT",
-      date: getRealisticDate("SAT"),
-      status: "Scheduled",
-      targetScore: "1500",
-      currentPrep: 75,
-      lastScore: null,
-      website: "https://satsuite.collegeboard.org/sat",
-      seatSelectionUrl:
-        "https://satsuite.collegeboard.org/sat/registration/test-center-search",
-    },
-    {
-      name: "TOEFL",
-      date: getRealisticDate("TOEFL"),
-      status: "Completed",
-      targetScore: "110",
-      currentPrep: 100,
-      lastScore: "108",
-      website: "https://www.ets.org/toefl",
-      seatSelectionUrl:
-        "https://www.ets.org/toefl/test-takers/ibt/register/centers-dates",
-    },
-  ];
-
-  // Helper function to get dynamic week dates for study plans
-  const getWeekDates = (weeksFromNow: number) => {
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() + (weeksFromNow - 1) * 7);
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + weeksFromNow * 7);
-
-    const start = startDate.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-    const end = endDate.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-    return `${start} - ${end}`;
-  };
-
-  const studyPlans = [
-    {
-      week: `Week 1-2 (${getWeekDates(1)})`,
-      focus: "Foundation Review",
-      exam: "SAT",
-      completed: true,
-      tasks: [
-        "Complete diagnostic test",
-        "Review basic math concepts",
-        "Practice reading comprehension",
-      ],
-    },
-    {
-      week: `Week 3-4 (${getWeekDates(3)})`,
-      focus: "Practice Tests",
-      exam: "SAT",
-      completed: true,
-      tasks: [
-        "Take 2 full practice tests",
-        "Analyze weak areas",
-        "Focus on time management",
-      ],
-    },
-    {
-      week: `Week 5-6 (${getWeekDates(5)})`,
-      focus: "Advanced Strategies",
-      exam: "SAT",
-      completed: false,
-      tasks: [
-        "Learn advanced math techniques",
-        "Practice essay writing",
-        "Review grammar rules",
-      ],
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -360,8 +270,6 @@ export const Exams = () => {
         <Tabs defaultValue="available" className="space-y-6">
           <TabsList>
             <TabsTrigger value="available">Available Exams</TabsTrigger>
-            <TabsTrigger value="my-exams">My Exams</TabsTrigger>
-            <TabsTrigger value="study-plans">Study Plans</TabsTrigger>
             <TabsTrigger value="practice">Practice Tests</TabsTrigger>
           </TabsList>
 
@@ -792,132 +700,6 @@ export const Exams = () => {
                     </Card>
                   ))}
               </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="my-exams" className="space-y-6">
-            <div className="space-y-6">
-              {myExams.map((exam, index) => (
-                <Card key={index}>
-                  <CardContent className="p-6">
-                    <div className="mb-4">
-                      <h4 className="text-lg font-semibold">{exam.name}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Test Date: {exam.date}
-                      </p>
-                    </div>
-
-                    <div className="grid md:grid-cols-3 gap-4 mb-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">
-                          Target Score
-                        </p>
-                        <p className="text-xl font-bold text-primary">
-                          {exam.targetScore}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">
-                          Preparation Progress
-                        </p>
-                        <div className="space-y-2">
-                          <Progress value={exam.currentPrep} className="h-2" />
-                          <p className="text-sm font-medium">
-                            {exam.currentPrep}% Complete
-                          </p>
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">
-                          Last Score
-                        </p>
-                        <p className="text-xl font-bold text-secondary">
-                          {exam.lastScore || "Not taken"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="bg-transparent flex-1"
-                      >
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Reschedule
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="bg-transparent flex-1"
-                      >
-                        <BookOpen className="h-4 w-4 mr-2" />
-                        Study Plan
-                      </Button>
-                      {exam.lastScore && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="bg-transparent flex-1"
-                        >
-                          <Download className="h-4 w-4 mr-2" />
-                          Score Report
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="study-plans" className="space-y-6">
-            <div className="space-y-4">
-              {studyPlans.map((plan, index) => (
-                <Card
-                  key={index}
-                  className={plan.completed ? "bg-muted/50" : ""}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            plan.completed
-                              ? "bg-green-500 text-white"
-                              : "bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          {plan.completed ? (
-                            <CheckCircle className="h-4 w-4" />
-                          ) : (
-                            <span className="text-sm font-bold">
-                              {index + 1}
-                            </span>
-                          )}
-                        </div>
-                        <div>
-                          <h4 className="font-semibold">
-                            {plan.week}: {plan.focus}
-                          </h4>
-                          <p className="text-sm text-muted-foreground">
-                            {plan.exam} Preparation
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      {plan.tasks.map((task, taskIndex) => (
-                        <li key={taskIndex} className="flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                          {task}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              ))}
             </div>
           </TabsContent>
 
