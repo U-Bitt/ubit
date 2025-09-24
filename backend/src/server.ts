@@ -65,14 +65,41 @@ app.use(
 );
 
 // CORS configuration
+console.log(process.env.CORS_ORIGIN, "https://frontend-kv7i3wt0r-tugstuguldurs-projects.vercel.app");
+
+// Handle preflight requests
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, x-user-id');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.status(200).end();
+});
+
 app.use(
   cors({
-    origin: [
-      process.env.CORS_ORIGIN || "http://localhost:3000",
-      "http://localhost:3001",
-      "http://localhost:3000",
-    ],
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      const allowedOrigins = [
+        process.env.CORS_ORIGIN || "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3000",
+        "https://frontend-tau-ten-36.vercel.app",
+        "https://frontend-kv7i3wt0r-tugstuguldurs-projects.vercel.app",
+      ];
+      
+      // Check if origin is allowed or is a Vercel preview deployment
+      if (allowedOrigins.includes(origin) || origin.includes('.vercel.app')) {
+        return callback(null, true);
+      }
+      
+      return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "x-user-id"],
   })
 );
 

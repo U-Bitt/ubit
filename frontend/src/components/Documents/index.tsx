@@ -279,7 +279,7 @@ export const Documents = () => {
             size: docData.size as string,
             format: docData.format as string,
             filePath: (docData.filePath as string).startsWith("/uploads/")
-              ? `http://localhost:5001${docData.filePath}`
+              ? `https://u-bit-backend-nk9klg5bc-tugstuguldurs-projects.vercel.app${docData.filePath}`
               : (docData.filePath as string),
             version: docData.version as number,
             isLatestVersion: docData.isLatestVersion as boolean,
@@ -411,7 +411,7 @@ export const Documents = () => {
           size: response.data.size as string,
           format: response.data.format as string,
           filePath: (response.data.filePath as string).startsWith("/uploads/")
-            ? `http://localhost:5001${response.data.filePath}`
+            ? `https://u-bit-backend.vercel.app${response.data.filePath}`
             : (response.data.filePath as string),
           version: response.data.version as number,
           isLatestVersion: response.data.isLatestVersion as boolean,

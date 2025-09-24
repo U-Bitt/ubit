@@ -10,7 +10,7 @@ export const getAllUniversities = async (
 ): Promise<void> => {
   try {
     const { sort = "ranking", order = "asc" } = req.query;
-
+    console.log('working')
     // Build sort object for MongoDB
     const sortObj: any = {};
     sortObj[sort] = order === "asc" ? 1 : -1;

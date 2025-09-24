@@ -48,13 +48,33 @@ app.use((0, helmet_1.default)({
     crossOriginResourcePolicy: false,
     frameguard: false,
 }));
+console.log(process.env.CORS_ORIGIN, "https://frontend-kv7i3wt0r-tugstuguldurs-projects.vercel.app");
+app.options('*', (req, res) => {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, x-user-id');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.status(200).end();
+});
 app.use((0, cors_1.default)({
-    origin: [
-        process.env.CORS_ORIGIN || "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:3000",
-    ],
+    origin: function (origin, callback) {
+        if (!origin)
+            return callback(null, true);
+        const allowedOrigins = [
+            process.env.CORS_ORIGIN || "http://localhost:3000",
+            "http://localhost:3001",
+            "http://localhost:3000",
+            "https://frontend-tau-ten-36.vercel.app",
+            "https://frontend-kv7i3wt0r-tugstuguldurs-projects.vercel.app",
+        ];
+        if (allowedOrigins.includes(origin) || origin.includes('.vercel.app')) {
+            return callback(null, true);
+        }
+        return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "x-user-id"],
 }));
 const limiter = (0, express_rate_limit_1.default)({
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000"),

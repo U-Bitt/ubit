@@ -8,6 +8,7 @@ const University_1 = __importDefault(require("../models/University"));
 const getAllUniversities = async (req, res, next) => {
     try {
         const { sort = "ranking", order = "asc" } = req.query;
+        console.log('working');
         const sortObj = {};
         sortObj[sort] = order === "asc" ? 1 : -1;
         const universities = await University_1.default.find()
