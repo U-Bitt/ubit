@@ -26,7 +26,7 @@ export default function AISuggestionsPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<UniversitySuggestion[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [testScores, setTestScores] = useState<any[]>([]);
+  const [testScores, setTestScores] = useState<Record<string, unknown>[]>([]);
   const [scoresLoading, setScoresLoading] = useState(false);
   const [scoresError, setScoresError] = useState<string | null>(null);
   const [lastFetchTime, setLastFetchTime] = useState<number>(0);
@@ -119,8 +119,8 @@ export default function AISuggestionsPage() {
 
       setUserData(prev => ({
         ...prev,
-        sat: satScore?.score || "",
-        ielts: ieltsScore?.score || "",
+        sat: (satScore?.score as string) || "",
+        ielts: (ieltsScore?.score as string) || "",
       }));
     } else {
       // If no test scores, set to empty
@@ -283,19 +283,21 @@ export default function AISuggestionsPage() {
                       className="text-center p-6 bg-white rounded-lg border border-gray-200 flex-shrink-0 w-[220px] h-[130px] flex flex-col justify-center"
                     >
                       <div className="text-3xl font-bold text-blue-900">
-                        {score.score}
+                        {score.score as string}
                       </div>
                       <div className="text-base text-gray-600">
-                        {score.examType}
+                        {score.examType as string}
                       </div>
-                      {score.band && (
+                      {(score.band as string) && (
                         <div className="text-xs text-gray-500">
-                          Band {score.band}
+                          Band {score.band as string}
                         </div>
                       )}
-                      {score.examDate && (
+                      {(score.examDate as string) && (
                         <div className="text-xs text-gray-400">
-                          {new Date(score.examDate).toLocaleDateString()}
+                          {new Date(
+                            score.examDate as string
+                          ).toLocaleDateString()}
                         </div>
                       )}
                     </div>

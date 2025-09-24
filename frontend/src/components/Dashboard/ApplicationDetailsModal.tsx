@@ -162,7 +162,7 @@ export const ApplicationDetailsModal = ({
               <ul className="space-y-2">
                 {application.requirements.map((req: string, index: number) => (
                   <li key={index} className="flex items-start gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                     <span>{req}</span>
                   </li>
                 ))}
@@ -186,39 +186,22 @@ export const ApplicationDetailsModal = ({
                     className="flex items-center justify-between p-3 rounded-lg border"
                   >
                     <div className="flex items-center gap-3">
-                      <div
-                        className={`w-3 h-3 rounded-full ${
-                          doc.status === "uploaded"
-                            ? "bg-green-500"
-                            : doc.status === "draft"
-                              ? "bg-yellow-500"
-                              : doc.status === "pending"
-                                ? "bg-orange-500"
-                                : doc.status === "not-required"
-                                  ? "bg-gray-300"
-                                  : "bg-gray-300"
-                        }`}
-                      />
+                      <div className="w-3 h-3 rounded-full bg-white border-2 border-primary" />
                       <div>
                         <span className="font-medium text-sm">{doc.name}</span>
                         {doc.required && (
-                          <Badge variant="destructive" className="ml-2 text-xs">
+                          <Badge
+                            variant="outline"
+                            className="ml-2 text-xs text-gray-600 border-gray-300"
+                          >
                             Required
                           </Badge>
                         )}
                       </div>
                     </div>
                     <Badge
-                      variant={
-                        doc.status === "uploaded"
-                          ? "default"
-                          : doc.status === "draft"
-                            ? "secondary"
-                            : doc.status === "pending"
-                              ? "outline"
-                              : "outline"
-                      }
-                      className="text-xs capitalize"
+                      variant="outline"
+                      className="text-xs capitalize text-gray-600 border-gray-300"
                     >
                       {doc.status.replace("-", " ")}
                     </Badge>
@@ -244,7 +227,7 @@ export const ApplicationDetailsModal = ({
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center ${
                           milestone.completed
-                            ? "bg-green-500 text-white"
+                            ? "bg-primary text-white"
                             : "bg-gray-200 text-gray-500"
                         }`}
                       >

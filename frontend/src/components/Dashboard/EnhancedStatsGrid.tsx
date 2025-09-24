@@ -41,25 +41,27 @@ export const EnhancedStatsGrid = ({ stats }: EnhancedStatsGridProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       {stats.map((stat, index) => (
-        <Card 
-          key={index} 
+        <Card
+          key={index}
           className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:scale-105"
         >
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/10 to-indigo-500/10 group-hover:from-blue-500/20 group-hover:to-indigo-500/20 transition-all duration-300">
-                <stat.icon className="h-6 w-6 text-blue-600 group-hover:text-blue-700" />
+              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/20 group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">
+                <stat.icon className="h-6 w-6 text-primary group-hover:text-primary/80" />
               </div>
               {stat.change !== undefined && (
-                <div className={`flex items-center gap-1 text-sm font-medium ${getTrendColor(stat.changeType)}`}>
+                <div
+                  className={`flex items-center gap-1 text-sm font-medium ${getTrendColor(stat.changeType)}`}
+                >
                   {getTrendIcon(stat.changeType)}
                   <span>{Math.abs(stat.change)}%</span>
                 </div>
               )}
             </div>
-            
+
             <div className="space-y-1">
-              <p className="text-3xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors duration-300">
+              <p className="text-3xl font-bold text-slate-900 group-hover:text-primary transition-colors duration-300">
                 {stat.value}
               </p>
               <p className="text-sm font-medium text-slate-600 group-hover:text-slate-700 transition-colors duration-300">
@@ -73,7 +75,7 @@ export const EnhancedStatsGrid = ({ stats }: EnhancedStatsGridProps) => {
             </div>
 
             {/* Decorative gradient line */}
-            <div className="mt-4 h-1 bg-gradient-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="mt-4 h-1 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </CardContent>
         </Card>
       ))}

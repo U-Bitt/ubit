@@ -227,7 +227,7 @@ export const ExamDetailsModal = ({
                     <div
                       className={`w-6 h-6 rounded-full flex items-center justify-center ${
                         topic.status === "completed"
-                          ? "bg-green-500 text-white"
+                          ? "bg-primary text-white"
                           : "bg-gray-200 text-gray-500"
                       }`}
                     >

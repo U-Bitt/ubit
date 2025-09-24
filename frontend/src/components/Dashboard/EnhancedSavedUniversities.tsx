@@ -77,7 +77,7 @@ export const EnhancedSavedUniversities = ({
 
     switch (status.toLowerCase()) {
       case "applying":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return "bg-primary/10 text-primary border-primary/20";
       case "considering":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "accepted":
@@ -284,8 +284,8 @@ export const EnhancedSavedUniversities = ({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {university.details.founded && (
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                                <Calendar className="h-4 w-4 text-blue-600" />
+                              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <Calendar className="h-4 w-4 text-primary" />
                               </div>
                               <div>
                                 <p className="text-xs text-slate-500 font-medium">

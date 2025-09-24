@@ -132,7 +132,7 @@ export default function Navbar() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-48">
-                    {menu.items.map(item => {
+                    {menu.items?.map(item => {
                       const isActive = router.pathname === item.href;
                       return (
                         <DropdownMenuItem key={item.name} asChild>
@@ -237,7 +237,7 @@ export default function Navbar() {
                     <div className="px-3 py-2 text-sm font-medium text-muted-foreground">
                       {menu.name}
                     </div>
-                    {menu.items.map(item => {
+                    {menu.items?.map(item => {
                       const isActive = router.pathname === item.href;
                       return (
                         <Link key={item.name} href={item.href}>

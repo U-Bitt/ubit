@@ -55,7 +55,7 @@ export const ExamProgressTracker = ({
             </div>
             <div className="flex justify-between items-center text-xs">
               {exam.score ? (
-                <span className="text-green-600 font-medium">
+                <span className="text-primary font-medium">
                   Score: {exam.score}
                 </span>
               ) : (
