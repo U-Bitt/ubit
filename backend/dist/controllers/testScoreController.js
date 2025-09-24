@@ -8,7 +8,7 @@ const User_1 = __importDefault(require("../models/User"));
 exports.testScoreController = {
     getAllTestScores: async (req, res) => {
         try {
-            const userId = req.headers["user-id"] || "user-123";
+            const userId = req.headers["x-user-id"] || "user-123";
             const user = await User_1.default.findById(userId).select("testScores");
             if (!user) {
                 return res.status(404).json({
@@ -39,7 +39,7 @@ exports.testScoreController = {
                     message: "Exam type, score, and max score are required",
                 });
             }
-            const userId = req.headers["user-id"] || "user-123";
+            const userId = req.headers["x-user-id"] || "user-123";
             const newTestScore = {
                 id: Date.now().toString(),
                 examType,
@@ -83,7 +83,7 @@ exports.testScoreController = {
         try {
             const { id } = req.params;
             const updates = req.body;
-            const userId = req.headers["user-id"] || "user-123";
+            const userId = req.headers["x-user-id"] || "user-123";
             const user = await User_1.default.findById(userId);
             if (!user) {
                 return res.status(404).json({
@@ -99,7 +99,10 @@ exports.testScoreController = {
                 });
             }
             if (user.testScores && user.testScores[scoreIndex]) {
-                user.testScores[scoreIndex] = { ...user.testScores[scoreIndex], ...updates };
+                user.testScores[scoreIndex] = {
+                    ...user.testScores[scoreIndex],
+                    ...updates,
+                };
                 await user.save();
                 res.status(200).json({
                     success: true,
@@ -126,7 +129,7 @@ exports.testScoreController = {
     deleteTestScore: async (req, res) => {
         try {
             const { id } = req.params;
-            const userId = req.headers["user-id"] || "user-123";
+            const userId = req.headers["x-user-id"] || "user-123";
             const user = await User_1.default.findById(userId);
             if (!user) {
                 return res.status(404).json({
