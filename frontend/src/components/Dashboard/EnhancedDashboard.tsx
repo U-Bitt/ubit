@@ -129,6 +129,58 @@ export const EnhancedDashboard = () => {
     };
   }, [user, userDocuments, userTestScores, isLoadingUserData]);
 
+  // Calculate exam progress based on registrations (50%) and test scores (50%)
+  const calculateExamProgress = useCallback(() => {
+    if (!user || isLoadingUserData) {
+      return {
+        examProgress: 0,
+        examRegistrations: 0,
+        testScoresAdded: 0,
+        examRegistrationsProgress: 0,
+        testScoresProgress: 0,
+        maxRegistrations: 3,
+        maxTestScores: 3,
+      };
+    }
+
+    // Get exam registrations from localStorage (tracked when register button is clicked)
+    const examRegistrations = JSON.parse(
+      localStorage.getItem("examRegistrations") || "[]"
+    );
+
+    // Count test scores added (from test scores page)
+    const testScoresAdded = userTestScores.filter(
+      score => score.certified === true
+    ).length;
+
+    // Calculate progress: 50% from registrations, 50% from test scores
+    // Assume 3 exam registrations = 100% of registration component
+    // Assume 3 test scores = 100% of test scores component
+    const maxRegistrations = 3;
+    const maxTestScores = 3;
+
+    const examRegistrationsProgress = Math.min(
+      (examRegistrations.length / maxRegistrations) * 50,
+      50
+    );
+    const testScoresProgress = Math.min(
+      (testScoresAdded / maxTestScores) * 50,
+      50
+    );
+
+    const totalExamProgress = examRegistrationsProgress + testScoresProgress;
+
+    return {
+      examProgress: Math.round(totalExamProgress),
+      examRegistrations: examRegistrations.length,
+      testScoresAdded,
+      examRegistrationsProgress: Math.round(examRegistrationsProgress),
+      testScoresProgress: Math.round(testScoresProgress),
+      maxRegistrations,
+      maxTestScores,
+    };
+  }, [user, userTestScores, isLoadingUserData]);
+
   // Search states
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredUniversities, setFilteredUniversities] = useState<
@@ -999,258 +1051,11 @@ export const EnhancedDashboard = () => {
     }
   }, []);
 
-  // Mock data with enhanced information
-  const mockApplications: Application[] = useMemo(
-    () => [
-      {
-        id: 1,
-        university: "MIT",
-        program: "Computer Science",
-        status: "In Progress",
-        deadline: "Jan 1, 2025",
-        progress: 75,
-        ranking: 1,
-        location: "Cambridge, MA, USA",
-        tuition: "$57,986/year",
-        acceptance: "6.7%",
-        image: "/mit-campus-aerial.png",
-        description:
-          "The Computer Science program at MIT focuses on the fundamental principles of computing and their applications.",
-        website: "https://www.mit.edu",
-        requirements: [
-          "SAT: 1500+ or ACT: 34+",
-          "IELTS: 7.0+ or TOEFL: 100+",
-          "High school transcripts",
-          "Letters of recommendation (2)",
-          "Personal statement",
-          "Extracurricular activities",
-        ],
-        documents: [
-          {
-            name: "High School Transcript",
-            status: "uploaded",
-            required: true,
-          },
-          { name: "SAT Scores", status: "uploaded", required: true },
-          { name: "Personal Statement", status: "draft", required: true },
-          {
-            name: "Letters of Recommendation",
-            status: "pending",
-            required: true,
-          },
-          { name: "Portfolio", status: "not-required", required: false },
-          { name: "Financial Aid Forms", status: "pending", required: false },
-        ],
-        milestones: [
-          {
-            title: "Application Started",
-            date: "Dec 15, 2024",
-            completed: true,
-          },
-          {
-            title: "Documents Uploaded",
-            date: "Dec 22, 2024",
-            completed: true,
-          },
-          {
-            title: "Personal Statement Draft",
-            date: "Dec 28, 2024",
-            completed: true,
-          },
-          {
-            title: "Letters of Recommendation",
-            date: "Jan 5, 2025",
-            completed: false,
-          },
-          { title: "Final Review", date: "Jan 10, 2025", completed: false },
-          { title: "Submission", date: "Jan 15, 2025", completed: false },
-        ],
-      },
-      {
-        id: 2,
-        university: "Stanford",
-        program: "Computer Science",
-        status: "Submitted",
-        deadline: "Jan 2, 2025",
-        progress: 100,
-        ranking: 2,
-        location: "Stanford, CA, USA",
-        tuition: "$61,731/year",
-        acceptance: "4.3%",
-        image: "/stanford-campus.jpg",
-        description:
-          "Stanford's CS program emphasizes both theoretical foundations and practical applications.",
-        website: "https://www.stanford.edu",
-        requirements: [
-          "SAT: 1520+ or ACT: 35+",
-          "IELTS: 7.5+ or TOEFL: 110+",
-          "High school transcripts",
-          "Letters of recommendation (3)",
-          "Personal statement",
-          "Research experience preferred",
-        ],
-        documents: [
-          {
-            name: "High School Transcript",
-            status: "uploaded",
-            required: true,
-          },
-          { name: "SAT Scores", status: "uploaded", required: true },
-          { name: "Personal Statement", status: "uploaded", required: true },
-          {
-            name: "Letters of Recommendation",
-            status: "uploaded",
-            required: true,
-          },
-          { name: "Research Portfolio", status: "uploaded", required: true },
-          { name: "Financial Aid Forms", status: "uploaded", required: false },
-        ],
-        milestones: [
-          {
-            title: "Application Started",
-            date: "Dec 1, 2024",
-            completed: true,
-          },
-          {
-            title: "Documents Uploaded",
-            date: "Dec 10, 2024",
-            completed: true,
-          },
-          {
-            title: "Personal Statement Final",
-            date: "Dec 20, 2024",
-            completed: true,
-          },
-          {
-            title: "Letters of Recommendation",
-            date: "Dec 25, 2024",
-            completed: true,
-          },
-          { title: "Final Review", date: "Dec 30, 2024", completed: true },
-          { title: "Submission", date: "Jan 2, 2025", completed: true },
-        ],
-      },
-    ],
-    []
-  );
+  // Start with empty applications - students will add their own
+  const mockApplications: Application[] = useMemo(() => [], []);
 
-  const examProgress: Exam[] = useMemo(
-    () => [
-      {
-        id: 1,
-        exam: "SAT",
-        fullName: "Scholastic Assessment Test",
-        date: "Dec 14, 2024",
-        daysLeft: 2,
-        status: "registered",
-        score: "1480",
-        target: "1500+",
-        progress: 85,
-        registrationId: "SAT-2024-12-14-12345",
-        location: "Downtown Test Center, Ulaanbaatar",
-        duration: "3 hours 45 minutes",
-        sections: [
-          {
-            name: "Reading",
-            score: 370,
-            target: 380,
-            progress: 95,
-            status: "completed",
-          },
-          {
-            name: "Writing & Language",
-            score: 360,
-            target: 370,
-            progress: 90,
-            status: "completed",
-          },
-          {
-            name: "Math",
-            score: 750,
-            target: 750,
-            progress: 100,
-            status: "completed",
-          },
-        ],
-        practiceTests: [
-          {
-            name: "Practice Test 1",
-            date: "Nov 15, 2024",
-            score: 1420,
-            status: "completed",
-            improvement: "+20",
-          },
-          {
-            name: "Practice Test 2",
-            date: "Nov 1, 2024",
-            score: 1400,
-            status: "completed",
-            improvement: "+15",
-          },
-          {
-            name: "Practice Test 3",
-            date: "Oct 15, 2024",
-            score: 1385,
-            status: "completed",
-            improvement: "Baseline",
-          },
-        ],
-        studyPlan: [
-          {
-            topic: "Reading Comprehension",
-            progress: 100,
-            priority: "high",
-            status: "completed",
-          },
-          {
-            topic: "Grammar Rules",
-            progress: 100,
-            priority: "high",
-            status: "completed",
-          },
-          {
-            topic: "Algebra & Functions",
-            progress: 100,
-            priority: "medium",
-            status: "completed",
-          },
-          {
-            topic: "Advanced Math",
-            progress: 60,
-            priority: "high",
-            status: "in-progress",
-          },
-          {
-            topic: "Data Analysis",
-            progress: 30,
-            priority: "medium",
-            status: "in-progress",
-          },
-        ],
-        resources: [
-          {
-            name: "Khan Academy SAT Prep",
-            type: "Practice Tests",
-            status: "active",
-            url: "https://www.khanacademy.org/test-prep/sat",
-          },
-          {
-            name: "College Board Official Guide",
-            type: "Study Material",
-            status: "completed",
-            url: "https://satsuite.collegeboard.org/sat/practice-preparation",
-          },
-          {
-            name: "SAT Math Bootcamp",
-            type: "Course",
-            status: "in-progress",
-            url: "https://www.khanacademy.org/math",
-          },
-        ],
-      },
-    ],
-    []
-  );
+  // Start with empty exam progress - students will add their own
+  const examProgress: Exam[] = useMemo(() => [], []);
 
   // Combine mock applications with saved applications
   const applications: Application[] = useMemo(() => {
@@ -1558,9 +1363,9 @@ export const EnhancedDashboard = () => {
       examProgress: examProgress,
       stats: {
         activeApplications: applications.length,
-        universitiesTracked: 2500,
+        universitiesTracked: 0, // Start with 0 tracked universities
         documentsUploaded: userProgress.completedDocuments || 0,
-        upcomingDeadlines: 3,
+        upcomingDeadlines: 0, // Start with 0 upcoming deadlines
       },
     });
 
@@ -1734,6 +1539,7 @@ export const EnhancedDashboard = () => {
                 <ExamProgressTracker
                   exams={realTimeData.examProgress}
                   onViewDetails={handleExamDetails}
+                  examProgress={calculateExamProgress()}
                 />
               </div>
             </CardContent>

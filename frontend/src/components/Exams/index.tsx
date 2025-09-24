@@ -351,9 +351,36 @@ export const Exams = () => {
                         <div className="space-y-2">
                           <Button
                             className="w-full bg-primary hover:bg-primary/90"
-                            onClick={() =>
-                              window.open(exam.registrationUrl, "_blank")
-                            }
+                            onClick={() => {
+                              // Track exam registration
+                              const examRegistrations = JSON.parse(
+                                localStorage.getItem("examRegistrations") ||
+                                  "[]"
+                              );
+                              const newRegistration = {
+                                examName: exam.name,
+                                examType: exam.category,
+                                registrationDate: new Date().toISOString(),
+                                registrationUrl: exam.registrationUrl,
+                              };
+
+                              // Check if already registered
+                              const alreadyRegistered = examRegistrations.some(
+                                (reg: { examName: string }) =>
+                                  reg.examName === exam.name
+                              );
+
+                              if (!alreadyRegistered) {
+                                examRegistrations.push(newRegistration);
+                                localStorage.setItem(
+                                  "examRegistrations",
+                                  JSON.stringify(examRegistrations)
+                                );
+                                console.log(`Registered for ${exam.name}`);
+                              }
+
+                              window.open(exam.registrationUrl, "_blank");
+                            }}
                             disabled={!exam.isAvailable}
                           >
                             <Target className="h-4 w-4 mr-2" />
@@ -458,9 +485,36 @@ export const Exams = () => {
                         <div className="space-y-2">
                           <Button
                             className="w-full bg-primary hover:bg-primary/90"
-                            onClick={() =>
-                              window.open(exam.registrationUrl, "_blank")
-                            }
+                            onClick={() => {
+                              // Track exam registration
+                              const examRegistrations = JSON.parse(
+                                localStorage.getItem("examRegistrations") ||
+                                  "[]"
+                              );
+                              const newRegistration = {
+                                examName: exam.name,
+                                examType: exam.category,
+                                registrationDate: new Date().toISOString(),
+                                registrationUrl: exam.registrationUrl,
+                              };
+
+                              // Check if already registered
+                              const alreadyRegistered = examRegistrations.some(
+                                (reg: { examName: string }) =>
+                                  reg.examName === exam.name
+                              );
+
+                              if (!alreadyRegistered) {
+                                examRegistrations.push(newRegistration);
+                                localStorage.setItem(
+                                  "examRegistrations",
+                                  JSON.stringify(examRegistrations)
+                                );
+                                console.log(`Registered for ${exam.name}`);
+                              }
+
+                              window.open(exam.registrationUrl, "_blank");
+                            }}
                             disabled={!exam.isAvailable}
                           >
                             <Target className="h-4 w-4 mr-2" />
@@ -565,9 +619,36 @@ export const Exams = () => {
                         <div className="space-y-2">
                           <Button
                             className="w-full bg-primary hover:bg-primary/90"
-                            onClick={() =>
-                              window.open(exam.registrationUrl, "_blank")
-                            }
+                            onClick={() => {
+                              // Track exam registration
+                              const examRegistrations = JSON.parse(
+                                localStorage.getItem("examRegistrations") ||
+                                  "[]"
+                              );
+                              const newRegistration = {
+                                examName: exam.name,
+                                examType: exam.category,
+                                registrationDate: new Date().toISOString(),
+                                registrationUrl: exam.registrationUrl,
+                              };
+
+                              // Check if already registered
+                              const alreadyRegistered = examRegistrations.some(
+                                (reg: { examName: string }) =>
+                                  reg.examName === exam.name
+                              );
+
+                              if (!alreadyRegistered) {
+                                examRegistrations.push(newRegistration);
+                                localStorage.setItem(
+                                  "examRegistrations",
+                                  JSON.stringify(examRegistrations)
+                                );
+                                console.log(`Registered for ${exam.name}`);
+                              }
+
+                              window.open(exam.registrationUrl, "_blank");
+                            }}
                             disabled={!exam.isAvailable}
                           >
                             <Target className="h-4 w-4 mr-2" />
@@ -672,9 +753,36 @@ export const Exams = () => {
                         <div className="space-y-2">
                           <Button
                             className="w-full bg-primary hover:bg-primary/90"
-                            onClick={() =>
-                              window.open(exam.registrationUrl, "_blank")
-                            }
+                            onClick={() => {
+                              // Track exam registration
+                              const examRegistrations = JSON.parse(
+                                localStorage.getItem("examRegistrations") ||
+                                  "[]"
+                              );
+                              const newRegistration = {
+                                examName: exam.name,
+                                examType: exam.category,
+                                registrationDate: new Date().toISOString(),
+                                registrationUrl: exam.registrationUrl,
+                              };
+
+                              // Check if already registered
+                              const alreadyRegistered = examRegistrations.some(
+                                (reg: { examName: string }) =>
+                                  reg.examName === exam.name
+                              );
+
+                              if (!alreadyRegistered) {
+                                examRegistrations.push(newRegistration);
+                                localStorage.setItem(
+                                  "examRegistrations",
+                                  JSON.stringify(examRegistrations)
+                                );
+                                console.log(`Registered for ${exam.name}`);
+                              }
+
+                              window.open(exam.registrationUrl, "_blank");
+                            }}
                             disabled={!exam.isAvailable}
                           >
                             <Target className="h-4 w-4 mr-2" />
