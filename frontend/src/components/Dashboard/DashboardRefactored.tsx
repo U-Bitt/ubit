@@ -5,7 +5,6 @@ import { ScholarshipModal } from "./ScholarshipModal";
 import { ScheduleExamModal } from "./ScheduleExamModal";
 import { AddApplicationModal } from "./AddApplicationModal";
 import { StatsGrid } from "./StatsGrid";
-import { QuickActionsPanel } from "./QuickActionsPanel";
 import { UpcomingDeadlines } from "./UpcomingDeadlines";
 import { RecentActivity } from "./RecentActivity";
 import { UpcomingTasks } from "./UpcomingTasks";
@@ -20,9 +19,7 @@ import {
   GraduationCap,
   BookOpen,
   Calendar,
-  Plus,
   Upload,
-  Award,
 } from "lucide-react";
 import {
   Application,
@@ -33,7 +30,6 @@ import {
   Deadline,
   ActivityItem,
   Stat,
-  QuickAction,
 } from "./types";
 
 export const DashboardRefactored = () => {
@@ -287,33 +283,6 @@ export const DashboardRefactored = () => {
     { label: "Deadlines", value: "2", icon: Calendar },
   ];
 
-  const quickActions: QuickAction[] = [
-    {
-      label: "Add Application",
-      icon: Plus,
-      action: "add-application",
-      color: "bg-blue-500",
-    },
-    {
-      label: "Upload Documents",
-      icon: Upload,
-      action: "upload-docs",
-      color: "bg-green-500",
-    },
-    {
-      label: "Schedule Exam",
-      icon: Calendar,
-      action: "schedule-exam",
-      color: "bg-purple-500",
-    },
-    {
-      label: "Find Scholarships",
-      icon: Award,
-      action: "find-scholarships",
-      color: "bg-yellow-500",
-    },
-  ];
-
   const upcomingDeadlines: Deadline[] = [
     {
       id: 1,
@@ -454,22 +423,6 @@ export const DashboardRefactored = () => {
     }
   };
 
-  const handleQuickAction = (action: string) => {
-    switch (action) {
-      case "find-scholarships":
-        setIsScholarshipModalOpen(true);
-        break;
-      case "schedule-exam":
-        setIsScheduleModalOpen(true);
-        break;
-      case "add-application":
-        setIsAddApplicationModalOpen(true);
-        break;
-      default:
-        console.log(`Action ${action} not implemented`);
-    }
-  };
-
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setShowSuggestions(query.length > 0);
@@ -520,12 +473,6 @@ export const DashboardRefactored = () => {
             Track your university application progress
           </p>
         </div>
-
-        {/* Quick Actions Panel */}
-        <QuickActionsPanel
-          quickActions={quickActions}
-          onActionClick={handleQuickAction}
-        />
 
         {/* Stats Grid */}
         <StatsGrid stats={stats} />

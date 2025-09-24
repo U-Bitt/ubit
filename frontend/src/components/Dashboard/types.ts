@@ -156,10 +156,3 @@ export interface Stat {
   value: string;
   icon: LucideIcon;
 }
-
-export interface QuickAction {
-  label: string;
-  icon: LucideIcon;
-  action: string;
-  color: string;
-}

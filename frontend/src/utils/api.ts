@@ -115,6 +115,32 @@ export interface UniversitySuggestion {
   matchScore: number;
   reason: string;
   deadline: string;
+  scoreDetails: {
+    gpa: {
+      yourScore: number;
+      required: string;
+      status: "excellent" | "good" | "average" | "below_average";
+      points: number;
+    };
+    sat: {
+      yourScore: number;
+      required: string;
+      status: "excellent" | "good" | "average" | "below_average";
+      points: number;
+    };
+    ielts: {
+      yourScore: number;
+      required: string;
+      status: "excellent" | "good" | "average" | "below_average";
+      points: number;
+    };
+    major: {
+      yourMajor: string;
+      matchingPrograms: string[];
+      status: "perfect_match" | "good_match" | "partial_match" | "no_match";
+      points: number;
+    };
+  };
 }
 
 // Rate limiting protection
@@ -417,7 +443,7 @@ export const testScoreApi = {
     const response = await apiCall<{
       success: boolean;
       data: Record<string, unknown>[];
-    }>("/users/test-scores/me", {
+    }>("/test-scores", {
       headers: {
         "x-user-id": userId,
       },

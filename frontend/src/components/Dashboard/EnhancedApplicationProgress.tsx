@@ -3,20 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Application } from "./types";
-import { 
-  Eye, 
-  ExternalLink, 
-  Calendar, 
-  MapPin, 
-  DollarSign, 
-  Users, 
-  Star,
+import {
+  Eye,
+  ExternalLink,
+  MapPin,
   CheckCircle,
   Clock,
   AlertCircle,
   ChevronRight,
   TrendingUp,
-  Target
+  Target,
 } from "lucide-react";
 
 interface EnhancedApplicationProgressProps {
@@ -33,7 +29,7 @@ export const EnhancedApplicationProgress = ({
       case "submitted":
         return "bg-green-100 text-green-800 border-green-200";
       case "in progress":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return "bg-primary/10 text-primary border-primary/20";
       case "pending":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "draft":
@@ -56,7 +52,6 @@ export const EnhancedApplicationProgress = ({
     }
   };
 
-
   return (
     <div className="mb-8">
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
@@ -76,29 +71,35 @@ export const EnhancedApplicationProgress = ({
         </CardHeader>
         <CardContent className="space-y-6">
           {applications.map((app, index) => (
-            <div 
-              key={index} 
-              className="group p-6 rounded-xl border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 bg-white/50 hover:bg-white/80"
+            <div
+              key={index}
+              className="group p-6 rounded-xl border border-slate-200 hover:border-primary/30 hover:shadow-lg transition-all duration-300 bg-white/50 hover:bg-white/80"
             >
               {/* Header */}
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-lg">
+                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white font-bold text-lg">
                     {app.university.charAt(0)}
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg text-slate-900 group-hover:text-blue-600 transition-colors duration-300">
+                    <h4 className="font-bold text-lg text-slate-900 group-hover:text-primary transition-colors duration-300">
                       {app.university}
                     </h4>
-                    <p className="text-sm text-slate-600 font-medium">{app.program}</p>
+                    <p className="text-sm text-slate-600 font-medium">
+                      {app.program}
+                    </p>
                     <div className="flex items-center gap-2 mt-1">
                       <MapPin className="h-3 w-3 text-slate-400" />
-                      <span className="text-xs text-slate-500">{app.location}</span>
+                      <span className="text-xs text-slate-500">
+                        {app.location}
+                      </span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge className={`${getStatusColor(app.status)} flex items-center gap-1`}>
+                  <Badge
+                    className={`${getStatusColor(app.status)} flex items-center gap-1`}
+                  >
                     {getStatusIcon(app.status)}
                     {app.status}
                   </Badge>
@@ -117,50 +118,22 @@ export const EnhancedApplicationProgress = ({
               {/* Progress Section */}
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-slate-700">Progress</span>
+                  <span className="text-sm font-medium text-slate-700">
+                    Progress
+                  </span>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-slate-900">{Math.round(app.progress)}%</span>
+                    <span className="text-sm font-bold text-slate-900">
+                      {Math.round(app.progress)}%
+                    </span>
                     <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500"
+                      <div
+                        className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500"
                         style={{ width: `${Math.round(app.progress)}%` }}
                       ></div>
                     </div>
                   </div>
                 </div>
                 <Progress value={Math.round(app.progress)} className="h-2" />
-              </div>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                <div className="text-center p-3 rounded-lg bg-slate-50 group-hover:bg-blue-50 transition-colors duration-300">
-                  <div className="flex items-center justify-center gap-1 text-slate-600 mb-1">
-                    <Calendar className="h-3 w-3" />
-                    <span className="text-xs font-medium">Deadline</span>
-                  </div>
-                  <p className="text-sm font-bold text-slate-900">{app.deadline}</p>
-                </div>
-                <div className="text-center p-3 rounded-lg bg-slate-50 group-hover:bg-blue-50 transition-colors duration-300">
-                  <div className="flex items-center justify-center gap-1 text-slate-600 mb-1">
-                    <DollarSign className="h-3 w-3" />
-                    <span className="text-xs font-medium">Tuition</span>
-                  </div>
-                  <p className="text-sm font-bold text-slate-900">{app.tuition}</p>
-                </div>
-                <div className="text-center p-3 rounded-lg bg-slate-50 group-hover:bg-blue-50 transition-colors duration-300">
-                  <div className="flex items-center justify-center gap-1 text-slate-600 mb-1">
-                    <Users className="h-3 w-3" />
-                    <span className="text-xs font-medium">Acceptance</span>
-                  </div>
-                  <p className="text-sm font-bold text-slate-900">{app.acceptance}</p>
-                </div>
-                <div className="text-center p-3 rounded-lg bg-slate-50 group-hover:bg-blue-50 transition-colors duration-300">
-                  <div className="flex items-center justify-center gap-1 text-slate-600 mb-1">
-                    <Star className="h-3 w-3" />
-                    <span className="text-xs font-medium">Ranking</span>
-                  </div>
-                  <p className="text-sm font-bold text-slate-900">#{app.ranking}</p>
-                </div>
               </div>
 
               {/* Action Buttons */}
@@ -179,7 +152,7 @@ export const EnhancedApplicationProgress = ({
                     size="sm"
                     variant="ghost"
                     className="gap-2"
-                    onClick={() => window.open(app.website, '_blank')}
+                    onClick={() => window.open(app.website, "_blank")}
                   >
                     <ExternalLink className="h-4 w-4" />
                     Website
@@ -188,7 +161,7 @@ export const EnhancedApplicationProgress = ({
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="group-hover:bg-blue-50 transition-colors duration-300"
+                  className="group-hover:bg-primary/5 transition-colors duration-300"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>

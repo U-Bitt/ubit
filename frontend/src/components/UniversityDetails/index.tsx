@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useSavedUniversities } from "@/hooks/useSavedUniversities";
 import { universityApi, scholarshipApi, University } from "@/utils/api";
+import { Application } from "@/components/Dashboard/types";
 
 interface UniversityDetailsProps {
   universityId: string;
@@ -40,6 +41,127 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
     }[]
   >([]);
   const [scholarshipsLoading, setScholarshipsLoading] = useState(false);
+  const [applications, setApplications] = useState<Application[]>([]);
+
+  // Load applications from localStorage on component mount
+  useEffect(() => {
+    const savedApplications = localStorage.getItem("applications");
+    if (savedApplications) {
+      try {
+        setApplications(JSON.parse(savedApplications));
+      } catch (error) {
+        console.error("Error loading applications from localStorage:", error);
+      }
+    }
+  }, []);
+
+  // Save applications to localStorage whenever applications change
+  useEffect(() => {
+    localStorage.setItem("applications", JSON.stringify(applications));
+  }, [applications]);
+
+  // Handler functions for Quick Actions
+  const handleStartApplication = () => {
+    if (!university) return;
+
+    // Check if application already exists
+    const existingApplication = applications.find(
+      app => app.university === university.name
+    );
+    if (existingApplication) {
+      alert(`You already have an application for ${university.name}!`);
+      return;
+    }
+
+    // Create new application
+    const newApplication: Application = {
+      id: Date.now(), // Simple ID generation
+      image: university.image,
+      university: university.name,
+      program: university.programs[0] || "General Studies", // Use first program or default
+      ranking: university.ranking,
+      status: "in_progress",
+      location: university.location,
+      tuition: university.tuition,
+      acceptance: university.acceptance,
+      deadline: university.deadline,
+      progress: 0,
+      description:
+        university.description || `Application for ${university.name}`,
+      requirements: university.requirements || [
+        "High School Transcript",
+        "SAT/ACT Scores",
+        "Personal Statement",
+        "Letters of Recommendation",
+        "Portfolio (for certain programs)",
+      ],
+      documents: [
+        { name: "High School Transcript", status: "pending", required: true },
+        { name: "SAT/ACT Scores", status: "pending", required: true },
+        { name: "Personal Statement", status: "pending", required: true },
+        {
+          name: "Letters of Recommendation",
+          status: "pending",
+          required: true,
+        },
+        { name: "Portfolio", status: "pending", required: false },
+      ],
+      milestones: [
+        {
+          title: "Application Started",
+          date: new Date().toISOString().split("T")[0],
+          completed: true,
+        },
+        { title: "Documents Collected", date: "", completed: false },
+        { title: "Application Submitted", date: "", completed: false },
+        { title: "Interview Scheduled", date: "", completed: false },
+        { title: "Decision Received", date: "", completed: false },
+      ],
+      website: `https://www.${university.name.toLowerCase().replace(/\s+/g, "")}.edu`,
+    };
+
+    // Add to applications
+    setApplications(prev => [...prev, newApplication]);
+
+    // Show success message
+    alert(
+      `Application started for ${university.name}! You can track your progress in the dashboard.`
+    );
+
+    // Navigate to dashboard
+    router.push("/manage/dashboard");
+  };
+
+  const handleContactAdmissions = () => {
+    if (!university) return;
+
+    // Create email subject and body
+    const subject = `Inquiry about ${university.name} - Application Information`;
+    const body = `Dear ${university.name} Admissions Office,
+
+I am writing to inquire about the application process for your university. I am particularly interested in the following programs:
+${university.programs
+  .slice(0, 3)
+  .map(program => `- ${program}`)
+  .join("\n")}
+
+Could you please provide me with:
+1. Detailed application requirements
+2. Application deadlines
+3. Required documents
+4. Any specific admission criteria
+
+Thank you for your time and assistance.
+
+Best regards,
+[Your Name]`;
+
+    // Create mailto link
+    const mailtoLink = `mailto:admissions@${university.name.toLowerCase().replace(/\s+/g, "")}.edu?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    // Open email client
+    window.open(mailtoLink, "_blank");
+  };
 
   // Fetch linked scholarships for the university
   const fetchLinkedScholarships = async (universityName: string) => {
@@ -219,10 +341,17 @@ export const UniversityDetails = ({ universityId }: UniversityDetailsProps) => {
               <CardContent className="p-6">
                 <h3 className="text-xl font-bold mb-4">Quick Actions</h3>
                 <div className="space-y-3">
-                  <Button className="w-full bg-primary hover:bg-primary/90">
+                  <Button
+                    className="w-full bg-primary hover:bg-primary/90"
+                    onClick={handleStartApplication}
+                  >
                     Start Application
                   </Button>
-                  <Button variant="outline" className="w-full">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleContactAdmissions}
+                  >
                     Contact Admissions
                   </Button>
                 </div>
