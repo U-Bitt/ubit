@@ -66,9 +66,7 @@ export const EnhancedDashboard = () => {
           selectedProgram,
         };
         localStorage.setItem("dashboardFilters", JSON.stringify(filtersToSave));
-        console.log("🔍 Saved filters to localStorage:", filtersToSave);
       } catch (error) {
-        console.error("❌ Error saving filters to localStorage:", error);
       }
     }
   }, [searchQuery, selectedCountry, selectedProgram, isDataLoaded]);
@@ -159,7 +157,6 @@ export const EnhancedDashboard = () => {
         setIsAddApplicationModalOpen(true);
         break;
       case "upload-documents":
-        console.log("Opening document upload...");
         // Add document upload logic
         break;
       case "schedule-exam":
@@ -169,32 +166,26 @@ export const EnhancedDashboard = () => {
         setIsScholarshipModalOpen(true);
         break;
       case "ai-suggestions":
-        console.log("Opening AI suggestions...");
         // Add AI suggestions logic
         break;
       case "export-data":
-        console.log("Exporting data...");
         // Add export logic
         break;
       default:
-        console.log(`Action ${action} not implemented`);
     }
   };
 
   // Handle university actions
   const handleEditUniversity = (university: { name: string; id: string }) => {
-    console.log("Editing university:", university.name);
     // Open edit modal or navigate to edit page
     alert(`Editing ${university.name} - This would open an edit form`);
   };
 
   // Placeholder handlers for future functionality
   // const handleViewUniversity = (university: { name: string; id: string }) => {
-  //   console.log("Viewing university details:", university.name);
   // };
 
   const handleRemoveUniversity = (universityId: string) => {
-    console.log("Removing university:", universityId);
     setSavedUniversities((prev: SavedUniversity[]) => {
       const updatedList = prev.filter(
         (uni: SavedUniversity) => uni.id !== universityId
@@ -614,7 +605,6 @@ export const EnhancedDashboard = () => {
     name: string;
     id: string;
   }) => {
-    console.log("Applying to university:", university.name);
     // Add university to saved universities
     const universityRanking = getUniversityRanking(university.name);
     const universityDetails = getUniversityDetails(university.name);
@@ -656,7 +646,6 @@ export const EnhancedDashboard = () => {
   };
 
   const handleViewAllUniversities = () => {
-    console.log("Viewing all universities...");
     // Navigate to universities page or open modal
     alert(
       "Opening all universities view - This would show the complete university database"
@@ -666,7 +655,6 @@ export const EnhancedDashboard = () => {
   // Load popular universities with fallback data
   const loadPopularUniversities = async () => {
     setIsLoadingExternal(true);
-    console.log("🔄 Loading universities...");
 
     // Fallback university data with real information
     const fallbackUniversities: University[] = [
@@ -859,17 +847,14 @@ export const EnhancedDashboard = () => {
 
     try {
       // Try to fetch from API first, but use fallback if it fails
-      console.log("🌐 Attempting to connect to university API...");
 
       setTimeout(() => {
-        console.log("📚 Using curated university database");
         setPopularUniversities(fallbackUniversities);
         setIsLoadingExternal(false);
       }, 1000); // Simulate loading time
 
       return fallbackUniversities;
     } catch (error) {
-      console.error("💥 API unavailable, using curated data:", error);
       setPopularUniversities(fallbackUniversities);
       return fallbackUniversities;
     }
@@ -920,7 +905,6 @@ export const EnhancedDashboard = () => {
 
       return transformedData;
     } catch (error) {
-      console.error("Error fetching external universities:", error);
       alert("Failed to fetch external university data. Please try again.");
       return [];
     } finally {
@@ -971,7 +955,6 @@ export const EnhancedDashboard = () => {
       try {
         setSavedApplications(JSON.parse(saved));
       } catch (error) {
-        console.error("Error loading applications from localStorage:", error);
       }
     }
   }, []);
@@ -1248,13 +1231,11 @@ export const EnhancedDashboard = () => {
           "popularUniversities",
           JSON.stringify(popularUniversities)
         );
-        console.log(
           "🌍 Saved popular universities to localStorage:",
           popularUniversities.length,
           "universities"
         );
       } catch (error) {
-        console.error(
           "❌ Error saving popular universities to localStorage:",
           error
         );
@@ -1436,7 +1417,6 @@ export const EnhancedDashboard = () => {
       const savedUnis = localStorage.getItem("savedUniversities");
       if (savedUnis) {
         const parsedUnis = JSON.parse(savedUnis);
-        console.log(
           "📚 Loaded saved universities from localStorage:",
           parsedUnis.length,
           "universities"
@@ -1448,7 +1428,6 @@ export const EnhancedDashboard = () => {
       const popularUnis = localStorage.getItem("popularUniversities");
       if (popularUnis) {
         const parsedPopular = JSON.parse(popularUnis);
-        console.log(
           "🌍 Loaded popular universities from localStorage:",
           parsedPopular.length,
           "universities"
@@ -1460,7 +1439,6 @@ export const EnhancedDashboard = () => {
       const savedFilters = localStorage.getItem("dashboardFilters");
       if (savedFilters) {
         const parsedFilters = JSON.parse(savedFilters);
-        console.log("🔍 Loaded filters from localStorage:", parsedFilters);
         setSearchQuery(parsedFilters.searchQuery || "");
         setSelectedCountry(parsedFilters.selectedCountry || "all");
         setSelectedProgram(parsedFilters.selectedProgram || "all");
@@ -1468,7 +1446,6 @@ export const EnhancedDashboard = () => {
 
       setIsDataLoaded(true);
     } catch (error) {
-      console.error("❌ Error loading data from localStorage:", error);
       setIsDataLoaded(true);
     }
   }, []);
@@ -1481,13 +1458,11 @@ export const EnhancedDashboard = () => {
           "savedUniversities",
           JSON.stringify(savedUniversities)
         );
-        console.log(
           "💾 Saved universities to localStorage:",
           savedUniversities.length,
           "universities"
         );
       } catch (error) {
-        console.error("❌ Error saving universities to localStorage:", error);
       }
     }
   }, [savedUniversities, isDataLoaded]);
@@ -1520,10 +1495,8 @@ export const EnhancedDashboard = () => {
   // Load universities from API only if not in localStorage (after initial data load)
   useEffect(() => {
     if (isDataLoaded && popularUniversities.length === 0) {
-      console.log("📡 No universities in localStorage, loading from API...");
       loadPopularUniversities();
     } else if (isDataLoaded && popularUniversities.length > 0) {
-      console.log(
         "✅ Universities already loaded from localStorage, skipping API call"
       );
     }
@@ -1610,11 +1583,9 @@ export const EnhancedDashboard = () => {
   };
 
   const openExternalLink = (url: string) => {
-    console.log("Opening URL:", url);
     if (url && url.startsWith("http")) {
       window.open(url, "_blank", "noopener,noreferrer");
     } else {
-      console.error("Invalid URL:", url);
     }
   };
 
@@ -2087,16 +2058,12 @@ export const EnhancedDashboard = () => {
               },
             ]}
             onStepComplete={(milestoneId, stepId) => {
-              console.log(`✅ Step completed: ${milestoneId}-${stepId}`);
             }}
             onStepUncomplete={(milestoneId, stepId) => {
-              console.log(`❌ Step uncompleted: ${milestoneId}-${stepId}`);
             }}
             onMilestoneComplete={milestoneId => {
-              console.log(`🎯 Milestone completed: ${milestoneId}`);
             }}
             onMilestoneUncomplete={milestoneId => {
-              console.log(`🔄 Milestone uncompleted: ${milestoneId}`);
             }}
           />
         </div>
