@@ -48,14 +48,6 @@ app.use((0, helmet_1.default)({
     crossOriginResourcePolicy: false,
     frameguard: false,
 }));
-console.log(process.env.CORS_ORIGIN, "https://frontend-kv7i3wt0r-tugstuguldurs-projects.vercel.app");
-app.options('*', (req, res) => {
-    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, x-user-id');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.status(200).end();
-});
 app.use((0, cors_1.default)({
     origin: function (origin, callback) {
         if (!origin)
