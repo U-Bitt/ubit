@@ -1,12 +1,7 @@
 // API utility functions for the Ubit education platform
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
-
-console.log("Environment variables:", {
-  NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-  NODE_ENV: process.env.NODE_ENV,
-  API_BASE_URL: API_BASE_URL,
-});
+// Use relative URL for better compatibility - Next.js will proxy to backend
+const API_BASE_URL = "/api";
 
 export interface University {
   id: string;
@@ -161,9 +156,6 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
   }
   lastApiCall = Date.now();
 
-  console.log("Making API call to:", url);
-  console.log("API_BASE_URL:", API_BASE_URL);
-
   try {
     const response = await fetch(url, {
       headers: {
@@ -172,12 +164,6 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
       },
       ...options,
     });
-
-    console.log("API response status:", response.status);
-    console.log(
-      "API response headers:",
-      Object.fromEntries(response.headers.entries())
-    );
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -191,15 +177,9 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
     }
 
     const data = await response.json();
-    console.log("API response data:", data);
     return data;
   } catch (error) {
-    console.error("API call error:", error);
-    if (error instanceof TypeError && error.message.includes("fetch")) {
-      throw new Error(
-        "Network error: Unable to connect to the server. Please check if the backend is running."
-      );
-    }
+    // Silently handle errors - let components handle UI state
     throw error;
   }
 }
@@ -304,7 +284,6 @@ export const userApi = {
     return response.data;
   },
   update: async (id: string, userData: Partial<User>): Promise<User> => {
-    console.log("API update call - ID:", id, "Data:", userData);
     const response = await apiCall<{ success: boolean; data: User }>(
       `/users/${id}`,
       {

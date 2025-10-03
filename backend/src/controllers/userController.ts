@@ -1,7 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { SignOptions } from "jsonwebtoken";
 import User, { IUser } from "../models/User";
-import { User as UserType, Application, ApiResponse, SearchQuery } from "../types";
+import {
+  User as UserType,
+  Application,
+  ApiResponse,
+  SearchQuery,
+} from "../types";
 
 // JWT Secret (should be in environment variables)
 const JWT_SECRET: string = process.env.JWT_SECRET || "your-secret-key";
@@ -14,19 +19,24 @@ const generateToken = (userId: string): string => {
 
 // Register a new user
 export const registerUser = async (
-  req: Request<{}, ApiResponse<{ user: UserType; token: string }>, {
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-    nationality?: string;
-    phone?: string;
-  }>,
+  req: Request<
+    {},
+    ApiResponse<{ user: UserType; token: string }>,
+    {
+      email: string;
+      password: string;
+      firstName: string;
+      lastName: string;
+      nationality?: string;
+      phone?: string;
+    }
+  >,
   res: Response<ApiResponse<{ user: UserType; token: string }>>,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { email, password, firstName, lastName, nationality, phone } = req.body;
+    const { email, password, firstName, lastName, nationality, phone } =
+      req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -87,10 +97,14 @@ export const registerUser = async (
 
 // Login user
 export const loginUser = async (
-  req: Request<{}, ApiResponse<{ user: UserType; token: string }>, {
-    email: string;
-    password: string;
-  }>,
+  req: Request<
+    {},
+    ApiResponse<{ user: UserType; token: string }>,
+    {
+      email: string;
+      password: string;
+    }
+  >,
   res: Response<ApiResponse<{ user: UserType; token: string }>>,
   next: NextFunction
 ): Promise<void> => {
@@ -174,7 +188,12 @@ export const getAllUsers = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { page = 1, limit = 10, sort = "createdAt", order = "desc" } = req.query;
+    const {
+      page = 1,
+      limit = 10,
+      sort = "createdAt",
+      order = "desc",
+    } = req.query;
 
     // Build sort object for MongoDB
     const sortObj: any = {};
@@ -269,13 +288,15 @@ export const getUserById = async (
       nationality: user.nationality,
       phone: user.phone,
       avatar: user.avatar,
-      personalInfo: user.personalInfo ? {
-        ...user.personalInfo,
-        dateOfBirth: user.personalInfo.dateOfBirth?.toISOString(),
-      } : undefined,
+      personalInfo: user.personalInfo
+        ? {
+            ...user.personalInfo,
+            dateOfBirth: user.personalInfo.dateOfBirth?.toISOString(),
+          }
+        : undefined,
       academicInfo: user.academicInfo,
       areasOfInterest: user.areasOfInterest,
-      testScores: user.testScores?.map(score => ({
+      testScores: user.testScores?.map((score) => ({
         id: score.id,
         testName: score.examType,
         score: score.score,
@@ -283,11 +304,11 @@ export const getUserById = async (
         maxScore: score.maxScore,
         percentile: 0, // Default value since it's not in the model
       })),
-      documents: user.documents?.map(doc => ({
+      documents: user.documents?.map((doc) => ({
         ...doc,
         uploadedAt: doc.uploadedAt.toISOString(),
       })),
-      savedUniversities: user.savedUniversities?.map(saved => ({
+      savedUniversities: user.savedUniversities?.map((saved) => ({
         ...saved,
         savedAt: saved.savedAt.toISOString(),
       })),
@@ -333,11 +354,10 @@ export const updateUserById = async (
     }
 
     // Find and update user
-    const user = await User.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true }
-    ).lean();
+    const user = await User.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    }).lean();
 
     if (!user) {
       res.status(404).json({
@@ -357,10 +377,12 @@ export const updateUserById = async (
       nationality: user.nationality,
       phone: user.phone,
       avatar: user.avatar,
-      personalInfo: user.personalInfo ? {
-        ...user.personalInfo,
-        dateOfBirth: user.personalInfo.dateOfBirth?.toISOString(),
-      } : undefined,
+      personalInfo: user.personalInfo
+        ? {
+            ...user.personalInfo,
+            dateOfBirth: user.personalInfo.dateOfBirth?.toISOString(),
+          }
+        : undefined,
       academicInfo: user.academicInfo,
       areasOfInterest: user.areasOfInterest,
       preferences: user.preferences,
@@ -393,8 +415,9 @@ export const getUserProfile = async (
   try {
     // This would typically get user ID from JWT token
     // For now, we'll use a mock user ID
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
-    
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
+
     const user = await User.findById(userId).lean();
 
     if (!user) {
@@ -443,7 +466,8 @@ export const updateUserProfile = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
     const updates = req.body;
 
     // Remove fields that shouldn't be updated directly
@@ -550,8 +574,9 @@ export const getUserApplications = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
-    
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
+
     const user = await User.findById(userId).lean();
 
     if (!user) {
@@ -585,7 +610,8 @@ export const createApplication = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
     const applicationData = req.body;
 
     const newApplication: Application = {
@@ -600,9 +626,9 @@ export const createApplication = async (
 
     const user = await User.findByIdAndUpdate(
       userId,
-      { 
+      {
         $push: { applications: newApplication },
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       { new: true }
     );
@@ -633,25 +659,30 @@ export const createApplication = async (
 
 // Update application
 export const updateApplication = async (
-  req: Request<{ appId: string }, ApiResponse<Application>, Partial<Application>>,
+  req: Request<
+    { appId: string },
+    ApiResponse<Application>,
+    Partial<Application>
+  >,
   res: Response<ApiResponse<Application>>,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
     const { appId } = req.params;
     const updates = req.body;
 
     const user = await User.findOneAndUpdate(
-      { 
-        _id: userId, 
-        "applications.id": appId 
+      {
+        _id: userId,
+        "applications.id": appId,
       },
-      { 
-        $set: { 
+      {
+        $set: {
           "applications.$": { ...updates, id: appId },
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       },
       { new: true }
     );
@@ -665,7 +696,9 @@ export const updateApplication = async (
       return;
     }
 
-    const updatedApplication = user.applications?.find(app => app.id === appId);
+    const updatedApplication = user.applications?.find(
+      (app) => app.id === appId
+    );
 
     res.status(200).json({
       success: true,
@@ -689,14 +722,15 @@ export const deleteApplication = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
     const { appId } = req.params;
 
     const user = await User.findByIdAndUpdate(
       userId,
-      { 
+      {
         $pull: { applications: { id: appId } },
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       { new: true }
     );
@@ -732,8 +766,9 @@ export const getTestScores = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
-    
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
+
     const user = await User.findById(userId).lean();
 
     if (!user) {
@@ -761,19 +796,24 @@ export const getTestScores = async (
 };
 
 export const addTestScore = async (
-  req: Request<{}, ApiResponse<any>, {
-    examType: string;
-    score: string;
-    maxScore: string;
-    certified: boolean;
-    testDate: string;
-    validityDate: string;
-  }>,
+  req: Request<
+    {},
+    ApiResponse<any>,
+    {
+      examType: string;
+      score: string;
+      maxScore: string;
+      certified: boolean;
+      testDate: string;
+      validityDate: string;
+    }
+  >,
   res: Response<ApiResponse<any>>,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
     const testScoreData = req.body;
 
     const newTestScore = {
@@ -786,13 +826,16 @@ export const addTestScore = async (
       validityDate: testScoreData.validityDate,
     };
 
-    console.log("Creating new test score:", JSON.stringify(newTestScore, null, 2));
+    console.log(
+      "Creating new test score:",
+      JSON.stringify(newTestScore, null, 2)
+    );
 
     const user = await User.findByIdAndUpdate(
       userId,
-      { 
+      {
         $push: { testScores: newTestScore },
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       { new: true }
     );
@@ -806,8 +849,11 @@ export const addTestScore = async (
       return;
     }
 
-    console.log("Returning response with data:", JSON.stringify(newTestScore, null, 2));
-    
+    console.log(
+      "Returning response with data:",
+      JSON.stringify(newTestScore, null, 2)
+    );
+
     res.status(201).json({
       success: true,
       data: newTestScore,
@@ -824,40 +870,50 @@ export const addTestScore = async (
 };
 
 export const updateTestScore = async (
-  req: Request<{ id: string }, ApiResponse<any>, {
-    examType?: string;
-    score?: string;
-    maxScore?: string;
-    certified?: boolean;
-    testDate?: string;
-    validityDate?: string;
-  }>,
+  req: Request<
+    { id: string },
+    ApiResponse<any>,
+    {
+      examType?: string;
+      score?: string;
+      maxScore?: string;
+      certified?: boolean;
+      testDate?: string;
+      validityDate?: string;
+    }
+  >,
   res: Response<ApiResponse<any>>,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
     const { id: testId } = req.params;
     const updates = req.body;
 
     const updateData: any = {};
-    if (updates.examType) updateData["testScores.$.examType"] = updates.examType;
+    if (updates.examType)
+      updateData["testScores.$.examType"] = updates.examType;
     if (updates.score) updateData["testScores.$.score"] = updates.score;
-    if (updates.maxScore) updateData["testScores.$.maxScore"] = updates.maxScore;
-    if (updates.certified !== undefined) updateData["testScores.$.certified"] = updates.certified;
-    if (updates.testDate) updateData["testScores.$.testDate"] = updates.testDate;
-    if (updates.validityDate) updateData["testScores.$.validityDate"] = updates.validityDate;
+    if (updates.maxScore)
+      updateData["testScores.$.maxScore"] = updates.maxScore;
+    if (updates.certified !== undefined)
+      updateData["testScores.$.certified"] = updates.certified;
+    if (updates.testDate)
+      updateData["testScores.$.testDate"] = updates.testDate;
+    if (updates.validityDate)
+      updateData["testScores.$.validityDate"] = updates.validityDate;
 
     const user = await User.findOneAndUpdate(
-      { 
-        _id: userId, 
-        "testScores.id": testId 
+      {
+        _id: userId,
+        "testScores.id": testId,
       },
-      { 
-        $set: { 
+      {
+        $set: {
           ...updateData,
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       },
       { new: true }
     );
@@ -871,7 +927,9 @@ export const updateTestScore = async (
       return;
     }
 
-    const updatedTestScore = user.testScores?.find(score => score.id === testId);
+    const updatedTestScore = user.testScores?.find(
+      (score) => score.id === testId
+    );
 
     res.status(200).json({
       success: true,
@@ -894,14 +952,15 @@ export const deleteTestScore = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
     const { id: testId } = req.params;
 
     const user = await User.findByIdAndUpdate(
       userId,
-      { 
+      {
         $pull: { testScores: { id: testId } },
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       { new: true }
     );
@@ -937,11 +996,12 @@ export const getDocuments = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
-    
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
+
     // Import Document model
     const Document = require("../models/Document").default;
-    
+
     // Fetch documents from Document collection
     const documents = await Document.find({
       uploadedBy: userId,
@@ -964,16 +1024,21 @@ export const getDocuments = async (
 };
 
 export const addDocument = async (
-  req: Request<{}, ApiResponse<any>, {
-    name: string;
-    type: string;
-    url?: string;
-  }>,
+  req: Request<
+    {},
+    ApiResponse<any>,
+    {
+      name: string;
+      type: string;
+      url?: string;
+    }
+  >,
   res: Response<ApiResponse<any>>,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
     const documentData = req.body;
 
     // Import Document model
@@ -990,7 +1055,9 @@ export const addDocument = async (
       filePath: documentData.url || "",
       uploadedBy: userId,
       metadata: {
-        description: documentData.url ? "External URL document" : "Draft document",
+        description: documentData.url
+          ? "External URL document"
+          : "Draft document",
       },
     });
 
@@ -1012,17 +1079,22 @@ export const addDocument = async (
 };
 
 export const updateDocument = async (
-  req: Request<{ docId: string }, ApiResponse<any>, {
-    name?: string;
-    type?: string;
-    url?: string;
-    status?: string;
-  }>,
+  req: Request<
+    { docId: string },
+    ApiResponse<any>,
+    {
+      name?: string;
+      type?: string;
+      url?: string;
+      status?: string;
+    }
+  >,
   res: Response<ApiResponse<any>>,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
     const { docId } = req.params;
     const updates = req.body;
 
@@ -1036,9 +1108,9 @@ export const updateDocument = async (
     if (updates.status) updateData.status = updates.status;
 
     const updatedDocument = await Document.findOneAndUpdate(
-      { 
+      {
         _id: docId,
-        uploadedBy: userId
+        uploadedBy: userId,
       },
       updateData,
       { new: true }
@@ -1074,7 +1146,8 @@ export const deleteDocument = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
     const { docId } = req.params;
 
     // Import Document model
@@ -1082,7 +1155,7 @@ export const deleteDocument = async (
 
     const document = await Document.findOneAndDelete({
       _id: docId,
-      uploadedBy: userId
+      uploadedBy: userId,
     });
 
     if (!document) {
@@ -1116,10 +1189,9 @@ export const getSavedUniversities = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
 
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
-
-    
     const user = await User.findById(userId).lean();
 
     if (!user) {
@@ -1150,16 +1222,21 @@ export const getSavedUniversities = async (
 };
 
 export const saveUniversity = async (
-  req: Request<{}, ApiResponse<any>, {
-    universityId: string;
-    universityName: string;
-    notes?: string;
-  }>,
+  req: Request<
+    {},
+    ApiResponse<any>,
+    {
+      universityId: string;
+      universityName: string;
+      notes?: string;
+    }
+  >,
   res: Response<ApiResponse<any>>,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
     const universityData = req.body;
 
     const newSavedUniversity = {
@@ -1172,9 +1249,9 @@ export const saveUniversity = async (
 
     const user = await User.findByIdAndUpdate(
       userId,
-      { 
+      {
         $push: { savedUniversities: newSavedUniversity },
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       { new: true }
     );
@@ -1209,14 +1286,15 @@ export const unsaveUniversity = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
     const { savedId } = req.params;
 
     const user = await User.findByIdAndUpdate(
       userId,
-      { 
+      {
         $pull: { savedUniversities: { id: savedId } },
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       { new: true }
     );
@@ -1247,36 +1325,45 @@ export const unsaveUniversity = async (
 
 // Update personal information
 export const updatePersonalInfo = async (
-  req: Request<{}, ApiResponse<any>, {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    phone?: string;
-    dateOfBirth?: string;
-    nationality?: string;
-  }>,
+  req: Request<
+    {},
+    ApiResponse<any>,
+    {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      phone?: string;
+      dateOfBirth?: string;
+      nationality?: string;
+    }
+  >,
   res: Response<ApiResponse<any>>,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
     const updates = req.body;
 
     const updateData: any = {};
-    if (updates.firstName) updateData["personalInfo.firstName"] = updates.firstName;
-    if (updates.lastName) updateData["personalInfo.lastName"] = updates.lastName;
+    if (updates.firstName)
+      updateData["personalInfo.firstName"] = updates.firstName;
+    if (updates.lastName)
+      updateData["personalInfo.lastName"] = updates.lastName;
     if (updates.email) updateData["personalInfo.email"] = updates.email;
     if (updates.phone) updateData["personalInfo.phone"] = updates.phone;
-    if (updates.dateOfBirth) updateData["personalInfo.dateOfBirth"] = new Date(updates.dateOfBirth);
-    if (updates.nationality) updateData["personalInfo.nationality"] = updates.nationality;
+    if (updates.dateOfBirth)
+      updateData["personalInfo.dateOfBirth"] = new Date(updates.dateOfBirth);
+    if (updates.nationality)
+      updateData["personalInfo.nationality"] = updates.nationality;
 
     const user = await User.findByIdAndUpdate(
       userId,
-      { 
-        $set: { 
+      {
+        $set: {
           ...updateData,
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       },
       { new: true }
     );
@@ -1307,32 +1394,40 @@ export const updatePersonalInfo = async (
 
 // Update academic information
 export const updateAcademicInfo = async (
-  req: Request<{}, ApiResponse<any>, {
-    gpa?: number;
-    highSchoolName?: string;
-    graduationYear?: number;
-    intendedMajors?: string[];
-  }>,
+  req: Request<
+    {},
+    ApiResponse<any>,
+    {
+      gpa?: number;
+      highSchoolName?: string;
+      graduationYear?: number;
+      intendedMajors?: string[];
+    }
+  >,
   res: Response<ApiResponse<any>>,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
     const updates = req.body;
 
     const updateData: any = {};
     if (updates.gpa !== undefined) updateData["academicInfo.gpa"] = updates.gpa;
-    if (updates.highSchoolName) updateData["academicInfo.highSchoolName"] = updates.highSchoolName;
-    if (updates.graduationYear) updateData["academicInfo.graduationYear"] = updates.graduationYear;
-    if (updates.intendedMajors) updateData["academicInfo.intendedMajors"] = updates.intendedMajors;
+    if (updates.highSchoolName)
+      updateData["academicInfo.highSchoolName"] = updates.highSchoolName;
+    if (updates.graduationYear)
+      updateData["academicInfo.graduationYear"] = updates.graduationYear;
+    if (updates.intendedMajors)
+      updateData["academicInfo.intendedMajors"] = updates.intendedMajors;
 
     const user = await User.findByIdAndUpdate(
       userId,
-      { 
-        $set: { 
+      {
+        $set: {
           ...updateData,
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       },
       { new: true }
     );
@@ -1363,23 +1458,28 @@ export const updateAcademicInfo = async (
 
 // Update areas of interest
 export const updateAreasOfInterest = async (
-  req: Request<{}, ApiResponse<string[]>, {
-    areasOfInterest: string[];
-  }>,
+  req: Request<
+    {},
+    ApiResponse<string[]>,
+    {
+      areasOfInterest: string[];
+    }
+  >,
   res: Response<ApiResponse<string[]>>,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.headers["x-user-id"] as string || "68d24c510a783721f2e82368";
+    const userId =
+      (req.headers["x-user-id"] as string) || "68d24c510a783721f2e82368";
     const { areasOfInterest } = req.body;
 
     const user = await User.findByIdAndUpdate(
       userId,
-      { 
-        $set: { 
+      {
+        $set: {
           areasOfInterest,
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       },
       { new: true }
     );

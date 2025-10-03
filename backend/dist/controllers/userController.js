@@ -127,7 +127,7 @@ const loginUser = async (req, res, next) => {
 exports.loginUser = loginUser;
 const getAllUsers = async (req, res, next) => {
     try {
-        const { page = 1, limit = 10, sort = "createdAt", order = "desc" } = req.query;
+        const { page = 1, limit = 10, sort = "createdAt", order = "desc", } = req.query;
         const sortObj = {};
         sortObj[sort] = order === "asc" ? 1 : -1;
         const skip = (page - 1) * limit;
@@ -202,13 +202,15 @@ const getUserById = async (req, res, next) => {
             nationality: user.nationality,
             phone: user.phone,
             avatar: user.avatar,
-            personalInfo: user.personalInfo ? {
-                ...user.personalInfo,
-                dateOfBirth: user.personalInfo.dateOfBirth?.toISOString(),
-            } : undefined,
+            personalInfo: user.personalInfo
+                ? {
+                    ...user.personalInfo,
+                    dateOfBirth: user.personalInfo.dateOfBirth?.toISOString(),
+                }
+                : undefined,
             academicInfo: user.academicInfo,
             areasOfInterest: user.areasOfInterest,
-            testScores: user.testScores?.map(score => ({
+            testScores: user.testScores?.map((score) => ({
                 id: score.id,
                 testName: score.examType,
                 score: score.score,
@@ -216,11 +218,11 @@ const getUserById = async (req, res, next) => {
                 maxScore: score.maxScore,
                 percentile: 0,
             })),
-            documents: user.documents?.map(doc => ({
+            documents: user.documents?.map((doc) => ({
                 ...doc,
                 uploadedAt: doc.uploadedAt.toISOString(),
             })),
-            savedUniversities: user.savedUniversities?.map(saved => ({
+            savedUniversities: user.savedUniversities?.map((saved) => ({
                 ...saved,
                 savedAt: saved.savedAt.toISOString(),
             })),
@@ -257,7 +259,10 @@ const updateUserById = async (req, res, next) => {
             });
             return;
         }
-        const user = await User_1.default.findByIdAndUpdate(id, updateData, { new: true, runValidators: true }).lean();
+        const user = await User_1.default.findByIdAndUpdate(id, updateData, {
+            new: true,
+            runValidators: true,
+        }).lean();
         if (!user) {
             res.status(404).json({
                 success: false,
@@ -275,10 +280,12 @@ const updateUserById = async (req, res, next) => {
             nationality: user.nationality,
             phone: user.phone,
             avatar: user.avatar,
-            personalInfo: user.personalInfo ? {
-                ...user.personalInfo,
-                dateOfBirth: user.personalInfo.dateOfBirth?.toISOString(),
-            } : undefined,
+            personalInfo: user.personalInfo
+                ? {
+                    ...user.personalInfo,
+                    dateOfBirth: user.personalInfo.dateOfBirth?.toISOString(),
+                }
+                : undefined,
             academicInfo: user.academicInfo,
             areasOfInterest: user.areasOfInterest,
             preferences: user.preferences,
@@ -467,7 +474,7 @@ const createApplication = async (req, res, next) => {
         };
         const user = await User_1.default.findByIdAndUpdate(userId, {
             $push: { applications: newApplication },
-            updatedAt: new Date()
+            updatedAt: new Date(),
         }, { new: true });
         if (!user) {
             res.status(404).json({
@@ -500,12 +507,12 @@ const updateApplication = async (req, res, next) => {
         const updates = req.body;
         const user = await User_1.default.findOneAndUpdate({
             _id: userId,
-            "applications.id": appId
+            "applications.id": appId,
         }, {
             $set: {
                 "applications.$": { ...updates, id: appId },
-                updatedAt: new Date()
-            }
+                updatedAt: new Date(),
+            },
         }, { new: true });
         if (!user) {
             res.status(404).json({
@@ -515,7 +522,7 @@ const updateApplication = async (req, res, next) => {
             });
             return;
         }
-        const updatedApplication = user.applications?.find(app => app.id === appId);
+        const updatedApplication = user.applications?.find((app) => app.id === appId);
         res.status(200).json({
             success: true,
             data: updatedApplication,
@@ -538,7 +545,7 @@ const deleteApplication = async (req, res, next) => {
         const { appId } = req.params;
         const user = await User_1.default.findByIdAndUpdate(userId, {
             $pull: { applications: { id: appId } },
-            updatedAt: new Date()
+            updatedAt: new Date(),
         }, { new: true });
         if (!user) {
             res.status(404).json({
@@ -608,7 +615,7 @@ const addTestScore = async (req, res, next) => {
         console.log("Creating new test score:", JSON.stringify(newTestScore, null, 2));
         const user = await User_1.default.findByIdAndUpdate(userId, {
             $push: { testScores: newTestScore },
-            updatedAt: new Date()
+            updatedAt: new Date(),
         }, { new: true });
         if (!user) {
             res.status(404).json({
@@ -655,12 +662,12 @@ const updateTestScore = async (req, res, next) => {
             updateData["testScores.$.validityDate"] = updates.validityDate;
         const user = await User_1.default.findOneAndUpdate({
             _id: userId,
-            "testScores.id": testId
+            "testScores.id": testId,
         }, {
             $set: {
                 ...updateData,
-                updatedAt: new Date()
-            }
+                updatedAt: new Date(),
+            },
         }, { new: true });
         if (!user) {
             res.status(404).json({
@@ -670,7 +677,7 @@ const updateTestScore = async (req, res, next) => {
             });
             return;
         }
-        const updatedTestScore = user.testScores?.find(score => score.id === testId);
+        const updatedTestScore = user.testScores?.find((score) => score.id === testId);
         res.status(200).json({
             success: true,
             data: updatedTestScore,
@@ -693,7 +700,7 @@ const deleteTestScore = async (req, res, next) => {
         const { id: testId } = req.params;
         const user = await User_1.default.findByIdAndUpdate(userId, {
             $pull: { testScores: { id: testId } },
-            updatedAt: new Date()
+            updatedAt: new Date(),
         }, { new: true });
         if (!user) {
             res.status(404).json({
@@ -759,7 +766,9 @@ const addDocument = async (req, res, next) => {
             filePath: documentData.url || "",
             uploadedBy: userId,
             metadata: {
-                description: documentData.url ? "External URL document" : "Draft document",
+                description: documentData.url
+                    ? "External URL document"
+                    : "Draft document",
             },
         });
         await newDocument.save();
@@ -796,7 +805,7 @@ const updateDocument = async (req, res, next) => {
             updateData.status = updates.status;
         const updatedDocument = await Document.findOneAndUpdate({
             _id: docId,
-            uploadedBy: userId
+            uploadedBy: userId,
         }, updateData, { new: true });
         if (!updatedDocument) {
             res.status(404).json({
@@ -829,7 +838,7 @@ const deleteDocument = async (req, res, next) => {
         const Document = require("../models/Document").default;
         const document = await Document.findOneAndDelete({
             _id: docId,
-            uploadedBy: userId
+            uploadedBy: userId,
         });
         if (!document) {
             res.status(404).json({
@@ -898,7 +907,7 @@ const saveUniversity = async (req, res, next) => {
         };
         const user = await User_1.default.findByIdAndUpdate(userId, {
             $push: { savedUniversities: newSavedUniversity },
-            updatedAt: new Date()
+            updatedAt: new Date(),
         }, { new: true });
         if (!user) {
             res.status(404).json({
@@ -930,7 +939,7 @@ const unsaveUniversity = async (req, res, next) => {
         const { savedId } = req.params;
         const user = await User_1.default.findByIdAndUpdate(userId, {
             $pull: { savedUniversities: { id: savedId } },
-            updatedAt: new Date()
+            updatedAt: new Date(),
         }, { new: true });
         if (!user) {
             res.status(404).json({
@@ -976,8 +985,8 @@ const updatePersonalInfo = async (req, res, next) => {
         const user = await User_1.default.findByIdAndUpdate(userId, {
             $set: {
                 ...updateData,
-                updatedAt: new Date()
-            }
+                updatedAt: new Date(),
+            },
         }, { new: true });
         if (!user) {
             res.status(404).json({
@@ -1019,8 +1028,8 @@ const updateAcademicInfo = async (req, res, next) => {
         const user = await User_1.default.findByIdAndUpdate(userId, {
             $set: {
                 ...updateData,
-                updatedAt: new Date()
-            }
+                updatedAt: new Date(),
+            },
         }, { new: true });
         if (!user) {
             res.status(404).json({
@@ -1053,8 +1062,8 @@ const updateAreasOfInterest = async (req, res, next) => {
         const user = await User_1.default.findByIdAndUpdate(userId, {
             $set: {
                 areasOfInterest,
-                updatedAt: new Date()
-            }
+                updatedAt: new Date(),
+            },
         }, { new: true });
         if (!user) {
             res.status(404).json({

@@ -107,11 +107,9 @@ export const EnhancedMilestoneTracker = ({
       if (newCompleted.has(stepKey)) {
         newCompleted.delete(stepKey);
         onStepUncomplete?.(milestoneId, stepId);
-        console.log(`❌ Uncompleted step: ${stepKey}`);
       } else {
         newCompleted.add(stepKey);
         onStepComplete?.(milestoneId, stepId);
-        console.log(`✅ Completed step: ${stepKey}`);
       }
 
       setCompletedSteps(newCompleted);
@@ -121,13 +119,11 @@ export const EnhancedMilestoneTracker = ({
 
   const toggleMilestoneComplete = useCallback(
     (milestoneId: string) => {
-      console.log(`🎯 Toggle milestone complete clicked: ${milestoneId}`);
       setLocalMilestones(prev =>
         prev.map(milestone => {
           if (milestone.id === milestoneId) {
             const newStatus =
               milestone.status === "completed" ? "current" : "completed";
-            console.log(
               `🔄 Changing milestone ${milestoneId} from ${milestone.status} to ${newStatus}`
             );
 
@@ -164,7 +160,6 @@ export const EnhancedMilestoneTracker = ({
             ).length;
             const progress = (completedCount / totalSteps) * 100; // Keep decimal precision
 
-            console.log(
               `📊 Updating milestone ${milestoneId}: ${completedCount}/${totalSteps} = ${Math.round(progress)}%`
             );
 
@@ -189,13 +184,11 @@ export const EnhancedMilestoneTracker = ({
 
   // Update all milestone progress when completedSteps changes
   useEffect(() => {
-    console.log(
-      "🔄 Completed steps changed, updating all milestone progress..."
-    );
     localMilestones.forEach(milestone => {
       updateMilestoneProgress(milestone.id);
     });
-  }, [completedSteps, localMilestones, updateMilestoneProgress]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [completedSteps]);
 
   const toggleTips = (milestoneId: string) => {
     const newShowTips = new Set(showTips);
@@ -212,7 +205,7 @@ export const EnhancedMilestoneTracker = ({
       case "completed":
         return <CheckCircle className="h-5 w-5 text-green-600" />;
       case "current":
-        return <Clock className="h-5 w-5 text-primary" />;
+        return <Clock className="h-5 w-5 text-blue-600" />;
       case "upcoming":
         return <Circle className="h-5 w-5 text-gray-400" />;
       case "overdue":
@@ -227,7 +220,7 @@ export const EnhancedMilestoneTracker = ({
       case "completed":
         return "bg-green-100 text-green-800 border-green-200";
       case "current":
-        return "bg-primary/10 text-primary border-primary/20";
+        return "bg-blue-100 text-blue-800 border-blue-200";
       case "upcoming":
         return "bg-gray-100 text-gray-800 border-gray-200";
       case "overdue":
@@ -255,7 +248,7 @@ export const EnhancedMilestoneTracker = ({
       case "completed":
         return <CheckCircle className="h-4 w-4 text-green-600" />;
       case "in-progress":
-        return <Clock className="h-4 w-4 text-primary" />;
+        return <Clock className="h-4 w-4 text-blue-600" />;
       case "pending":
         return <Circle className="h-4 w-4 text-gray-400" />;
       case "overdue":
@@ -276,19 +269,19 @@ export const EnhancedMilestoneTracker = ({
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case "Application":
-        return <FileText className="h-4 w-4 text-primary" />;
+        return <FileText className="h-4 w-4" />;
       case "Document":
-        return <Upload className="h-4 w-4 text-primary" />;
+        return <Upload className="h-4 w-4" />;
       case "Exam":
-        return <BookOpen className="h-4 w-4 text-primary" />;
+        return <BookOpen className="h-4 w-4" />;
       case "Interview":
-        return <Users className="h-4 w-4 text-primary" />;
+        return <Users className="h-4 w-4" />;
       case "Decision":
-        return <Award className="h-4 w-4 text-primary" />;
+        return <Award className="h-4 w-4" />;
       case "Financial":
-        return <Star className="h-4 w-4 text-primary" />;
+        return <Star className="h-4 w-4" />;
       default:
-        return <Target className="h-4 w-4 text-primary" />;
+        return <Target className="h-4 w-4" />;
     }
   };
 
@@ -297,7 +290,7 @@ export const EnhancedMilestoneTracker = ({
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-3 text-xl">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-primary/80">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500">
               <Target className="h-5 w-5 text-white" />
             </div>
             Application Milestones
@@ -311,7 +304,7 @@ export const EnhancedMilestoneTracker = ({
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <Clock className="h-4 w-4 text-primary" />
+              <Clock className="h-4 w-4 text-blue-600" />
               <span>
                 {milestones.filter(m => m.status === "current").length} in
                 progress
@@ -334,7 +327,7 @@ export const EnhancedMilestoneTracker = ({
                   milestone.status === "completed"
                     ? "border-green-200 bg-green-50/50"
                     : milestone.status === "current"
-                      ? "border-primary/20 bg-primary/5"
+                      ? "border-blue-200 bg-blue-50/50"
                       : milestone.status === "overdue"
                         ? "border-red-200 bg-red-50/50"
                         : "border-gray-200 bg-gray-50/50"
@@ -349,7 +342,7 @@ export const EnhancedMilestoneTracker = ({
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h4 className="font-bold text-lg text-slate-900 group-hover:text-primary transition-colors duration-300">
+                        <h4 className="font-bold text-lg text-slate-900 group-hover:text-blue-600 transition-colors duration-300">
                           {milestone.title}
                         </h4>
                         <Badge
@@ -505,14 +498,14 @@ export const EnhancedMilestoneTracker = ({
                   {/* Steps */}
                   <div>
                     <h5 className="font-bold text-lg mb-4 flex items-center gap-2">
-                      <Target className="h-5 w-5 text-primary" />
+                      <Target className="h-5 w-5 text-blue-600" />
                       Steps ({milestone.completedSteps}/{milestone.totalSteps})
                     </h5>
                     <div className="space-y-3">
                       {milestone.steps.map((step, stepIndex) => (
                         <div
                           key={step.id}
-                          className="p-4 rounded-lg border border-slate-200 hover:border-primary/30 transition-colors duration-300"
+                          className="p-4 rounded-lg border border-slate-200 hover:border-blue-300 transition-colors duration-300"
                         >
                           <div className="flex items-start gap-3">
                             <div className="flex-shrink-0 mt-1">

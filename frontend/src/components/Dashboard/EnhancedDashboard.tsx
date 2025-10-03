@@ -5,11 +5,25 @@ import { ScholarshipModal } from "./ScholarshipModal";
 import { ScheduleExamModal } from "./ScheduleExamModal";
 import { AddApplicationModal } from "./AddApplicationModal";
 import { StatsGrid } from "./StatsGrid";
+import { EnhancedQuickActionsPanel } from "./EnhancedQuickActionsPanel";
 import { EnhancedApplicationProgress } from "./EnhancedApplicationProgress";
 import { ExamProgressTracker } from "./ExamProgressTracker";
+import { EnhancedSavedUniversities } from "./EnhancedSavedUniversities";
 import { ProgressTracker } from "@/components/progress-tracker";
+import { EnhancedMilestoneTracker } from "./EnhancedMilestoneTracker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { GraduationCap, BookOpen, Calendar, FileText } from "lucide-react";
+import {
+  FileText,
+  GraduationCap,
+  BookOpen,
+  Calendar,
+  Plus,
+  Upload,
+  Award,
+  Download,
+  Sparkles,
+  Users,
+} from "lucide-react";
 import {
   Application,
   Exam,
@@ -17,13 +31,10 @@ import {
   SavedUniversity,
   Scholarship,
   Stat,
+  QuickAction,
 } from "./types";
-import { useUser } from "@/contexts/UserContext";
-import { documentApi, testScoreApi } from "@/utils/api";
 
 export const EnhancedDashboard = () => {
-  const { user } = useUser();
-
   // Modal states
   const [selectedApplication, setSelectedApplication] =
     useState<Application | null>(null);
@@ -34,152 +45,6 @@ export const EnhancedDashboard = () => {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isAddApplicationModalOpen, setIsAddApplicationModalOpen] =
     useState(false);
-
-  // Real user data state
-  const [userDocuments, setUserDocuments] = useState<Record<string, unknown>[]>(
-    []
-  );
-  const [userTestScores, setUserTestScores] = useState<
-    Record<string, unknown>[]
-  >([]);
-  const [isLoadingUserData, setIsLoadingUserData] = useState(true);
-
-  // Fetch user documents and test scores
-  const fetchUserData = useCallback(async () => {
-    if (!user?.id) {
-      setIsLoadingUserData(false);
-      return;
-    }
-
-    try {
-      setIsLoadingUserData(true);
-
-      // Fetch documents and test scores in parallel
-      const [documentsResponse, testScoresResponse] = await Promise.all([
-        documentApi.getAll(user.id),
-        testScoreApi.getAll(user.id),
-      ]);
-
-      setUserDocuments(documentsResponse || []);
-      setUserTestScores(testScoresResponse || []);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      setUserDocuments([]);
-      setUserTestScores([]);
-    } finally {
-      setIsLoadingUserData(false);
-    }
-  }, [user?.id]);
-
-  // Fetch user data on component mount and when user changes
-  useEffect(() => {
-    fetchUserData();
-  }, [fetchUserData]);
-
-  // Calculate progress based on user documents and test scores
-  const calculateUserProgress = useCallback(() => {
-    if (!user || isLoadingUserData)
-      return { progress: 0, completedItems: 0, totalItems: 0 };
-
-    // Define required items for application process
-    const requiredDocuments = [
-      "High School Transcript",
-      "SAT Scores",
-      "IELTS Scores",
-      "TOEFL Scores",
-      "Personal Statement",
-      "Letters of Recommendation",
-      "Portfolio",
-      "Financial Aid Forms",
-    ];
-
-    const requiredTestScores = ["SAT", "IELTS", "TOEFL", "ACT", "GRE", "GMAT"];
-
-    // Count completed documents
-    const completedDocuments = userDocuments.filter(
-      doc =>
-        requiredDocuments.some(
-          req =>
-            (doc.name as string)?.toLowerCase().includes(req.toLowerCase()) ||
-            (doc.type as string)?.toLowerCase().includes(req.toLowerCase())
-        ) && doc.status === "uploaded"
-    ).length;
-
-    // Count completed test scores
-    const completedTestScores = userTestScores.filter(
-      score =>
-        requiredTestScores.some(req =>
-          (score.examType as string)?.toLowerCase().includes(req.toLowerCase())
-        ) && score.certified === true
-    ).length;
-
-    const totalRequired = requiredDocuments.length + requiredTestScores.length;
-    const completedItems = completedDocuments + completedTestScores;
-    const progress =
-      totalRequired > 0 ? (completedItems / totalRequired) * 100 : 0;
-
-    return {
-      progress: Math.round(progress),
-      completedItems,
-      totalItems: totalRequired,
-      completedDocuments,
-      completedTestScores,
-      requiredDocuments: requiredDocuments.length,
-      requiredTestScores: requiredTestScores.length,
-    };
-  }, [user, userDocuments, userTestScores, isLoadingUserData]);
-
-  // Calculate exam progress based on registrations (50%) and test scores (50%)
-  const calculateExamProgress = useCallback(() => {
-    if (!user || isLoadingUserData) {
-      return {
-        examProgress: 0,
-        examRegistrations: 0,
-        testScoresAdded: 0,
-        examRegistrationsProgress: 0,
-        testScoresProgress: 0,
-        maxRegistrations: 3,
-        maxTestScores: 3,
-      };
-    }
-
-    // Get exam registrations from localStorage (tracked when register button is clicked)
-    const examRegistrations = JSON.parse(
-      localStorage.getItem("examRegistrations") || "[]"
-    );
-
-    // Count test scores added (from test scores page)
-    const testScoresAdded = userTestScores.filter(
-      score => score.certified === true
-    ).length;
-
-    // Calculate progress: 50% from registrations, 50% from test scores
-    // Assume 3 exam registrations = 100% of registration component
-    // Assume 3 test scores = 100% of test scores component
-    const maxRegistrations = 3;
-    const maxTestScores = 3;
-
-    const examRegistrationsProgress = Math.min(
-      (examRegistrations.length / maxRegistrations) * 50,
-      50
-    );
-    const testScoresProgress = Math.min(
-      (testScoresAdded / maxTestScores) * 50,
-      50
-    );
-
-    const totalExamProgress = examRegistrationsProgress + testScoresProgress;
-
-    return {
-      examProgress: Math.round(totalExamProgress),
-      examRegistrations: examRegistrations.length,
-      testScoresAdded,
-      examRegistrationsProgress: Math.round(examRegistrationsProgress),
-      testScoresProgress: Math.round(testScoresProgress),
-      maxRegistrations,
-      maxTestScores,
-    };
-  }, [user, userTestScores, isLoadingUserData]);
 
   // Search states
   const [searchQuery, setSearchQuery] = useState("");
@@ -201,9 +66,7 @@ export const EnhancedDashboard = () => {
           selectedProgram,
         };
         localStorage.setItem("dashboardFilters", JSON.stringify(filtersToSave));
-        console.log("🔍 Saved filters to localStorage:", filtersToSave);
       } catch (error) {
-        console.error("❌ Error saving filters to localStorage:", error);
       }
     }
   }, [searchQuery, selectedCountry, selectedProgram, isDataLoaded]);
@@ -287,12 +150,57 @@ export const EnhancedDashboard = () => {
     setShowSuggestions(false);
   };
 
+  // Handle quick actions
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case "add-application":
+        setIsAddApplicationModalOpen(true);
+        break;
+      case "upload-documents":
+        // Add document upload logic
+        break;
+      case "schedule-exam":
+        setIsExamModalOpen(true);
+        break;
+      case "find-scholarships":
+        setIsScholarshipModalOpen(true);
+        break;
+      case "ai-suggestions":
+        // Add AI suggestions logic
+        break;
+      case "export-data":
+        // Add export logic
+        break;
+      default:
+    }
+  };
+
   // Handle university actions
+  const handleEditUniversity = (university: { name: string; id: string }) => {
+    // Open edit modal or navigate to edit page
+    alert(`Editing ${university.name} - This would open an edit form`);
+  };
 
   // Placeholder handlers for future functionality
   // const handleViewUniversity = (university: { name: string; id: string }) => {
-  //   console.log("Viewing university details:", university.name);
   // };
+
+  const handleRemoveUniversity = (universityId: string) => {
+    setSavedUniversities((prev: SavedUniversity[]) => {
+      const updatedList = prev.filter(
+        (uni: SavedUniversity) => uni.id !== universityId
+      );
+      const removedUni = prev.find(
+        (uni: SavedUniversity) => uni.id === universityId
+      );
+      if (removedUni) {
+        alert(
+          `${removedUni.name} has been removed from your saved universities!`
+        );
+      }
+      return updatedList;
+    });
+  };
 
   // Get university ranking based on name
   const getUniversityRanking = (universityName: string | undefined): number => {
@@ -697,7 +605,6 @@ export const EnhancedDashboard = () => {
     name: string;
     id: string;
   }) => {
-    console.log("Applying to university:", university.name);
     // Add university to saved universities
     const universityRanking = getUniversityRanking(university.name);
     const universityDetails = getUniversityDetails(university.name);
@@ -738,10 +645,16 @@ export const EnhancedDashboard = () => {
     setIsAddApplicationModalOpen(false);
   };
 
+  const handleViewAllUniversities = () => {
+    // Navigate to universities page or open modal
+    alert(
+      "Opening all universities view - This would show the complete university database"
+    );
+  };
+
   // Load popular universities with fallback data
   const loadPopularUniversities = async () => {
     setIsLoadingExternal(true);
-    console.log("🔄 Loading universities...");
 
     // Fallback university data with real information
     const fallbackUniversities: University[] = [
@@ -934,17 +847,14 @@ export const EnhancedDashboard = () => {
 
     try {
       // Try to fetch from API first, but use fallback if it fails
-      console.log("🌐 Attempting to connect to university API...");
 
       setTimeout(() => {
-        console.log("📚 Using curated university database");
         setPopularUniversities(fallbackUniversities);
         setIsLoadingExternal(false);
       }, 1000); // Simulate loading time
 
       return fallbackUniversities;
     } catch (error) {
-      console.error("💥 API unavailable, using curated data:", error);
       setPopularUniversities(fallbackUniversities);
       return fallbackUniversities;
     }
@@ -995,7 +905,6 @@ export const EnhancedDashboard = () => {
 
       return transformedData;
     } catch (error) {
-      console.error("Error fetching external universities:", error);
       alert("Failed to fetch external university data. Please try again.");
       return [];
     } finally {
@@ -1046,16 +955,258 @@ export const EnhancedDashboard = () => {
       try {
         setSavedApplications(JSON.parse(saved));
       } catch (error) {
-        console.error("Error loading applications from localStorage:", error);
       }
     }
   }, []);
 
-  // Start with empty applications - students will add their own
-  const mockApplications: Application[] = useMemo(() => [], []);
+  // Mock data with enhanced information
+  const mockApplications: Application[] = useMemo(
+    () => [
+      {
+        id: 1,
+        university: "MIT",
+        program: "Computer Science",
+        status: "In Progress",
+        deadline: "Jan 1, 2025",
+        progress: 75,
+        ranking: 1,
+        location: "Cambridge, MA, USA",
+        tuition: "$57,986/year",
+        acceptance: "6.7%",
+        image: "/mit-campus-aerial.png",
+        description:
+          "The Computer Science program at MIT focuses on the fundamental principles of computing and their applications.",
+        website: "https://www.mit.edu",
+        requirements: [
+          "SAT: 1500+ or ACT: 34+",
+          "IELTS: 7.0+ or TOEFL: 100+",
+          "High school transcripts",
+          "Letters of recommendation (2)",
+          "Personal statement",
+          "Extracurricular activities",
+        ],
+        documents: [
+          {
+            name: "High School Transcript",
+            status: "uploaded",
+            required: true,
+          },
+          { name: "SAT Scores", status: "uploaded", required: true },
+          { name: "Personal Statement", status: "draft", required: true },
+          {
+            name: "Letters of Recommendation",
+            status: "pending",
+            required: true,
+          },
+          { name: "Portfolio", status: "not-required", required: false },
+          { name: "Financial Aid Forms", status: "pending", required: false },
+        ],
+        milestones: [
+          {
+            title: "Application Started",
+            date: "Nov 1, 2024",
+            completed: true,
+          },
+          {
+            title: "Documents Uploaded",
+            date: "Nov 15, 2024",
+            completed: true,
+          },
+          {
+            title: "Personal Statement Draft",
+            date: "Dec 1, 2024",
+            completed: true,
+          },
+          {
+            title: "Letters of Recommendation",
+            date: "Dec 20, 2024",
+            completed: false,
+          },
+          { title: "Final Review", date: "Dec 28, 2024", completed: false },
+          { title: "Submission", date: "Jan 1, 2025", completed: false },
+        ],
+      },
+      {
+        id: 2,
+        university: "Stanford",
+        program: "Computer Science",
+        status: "Submitted",
+        deadline: "Jan 2, 2025",
+        progress: 100,
+        ranking: 2,
+        location: "Stanford, CA, USA",
+        tuition: "$61,731/year",
+        acceptance: "4.3%",
+        image: "/stanford-campus.jpg",
+        description:
+          "Stanford's CS program emphasizes both theoretical foundations and practical applications.",
+        website: "https://www.stanford.edu",
+        requirements: [
+          "SAT: 1520+ or ACT: 35+",
+          "IELTS: 7.5+ or TOEFL: 110+",
+          "High school transcripts",
+          "Letters of recommendation (3)",
+          "Personal statement",
+          "Research experience preferred",
+        ],
+        documents: [
+          {
+            name: "High School Transcript",
+            status: "uploaded",
+            required: true,
+          },
+          { name: "SAT Scores", status: "uploaded", required: true },
+          { name: "Personal Statement", status: "uploaded", required: true },
+          {
+            name: "Letters of Recommendation",
+            status: "uploaded",
+            required: true,
+          },
+          { name: "Research Portfolio", status: "uploaded", required: true },
+          { name: "Financial Aid Forms", status: "uploaded", required: false },
+        ],
+        milestones: [
+          {
+            title: "Application Started",
+            date: "Oct 15, 2024",
+            completed: true,
+          },
+          { title: "Documents Uploaded", date: "Nov 1, 2024", completed: true },
+          {
+            title: "Personal Statement Final",
+            date: "Nov 15, 2024",
+            completed: true,
+          },
+          {
+            title: "Letters of Recommendation",
+            date: "Nov 20, 2024",
+            completed: true,
+          },
+          { title: "Final Review", date: "Dec 1, 2024", completed: true },
+          { title: "Submission", date: "Dec 15, 2024", completed: true },
+        ],
+      },
+    ],
+    []
+  );
 
-  // Start with empty exam progress - students will add their own
-  const examProgress: Exam[] = useMemo(() => [], []);
+  const examProgress: Exam[] = useMemo(
+    () => [
+      {
+        id: 1,
+        exam: "SAT",
+        fullName: "Scholastic Assessment Test",
+        date: "Dec 14, 2024",
+        daysLeft: 2,
+        status: "registered",
+        score: "1480",
+        target: "1500+",
+        progress: 85,
+        registrationId: "SAT-2024-12-14-12345",
+        location: "Downtown Test Center, Ulaanbaatar",
+        duration: "3 hours 45 minutes",
+        sections: [
+          {
+            name: "Reading",
+            score: 370,
+            target: 380,
+            progress: 95,
+            status: "completed",
+          },
+          {
+            name: "Writing & Language",
+            score: 360,
+            target: 370,
+            progress: 90,
+            status: "completed",
+          },
+          {
+            name: "Math",
+            score: 750,
+            target: 750,
+            progress: 100,
+            status: "completed",
+          },
+        ],
+        practiceTests: [
+          {
+            name: "Practice Test 1",
+            date: "Nov 15, 2024",
+            score: 1420,
+            status: "completed",
+            improvement: "+20",
+          },
+          {
+            name: "Practice Test 2",
+            date: "Nov 1, 2024",
+            score: 1400,
+            status: "completed",
+            improvement: "+15",
+          },
+          {
+            name: "Practice Test 3",
+            date: "Oct 15, 2024",
+            score: 1385,
+            status: "completed",
+            improvement: "Baseline",
+          },
+        ],
+        studyPlan: [
+          {
+            topic: "Reading Comprehension",
+            progress: 100,
+            priority: "high",
+            status: "completed",
+          },
+          {
+            topic: "Grammar Rules",
+            progress: 100,
+            priority: "high",
+            status: "completed",
+          },
+          {
+            topic: "Algebra & Functions",
+            progress: 100,
+            priority: "medium",
+            status: "completed",
+          },
+          {
+            topic: "Advanced Math",
+            progress: 60,
+            priority: "high",
+            status: "in-progress",
+          },
+          {
+            topic: "Data Analysis",
+            progress: 30,
+            priority: "medium",
+            status: "in-progress",
+          },
+        ],
+        resources: [
+          {
+            name: "Khan Academy SAT Prep",
+            type: "Practice Tests",
+            status: "active",
+            url: "https://www.khanacademy.org/test-prep/sat",
+          },
+          {
+            name: "College Board Official Guide",
+            type: "Study Material",
+            status: "completed",
+            url: "https://satsuite.collegeboard.org/sat/practice-preparation",
+          },
+          {
+            name: "SAT Math Bootcamp",
+            type: "Course",
+            status: "in-progress",
+            url: "https://www.khanacademy.org/math",
+          },
+        ],
+      },
+    ],
+    []
+  );
 
   // Combine mock applications with saved applications
   const applications: Application[] = useMemo(() => {
@@ -1080,13 +1231,11 @@ export const EnhancedDashboard = () => {
           "popularUniversities",
           JSON.stringify(popularUniversities)
         );
-        console.log(
           "🌍 Saved popular universities to localStorage:",
           popularUniversities.length,
           "universities"
         );
       } catch (error) {
-        console.error(
           "❌ Error saving popular universities to localStorage:",
           error
         );
@@ -1115,35 +1264,67 @@ export const EnhancedDashboard = () => {
     },
   ];
 
-  const stats: Stat[] = useMemo(() => {
-    const progress = calculateUserProgress() || {
-      progress: 0,
-      completedDocuments: 0,
-      completedTestScores: 0,
-    };
-    return [
-      {
-        label: "Active Applications",
-        value: realTimeData.stats.activeApplications.toString(),
-        icon: FileText,
-      },
-      {
-        label: "Documents Uploaded",
-        value: (progress.completedDocuments || 0).toString(),
-        icon: BookOpen,
-      },
-      {
-        label: "Test Scores Completed",
-        value: (progress.completedTestScores || 0).toString(),
-        icon: GraduationCap,
-      },
-      {
-        label: "Overall Progress",
-        value: `${progress.progress || 0}%`,
-        icon: Calendar,
-      },
-    ];
-  }, [realTimeData.stats.activeApplications, calculateUserProgress]);
+  const stats: Stat[] = [
+    {
+      label: "Active Applications",
+      value: realTimeData.stats.activeApplications.toString(),
+      icon: FileText,
+    },
+    {
+      label: "Universities Tracked",
+      value: `${realTimeData.stats.universitiesTracked.toLocaleString()}+`,
+      icon: GraduationCap,
+    },
+    {
+      label: "Documents Uploaded",
+      value: realTimeData.stats.documentsUploaded.toString(),
+      icon: BookOpen,
+    },
+    {
+      label: "Upcoming Deadlines",
+      value: realTimeData.stats.upcomingDeadlines.toString(),
+      icon: Calendar,
+    },
+  ];
+
+  const quickActions: QuickAction[] = [
+    {
+      label: "Add Application",
+      icon: Plus,
+      action: "add-application",
+      color: "bg-blue-500",
+    },
+    {
+      label: "Upload Documents",
+      icon: Upload,
+      action: "upload-docs",
+      color: "bg-green-500",
+    },
+    {
+      label: "Schedule Exam",
+      icon: Calendar,
+      action: "schedule-exam",
+      color: "bg-purple-500",
+    },
+    {
+      label: "Find Scholarships",
+      icon: Award,
+      action: "find-scholarships",
+      color: "bg-yellow-500",
+    },
+    {
+      label: "AI Suggestions",
+      icon: Sparkles,
+      action: "ai-suggestions",
+      color: "bg-pink-500",
+    },
+    {
+      label: "Export Data",
+      icon: Download,
+      action: "export-data",
+      color: "bg-indigo-500",
+    },
+  ];
 
   // Default saved universities
   const defaultSavedUniversities = [
@@ -1236,7 +1417,6 @@ export const EnhancedDashboard = () => {
       const savedUnis = localStorage.getItem("savedUniversities");
       if (savedUnis) {
         const parsedUnis = JSON.parse(savedUnis);
-        console.log(
           "📚 Loaded saved universities from localStorage:",
           parsedUnis.length,
           "universities"
@@ -1248,7 +1428,6 @@ export const EnhancedDashboard = () => {
       const popularUnis = localStorage.getItem("popularUniversities");
       if (popularUnis) {
         const parsedPopular = JSON.parse(popularUnis);
-        console.log(
           "🌍 Loaded popular universities from localStorage:",
           parsedPopular.length,
           "universities"
@@ -1260,7 +1439,6 @@ export const EnhancedDashboard = () => {
       const savedFilters = localStorage.getItem("dashboardFilters");
       if (savedFilters) {
         const parsedFilters = JSON.parse(savedFilters);
-        console.log("🔍 Loaded filters from localStorage:", parsedFilters);
         setSearchQuery(parsedFilters.searchQuery || "");
         setSelectedCountry(parsedFilters.selectedCountry || "all");
         setSelectedProgram(parsedFilters.selectedProgram || "all");
@@ -1268,7 +1446,6 @@ export const EnhancedDashboard = () => {
 
       setIsDataLoaded(true);
     } catch (error) {
-      console.error("❌ Error loading data from localStorage:", error);
       setIsDataLoaded(true);
     }
   }, []);
@@ -1281,13 +1458,11 @@ export const EnhancedDashboard = () => {
           "savedUniversities",
           JSON.stringify(savedUniversities)
         );
-        console.log(
           "💾 Saved universities to localStorage:",
           savedUniversities.length,
           "universities"
         );
       } catch (error) {
-        console.error("❌ Error saving universities to localStorage:", error);
       }
     }
   }, [savedUniversities, isDataLoaded]);
@@ -1320,10 +1495,8 @@ export const EnhancedDashboard = () => {
   // Load universities from API only if not in localStorage (after initial data load)
   useEffect(() => {
     if (isDataLoaded && popularUniversities.length === 0) {
-      console.log("📡 No universities in localStorage, loading from API...");
       loadPopularUniversities();
     } else if (isDataLoaded && popularUniversities.length > 0) {
-      console.log(
         "✅ Universities already loaded from localStorage, skipping API call"
       );
     }
@@ -1351,21 +1524,15 @@ export const EnhancedDashboard = () => {
 
   // Real-time data updates
   useEffect(() => {
-    const userProgress = calculateUserProgress() || {
-      progress: 0,
-      completedDocuments: 0,
-      completedTestScores: 0,
-    };
-
-    // Initialize real-time data with user progress
+    // Initialize real-time data
     setRealTimeData({
       applications: applications,
       examProgress: examProgress,
       stats: {
         activeApplications: applications.length,
-        universitiesTracked: 0, // Start with 0 tracked universities
-        documentsUploaded: userProgress.completedDocuments || 0,
-        upcomingDeadlines: 0, // Start with 0 upcoming deadlines
+        universitiesTracked: 2500,
+        documentsUploaded: 12,
+        upcomingDeadlines: 3,
       },
     });
 
@@ -1392,7 +1559,7 @@ export const EnhancedDashboard = () => {
     }, 30000); // Update every 30 seconds
 
     return () => clearInterval(interval);
-  }, [applications, examProgress, calculateUserProgress]);
+  }, [applications, examProgress]);
 
   // Event handlers
   const handleViewDetails = (application: Application) => {
@@ -1416,11 +1583,9 @@ export const EnhancedDashboard = () => {
   };
 
   const openExternalLink = (url: string) => {
-    console.log("Opening URL:", url);
     if (url && url.startsWith("http")) {
       window.open(url, "_blank", "noopener,noreferrer");
     } else {
-      console.error("Invalid URL:", url);
     }
   };
 
@@ -1454,19 +1619,464 @@ export const EnhancedDashboard = () => {
           </div>
         </div>
 
+        {/* Quick Actions Panel */}
+        <EnhancedQuickActionsPanel
+          quickActions={quickActions}
+          onActionClick={handleQuickAction}
+        />
+
         {/* Stats Grid */}
         <StatsGrid stats={stats} />
 
-        {/* Application Progress - Full Width */}
+        {/* Saved Universities - Top Priority */}
         <div className="mb-8">
+          <EnhancedSavedUniversities
+            universities={savedUniversities}
+            onEditUniversity={handleEditUniversity}
+            onRemoveUniversity={handleRemoveUniversity}
+            onApplyToUniversity={handleApplyToUniversity}
+            onViewAllUniversities={handleViewAllUniversities}
+          />
+        </div>
+
+        {/* Application Milestones - Full Width */}
+        <div className="mb-8">
+          <EnhancedMilestoneTracker
+            milestones={[
+              {
+                id: "1",
+                title: "MIT Application Submission",
+                description:
+                  "Complete and submit MIT application with all required documents",
+                status: "completed",
+                category: "Application",
+                dueDate: "Dec 1, 2024",
+                completedDate: "Dec 1, 2024",
+                priority: "high",
+                progress: 100,
+                totalSteps: 6,
+                completedSteps: 6,
+                estimatedDuration: "2-3 weeks",
+                requirements: [
+                  "High school transcripts",
+                  "SAT/ACT scores",
+                  "Personal statement",
+                  "Letters of recommendation (2)",
+                  "Portfolio (if applicable)",
+                  "Application fee payment",
+                ],
+                tips: [
+                  "Start your personal statement early and get feedback from teachers",
+                  "Request recommendation letters at least 3 weeks before deadline",
+                  "Review all requirements carefully to avoid missing documents",
+                ],
+                icon: FileText,
+                color: "bg-blue-500",
+                steps: [
+                  {
+                    id: "1-1",
+                    title: "Create MIT Application Account",
+                    description:
+                      "Register on MIT's application portal and complete basic information",
+                    status: "completed",
+                    priority: "high",
+                    dueDate: "Nov 1, 2024",
+                    completedDate: "Nov 1, 2024",
+                    estimatedTime: "30 minutes",
+                    requirements: [
+                      "Valid email address",
+                      "Personal information",
+                    ],
+                    resources: [
+                      {
+                        name: "MIT Application Portal",
+                        url: "https://apply.mit.edu",
+                        type: "website",
+                      },
+                      {
+                        name: "Application Guide",
+                        url: "https://mit.edu/apply",
+                        type: "guide",
+                      },
+                    ],
+                    progress: 100,
+                    notes: "Account created successfully",
+                  },
+                  {
+                    id: "1-2",
+                    title: "Upload Academic Documents",
+                    description:
+                      "Submit high school transcripts and test scores",
+                    status: "completed",
+                    priority: "high",
+                    dueDate: "Nov 15, 2024",
+                    completedDate: "Nov 15, 2024",
+                    estimatedTime: "2 hours",
+                    requirements: [
+                      "Official transcripts",
+                      "SAT/ACT scores",
+                      "AP scores (if applicable)",
+                    ],
+                    resources: [
+                      {
+                        name: "Transcript Request Form",
+                        url: "#",
+                        type: "form",
+                      },
+                      {
+                        name: "Score Reporting Guide",
+                        url: "#",
+                        type: "guide",
+                      },
+                    ],
+                    progress: 100,
+                    notes: "All academic documents uploaded",
+                  },
+                  {
+                    id: "1-3",
+                    title: "Write Personal Statement",
+                    description:
+                      "Complete the main essay and supplemental essays",
+                    status: "completed",
+                    priority: "high",
+                    dueDate: "Nov 20, 2024",
+                    completedDate: "Nov 20, 2024",
+                    estimatedTime: "1-2 weeks",
+                    requirements: [
+                      "Main essay (500 words)",
+                      "Supplemental essays",
+                      "Proofreading",
+                    ],
+                    resources: [
+                      { name: "Essay Prompts", url: "#", type: "guide" },
+                      { name: "Writing Tips", url: "#", type: "guide" },
+                    ],
+                    progress: 100,
+                    notes: "Personal statement reviewed by counselor",
+                  },
+                  {
+                    id: "1-4",
+                    title: "Request Letters of Recommendation",
+                    description:
+                      "Ask teachers and counselors for recommendation letters",
+                    status: "completed",
+                    priority: "high",
+                    dueDate: "Nov 25, 2024",
+                    completedDate: "Nov 25, 2024",
+                    estimatedTime: "1 week",
+                    requirements: [
+                      "Identify recommenders",
+                      "Send formal requests",
+                      "Provide supporting materials",
+                    ],
+                    resources: [
+                      {
+                        name: "Recommender Guidelines",
+                        url: "#",
+                        type: "guide",
+                      },
+                      { name: "Request Template", url: "#", type: "document" },
+                    ],
+                    progress: 100,
+                    notes: "Both letters submitted on time",
+                  },
+                  {
+                    id: "1-5",
+                    title: "Complete Application Review",
+                    description:
+                      "Final review of all application materials before submission",
+                    status: "completed",
+                    priority: "high",
+                    dueDate: "Nov 28, 2024",
+                    completedDate: "Nov 28, 2024",
+                    estimatedTime: "2 hours",
+                    requirements: [
+                      "Check all sections",
+                      "Verify document uploads",
+                      "Proofread essays",
+                    ],
+                    resources: [
+                      {
+                        name: "Application Checklist",
+                        url: "#",
+                        type: "document",
+                      },
+                      { name: "Final Review Guide", url: "#", type: "guide" },
+                    ],
+                    progress: 100,
+                    notes: "Application thoroughly reviewed",
+                  },
+                  {
+                    id: "1-6",
+                    title: "Submit Application",
+                    description:
+                      "Final submission of MIT application with payment",
+                    status: "completed",
+                    priority: "high",
+                    dueDate: "Dec 1, 2024",
+                    completedDate: "Dec 1, 2024",
+                    estimatedTime: "30 minutes",
+                    requirements: [
+                      "Submit application",
+                      "Pay application fee",
+                      "Receive confirmation",
+                    ],
+                    resources: [
+                      { name: "Payment Portal", url: "#", type: "website" },
+                      {
+                        name: "Submission Confirmation",
+                        url: "#",
+                        type: "document",
+                      },
+                    ],
+                    progress: 100,
+                    notes: "Application successfully submitted",
+                  },
+                ],
+              },
+              {
+                id: "2",
+                title: "MIT Interview Preparation",
+                description: "Prepare for and complete MIT admission interview",
+                status: "current",
+                category: "Interview",
+                dueDate: "Dec 20, 2024",
+                priority: "high",
+                progress: 60,
+                totalSteps: 4,
+                completedSteps: 2,
+                estimatedDuration: "1-2 weeks",
+                requirements: [
+                  "Schedule interview",
+                  "Prepare responses to common questions",
+                  "Research MIT programs",
+                  "Practice with mock interviews",
+                ],
+                tips: [
+                  "Be yourself and show genuine interest in MIT",
+                  "Prepare specific examples of your achievements and challenges",
+                  "Research MIT's culture and values to align your responses",
+                ],
+                icon: Users,
+                color: "bg-green-500",
+                steps: [
+                  {
+                    id: "2-1",
+                    title: "Schedule Interview",
+                    description: "Contact MIT alumni for interview scheduling",
+                    status: "completed",
+                    priority: "high",
+                    dueDate: "Dec 10, 2024",
+                    completedDate: "Dec 8, 2024",
+                    estimatedTime: "1 hour",
+                    requirements: [
+                      "Find local MIT alumni",
+                      "Schedule convenient time",
+                      "Confirm location",
+                    ],
+                    resources: [
+                      {
+                        name: "Alumni Interview Portal",
+                        url: "#",
+                        type: "website",
+                      },
+                      {
+                        name: "Interview Scheduling Guide",
+                        url: "#",
+                        type: "guide",
+                      },
+                    ],
+                    progress: 100,
+                    notes: "Interview scheduled for Dec 18, 2024",
+                  },
+                  {
+                    id: "2-2",
+                    title: "Research MIT Programs",
+                    description: "Study MIT's academic programs and culture",
+                    status: "completed",
+                    priority: "medium",
+                    dueDate: "Dec 12, 2024",
+                    completedDate: "Dec 12, 2024",
+                    estimatedTime: "3-4 hours",
+                    requirements: [
+                      "Study course catalog",
+                      "Research faculty",
+                      "Understand MIT culture",
+                    ],
+                    resources: [
+                      {
+                        name: "MIT Course Catalog",
+                        url: "https://catalog.mit.edu",
+                        type: "website",
+                      },
+                      { name: "MIT Culture Guide", url: "#", type: "guide" },
+                    ],
+                    progress: 100,
+                    notes: "Comprehensive research completed",
+                  },
+                  {
+                    id: "2-3",
+                    title: "Practice Interview Questions",
+                    description:
+                      "Prepare responses to common interview questions",
+                    status: "in-progress",
+                    priority: "high",
+                    dueDate: "Dec 16, 2024",
+                    estimatedTime: "2-3 days",
+                    requirements: [
+                      "Prepare personal stories",
+                      "Practice common questions",
+                      "Record practice sessions",
+                    ],
+                    resources: [
+                      {
+                        name: "Common Interview Questions",
+                        url: "#",
+                        type: "guide",
+                      },
+                      { name: "STAR Method Guide", url: "#", type: "guide" },
+                    ],
+                    progress: 60,
+                    notes: "Working on personal story examples",
+                  },
+                  {
+                    id: "2-4",
+                    title: "Mock Interview Session",
+                    description:
+                      "Conduct practice interview with counselor or mentor",
+                    status: "pending",
+                    priority: "high",
+                    dueDate: "Dec 17, 2024",
+                    estimatedTime: "1 hour",
+                    requirements: [
+                      "Schedule mock interview",
+                      "Practice full interview",
+                      "Receive feedback",
+                    ],
+                    resources: [
+                      { name: "Mock Interview Guide", url: "#", type: "guide" },
+                      { name: "Feedback Template", url: "#", type: "document" },
+                    ],
+                    progress: 0,
+                    notes: "Scheduled for Dec 16, 2024",
+                  },
+                ],
+              },
+              {
+                id: "3",
+                title: "Admission Decision",
+                description: "Receive and respond to MIT admission decision",
+                status: "upcoming",
+                category: "Decision",
+                dueDate: "Mar 15, 2025",
+                priority: "high",
+                progress: 0,
+                totalSteps: 3,
+                completedSteps: 0,
+                estimatedDuration: "1-2 weeks",
+                requirements: [
+                  "Check decision portal",
+                  "Review financial aid package",
+                  "Make enrollment decision",
+                  "Submit enrollment deposit",
+                ],
+                tips: [
+                  "Check your email and portal regularly on decision day",
+                  "Take time to carefully consider all options before deciding",
+                  "Don't hesitate to ask questions about financial aid",
+                ],
+                icon: Award,
+                color: "bg-purple-500",
+                steps: [
+                  {
+                    id: "3-1",
+                    title: "Check Decision Portal",
+                    description:
+                      "Log in to MIT portal to view admission decision",
+                    status: "pending",
+                    priority: "high",
+                    dueDate: "Mar 15, 2025",
+                    estimatedTime: "30 minutes",
+                    requirements: [
+                      "Access portal",
+                      "View decision letter",
+                      "Download decision",
+                    ],
+                    resources: [
+                      {
+                        name: "MIT Decision Portal",
+                        url: "#",
+                        type: "website",
+                      },
+                      { name: "Decision Day Guide", url: "#", type: "guide" },
+                    ],
+                    progress: 0,
+                  },
+                  {
+                    id: "3-2",
+                    title: "Review Financial Aid",
+                    description: "Analyze financial aid package and options",
+                    status: "pending",
+                    priority: "high",
+                    dueDate: "Mar 20, 2025",
+                    estimatedTime: "2-3 hours",
+                    requirements: [
+                      "Review aid package",
+                      "Compare with other offers",
+                      "Calculate costs",
+                    ],
+                    resources: [
+                      {
+                        name: "Financial Aid Calculator",
+                        url: "#",
+                        type: "website",
+                      },
+                      { name: "Aid Comparison Tool", url: "#", type: "guide" },
+                    ],
+                    progress: 0,
+                  },
+                  {
+                    id: "3-3",
+                    title: "Submit Enrollment Decision",
+                    description: "Accept or decline MIT admission offer",
+                    status: "pending",
+                    priority: "high",
+                    dueDate: "May 1, 2025",
+                    estimatedTime: "1 hour",
+                    requirements: [
+                      "Make final decision",
+                      "Submit enrollment form",
+                      "Pay deposit",
+                    ],
+                    resources: [
+                      { name: "Enrollment Portal", url: "#", type: "website" },
+                      { name: "Decision Timeline", url: "#", type: "guide" },
+                    ],
+                    progress: 0,
+                  },
+                ],
+              },
+            ]}
+            onStepComplete={(milestoneId, stepId) => {
+            }}
+            onStepUncomplete={(milestoneId, stepId) => {
+            }}
+            onMilestoneComplete={milestoneId => {
+            }}
+            onMilestoneUncomplete={milestoneId => {
+            }}
+          />
+        </div>
+
+        {/* Application and Overall Progress Grid */}
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          {/* Applications Progress */}
           <EnhancedApplicationProgress
             applications={realTimeData.applications}
             onViewDetails={handleViewDetails}
           />
-        </div>
 
-        {/* Overall Progress Card */}
-        <div className="mb-8">
+          {/* Overall Progress Card */}
           <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
@@ -1476,58 +2086,21 @@ export const EnhancedDashboard = () => {
             <CardContent className="space-y-6">
               <ProgressTracker
                 title="Application Progress"
-                items={useMemo(() => {
-                  const progress = calculateUserProgress() || {
-                    progress: 0,
-                    completedDocuments: 0,
-                    completedTestScores: 0,
-                  };
-                  return [
-                    {
-                      name: "Documents Uploaded",
-                      progress: progress.completedDocuments || 0,
-                      status:
-                        (progress.completedDocuments || 0) > 0
-                          ? "completed"
-                          : "pending",
-                      deadline: "Ongoing",
-                      priority:
-                        (progress.completedDocuments || 0) > 4
-                          ? "high"
-                          : "medium",
-                    },
-                    {
-                      name: "Test Scores Completed",
-                      progress: progress.completedTestScores || 0,
-                      status:
-                        (progress.completedTestScores || 0) > 0
-                          ? "completed"
-                          : "pending",
-                      deadline: "Ongoing",
-                      priority:
-                        (progress.completedTestScores || 0) > 2
-                          ? "high"
-                          : "medium",
-                    },
-                    {
-                      name: "Overall Progress",
-                      progress: progress.progress || 0,
-                      status:
-                        (progress.progress || 0) > 80
-                          ? "completed"
-                          : (progress.progress || 0) > 50
-                            ? "in-progress"
-                            : "pending",
-                      deadline: "Application Deadline",
-                      priority:
-                        (progress.progress || 0) > 80
-                          ? "high"
-                          : (progress.progress || 0) > 50
-                            ? "medium"
-                            : "low",
-                    },
-                  ];
-                }, [calculateUserProgress])}
+                items={realTimeData.applications.map(app => ({
+                  name: app.university,
+                  progress: Math.round(app.progress),
+                  status: app.status.toLowerCase().replace(" ", "-") as
+                    | "completed"
+                    | "in-progress"
+                    | "pending",
+                  deadline: app.deadline,
+                  priority:
+                    app.progress > 80
+                      ? "high"
+                      : app.progress > 50
+                        ? "medium"
+                        : "low",
+                }))}
               />
 
               {/* Exam Progress Section */}
@@ -1539,7 +2112,6 @@ export const EnhancedDashboard = () => {
                 <ExamProgressTracker
                   exams={realTimeData.examProgress}
                   onViewDetails={handleExamDetails}
-                  examProgress={calculateExamProgress()}
                 />
               </div>
             </CardContent>
