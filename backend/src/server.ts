@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-1simport rateLimit from "express-rate-limit";
+import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 
 // Import routes
